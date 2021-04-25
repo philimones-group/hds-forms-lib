@@ -1,0 +1,23 @@
+*.iml
+*.directory
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/app/build/
+/app/debug
+/app/release
+/captures
+/projectFilesBackup
+# Android studio 3.1+ serialized cache file
+.idea/caches/build_file_checksums.ser
+/.idea/dbnavigator.xml
+.idea
+*.iml
+*.ipr
+*.iws
+.project
+.settings
+.classpath
