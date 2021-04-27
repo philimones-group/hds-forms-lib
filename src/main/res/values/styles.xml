@@ -1,0 +1,50 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:fontFamily">@font/gordita_regular</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/nui_button_textcolor</item>
+        <item name="spinnerDropDownItemStyle">@style/SpinnerStyle</item>
+        <item name="android:dialogTheme">@style/CustomDialog</item>
+
+    </style>
+
+    <style name="CustomDialog" parent="@style/AppTheme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <style name="ThemeNoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:fontFamily">@font/gordita_regular</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/nui_button_textcolor</item>
+    </style>
+
+    <style name="SettingsScreen" parent="Theme.AppCompat.Light">
+        <item name="android:textColor">@color/nui_color_text_red</item>
+        <item name="android:textColorPrimary">#444</item>
+        <item name="colorPrimary">#C85E5E</item>
+        <item name="colorPrimaryDark">#C85E5E</item>
+        <item name="colorAccent">#836060</item>
+        <item name="android:background">@color/zxing_transparent</item>
+    </style>
+
+    <style name="SpinnerStyle" parent="@style/Widget.AppCompat.Light.DropDownItem.Spinner">
+        <item name="android:textColor">#444</item>
+        <item name="android:colorAccent">@color/nui_color_text_red</item>
+        <item name="android:color">#444</item>
+    </style>
+
+</resources>

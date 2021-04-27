@@ -1,0 +1,21 @@
+<resources>
+    <!-- General buttons and Strings-->
+    <string name="bt_ok_lbl">OK</string>
+    <string name="bt_yes_lbl">Yes</string>
+    <string name="bt_no_lbl">No</string>
+    <string name="bt_cancel_lbl">Cancel</string>
+    <string name="bt_confirm_lbl">Confirm</string>
+    <string name="bt_accept_lbl">Accept</string>
+    <string name="bt_reject_lbl">Reject</string>
+    <string name="bt_delete_lbl">Delete</string>
+    <string name="bt_open_lbl">Open</string>
+    <string name="bt_close_lbl">Close</string>
+    <string name="bt_enable_lbl">Enable</string>
+    <string name="bt_disable_lbl">Disable</string>
+
+    <string name="bt_save_lbl">Save</string>
+    <string name="bt_update_lbl">Update</string>
+
+    <string name="info_lbl">Info</string>
+    <string name="error_lbl">Error</string>
+</resources>
