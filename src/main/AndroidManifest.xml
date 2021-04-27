@@ -2,4 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.philimone.hds.forms">
 
+    <application>
+        <activity android:name=".main.HFormActivity" android:theme="@style/AppTheme"></activity>
+    </application>
+
 </manifest>
