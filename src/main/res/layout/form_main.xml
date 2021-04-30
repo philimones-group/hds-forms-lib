@@ -28,7 +28,7 @@
             android:contentDescription="TODO" />
 
         <TextView
-            android:id="@+id/formTitle"
+            android:id="@+id/txtFormTitle"
             android:layout_width="500dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
@@ -41,34 +41,24 @@
     </LinearLayout>
 
     <!-- Form Header Columns - Fixed columns - generally read-only -->
-
     <LinearLayout
         android:id="@+id/formHeaderLayout"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
-
 
     </LinearLayout>
 
     <!-- Form Content - swipeable columns - view pager-->
-    <LinearLayout
-        android:id="@+id/formMainLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_weight="1"
-        android:background="@drawable/nui_txtbox_rone_wbevel"
-        android:orientation="vertical">
-
-
-
-    </LinearLayout>
+    <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/formMainViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
     <!-- Form Action Buttons -->
     <LinearLayout
-        android:id="@+id/hhLayoutButtons"
+        android:id="@+id/formButtonsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center|bottom"
@@ -78,7 +68,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btNewMemCancel"
+            android:id="@+id/btCancel"
             android:layout_width="@dimen/member_form_dialog_button_size"
             android:layout_height="@dimen/member_details_bt_height"
             android:layout_marginRight="10dp"
@@ -88,7 +78,7 @@
             android:background="@drawable/nui_btnd_rone_gflat"/>
 
         <Button
-            android:id="@+id/btNewMemCollect"
+            android:id="@+id/btSave"
             android:layout_width="@dimen/member_form_dialog_button_size"
             android:layout_height="@dimen/member_details_bt_height"
             android:layout_marginLeft="10dp"
@@ -98,6 +88,8 @@
             android:background="@drawable/nui_btnd_rone_dgbevel"/>
 
     </LinearLayout>
+
+
 
 
 </LinearLayout>

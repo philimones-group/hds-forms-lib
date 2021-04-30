@@ -1,27 +1,22 @@
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">10dp</dimen>
 
-    <dimen name="circleProgressRadius">25dp</dimen>
-    <dimen name="circleProgressThickness">2dp</dimen>
+    <dimen name="columngroup_name_textsize">16sp</dimen>
+    <dimen name="columngroup_name_margin_left">15dp</dimen>
+    <dimen name="columngroup_name_margin_bottom">2dp</dimen>
+    <dimen name="columngroup_view_margin_left">10dp</dimen>
+    <dimen name="columngroup_view_margin_right">10dp</dimen>
+    <dimen name="columngroup_view_padding">15dp</dimen>
+    <dimen name="columngroup_view_padding_top">20dp</dimen>
+    <dimen name="columngroup_view_padding_bottom">20dp</dimen>
 
-    <dimen name="fagm_margin_left">2dp</dimen>
-    <dimen name="fagm_margin_top">10dp</dimen>
-    <dimen name="fagm_margin_bottom">10dp</dimen>
-    <dimen name="fagm_margin_right">5dp</dimen>
-
-    <dimen name="hf_margin_left">10dp</dimen>
-    <dimen name="hf_margin_right">10dp</dimen>
-    <dimen name="hf_margin_top">15dp</dimen>
-
-    <dimen name="mf_margin_left">10dp</dimen>
-    <dimen name="mf_margin_top">10dp</dimen>
-    <dimen name="mf_margin_right">10dp</dimen>
-
-    <dimen name="mf_land_margin_left">10dp</dimen>
-    <dimen name="mf_land_margin_top">10dp</dimen>
-    <dimen name="mf_land_margin_right">10dp</dimen>
+    <dimen name="column_margin_left">15dp</dimen>
+    <dimen name="column_margin_top">10dp</dimen>
+    <dimen name="column_name_textsize">16sp</dimen>
+    <dimen name="column_value_textsize">16sp</dimen>
+    <dimen name="column_value_text_padding_start">15sp</dimen>
+    <dimen name="column_value_text_padding_top">8dp</dimen>
+    <dimen name="column_value_text_padding_bottom">8dp</dimen>
 
     <dimen name="member_filter_textsize">14sp</dimen>
     <dimen name="member_filter_button_textsize">14sp</dimen>

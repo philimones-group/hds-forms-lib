@@ -2,8 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.philimone.hds.forms">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application>
-        <activity android:name=".main.HFormActivity" android:theme="@style/AppTheme"></activity>
+        <activity
+            android:name=".main.HFormActivity" android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateHidden|adjustPan"></activity>
+
     </application>
 
 </manifest>

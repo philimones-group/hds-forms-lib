@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="@dimen/columngroup_view_margin_left"
+    android:layout_marginRight="@dimen/columngroup_view_margin_right"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/txtColumnGroupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/columngroup_name_margin_left"
+        android:layout_marginBottom="@dimen/columngroup_name_margin_bottom"
+        android:layout_gravity="center|left"
+        android:gravity="left|center_horizontal"
+        android:text="OpenHDS preloaded info"
+        android:singleLine="true"
+        android:textSize="@dimen/columngroup_name_textsize"
+        android:textColor="@color/nui_color_text_adgray"/>
+
+    <!-- Columns come here -->
+    <!--<include layout="@layout/column_string_item"></include>-->
+
+    <LinearLayout
+        android:id="@+id/formColumnGroupLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/columngroup_view_padding"
+        android:paddingTop="@dimen/columngroup_view_padding_top"
+        android:paddingBottom="@dimen/columngroup_view_padding_bottom"
+        android:background="@drawable/nui_list_rborder_panel">
+
+    </LinearLayout>
+
+</LinearLayout>

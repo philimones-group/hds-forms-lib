@@ -39,7 +39,8 @@ public class ColumnGroup {
     }
 
     public void setTranslatedLabel(Map<String, String> translatedLabel) {
-        this.translatedLabel = translatedLabel;
+        if (translatedLabel != null)
+            this.translatedLabel = translatedLabel;
     }
 
     public void addLabel(String language, String labelText) {
@@ -51,7 +52,8 @@ public class ColumnGroup {
     }
 
     public void setColumns(List<Column> columns) {
-        this.columns = columns;
+        if (columns != null)
+            this.columns.addAll(columns);
     }
 
     public void addColumn(Column column) {

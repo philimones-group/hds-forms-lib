@@ -1,5 +1,6 @@
 package org.philimone.hds.forms.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HForm {
@@ -8,7 +9,12 @@ public class HForm {
     private String formName;
     private List<ColumnGroup> columns;
 
+    public HForm() {
+        this.columns = new ArrayList<>();
+    }
+
     public HForm(String formId, String formName) {
+        this();
         this.formId = formId;
         this.formName = formName;
     }
@@ -49,4 +55,10 @@ public class HForm {
     }
 
 
+    public ColumnGroup getHeader() {
+        for (ColumnGroup cgroup : columns) {
+            if (cgroup.isHeader()) return cgroup;
+        }
+        return null;
+    }
 }

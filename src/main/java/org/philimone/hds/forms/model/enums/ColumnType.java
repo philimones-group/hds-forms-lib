@@ -3,7 +3,7 @@ package org.philimone.hds.forms.model.enums;
 public enum ColumnType {
 
     INTEGER,
-    DOUBLE,
+    DECIMAL,
     STRING,
     DATE,
     DATETIME,

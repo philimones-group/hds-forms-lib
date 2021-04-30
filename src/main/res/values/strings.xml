@@ -15,6 +15,18 @@
 
     <string name="bt_save_lbl">Save</string>
     <string name="bt_update_lbl">Update</string>
+    <string name="bt_gps_lbl">Get GPS Location</string>
+
+    <string name="gps_lat_lbl">Latitude:</string>
+    <string name="gps_lon_lbl">Longitude:</string>
+    <string name="gps_alt_lbl">Altitude:</string>
+    <string name="gps_acc_lbl">Accuracy:</string>
+
+    <string name="gps_title_lbl">GPS Location</string>
+    <string name="gps_permissions_error">You must grant Location permissions to be able to use the GPS feature</string>
+    <string name="gps_loading_lbl">Loading GPS Location</string>
+    <string name="gps_loading_error">Couldnt provide GPS Location</string>
+    <string name="gps_no_provider_available_error">Providers are disabled. To be able to continue, enable Network or Location provider</string>
 
     <string name="info_lbl">Info</string>
     <string name="error_lbl">Error</string>

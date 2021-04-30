@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/column_margin_top"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtColumnRequired"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:text="*"
+            android:textStyle="bold"
+            android:textColor="@color/nui_color_text_red"
+            android:textSize="@dimen/column_name_textsize" />
+
+        <TextView
+            android:id="@+id/txtColumnName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|left"
+            android:gravity="left|center_horizontal"
+            android:text="Field Worker ID"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="@dimen/column_name_textsize" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtColumnValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginTop="5dp"
+        android:paddingStart="15dp"
+        android:paddingTop="@dimen/column_value_text_padding_top"
+        android:paddingBottom="@dimen/column_value_text_padding_bottom"
+        android:background="@drawable/nui_txtbox_rone_wbevel"
+        android:textSize="@dimen/column_value_textsize"
+        android:textColor="@color/nui_color_text_adgray"
+        android:maxLines="1"
+        android:singleLine="true" />
+
+</LinearLayout>
