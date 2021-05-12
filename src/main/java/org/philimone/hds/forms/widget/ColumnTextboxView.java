@@ -1,6 +1,7 @@
 package org.philimone.hds.forms.widget;
 
 import android.content.Context;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,9 +40,9 @@ public class ColumnTextboxView extends ColumnView {
         this.txtValue = findViewById(R.id.txtColumnValue);
 
         switch (column.getType()){
-            case STRING:  txtValue.setInputType(EditorInfo.TYPE_CLASS_TEXT); break;
-            case INTEGER: txtValue.setInputType(EditorInfo.TYPE_CLASS_NUMBER); break;
-            case DECIMAL:  txtValue.setInputType(EditorInfo.TYPE_NUMBER_FLAG_DECIMAL);break;
+            case STRING:  txtValue.setInputType(InputType.TYPE_CLASS_TEXT); break;
+            case INTEGER: txtValue.setInputType(InputType.TYPE_CLASS_NUMBER); break;
+            case DECIMAL:  txtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
         }
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);

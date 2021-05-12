@@ -1,5 +1,6 @@
 package org.philimone.hds.forms.widget;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -33,6 +34,10 @@ public abstract class ColumnView extends LinearLayout {
         this(context, resource,null, column);
     }
 
+    public Activity getActivity(){
+        return (Activity) this.mContext;
+    }
+
     public ColumnType getType(){
         return this.column.getType();
     }
@@ -40,6 +45,10 @@ public abstract class ColumnView extends LinearLayout {
     public abstract String getValue();
 
     public abstract String getValueAsXml();
+
+    public Column getColumn() {
+        return this.column;
+    }
 
     private void buildViews(@LayoutRes int resource) {
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

@@ -20,6 +20,7 @@ import java.util.Set;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class ColumnMultiSelectView extends ColumnView {
@@ -94,6 +95,12 @@ public class ColumnMultiSelectView extends ColumnView {
         return getSelectedValue();
     }
 
+    public List<String> getValues(){
+        List<String> list = this.rdbOptions.stream().filter(op -> op.button.isChecked()).map(SelectOption::getValue).collect(toList());
+
+        return list;
+    }
+
     @Override
     public String getValueAsXml() {
         String value = getValue();
@@ -110,6 +117,30 @@ public class ColumnMultiSelectView extends ColumnView {
         public SelectOption(String value, String label, CheckBox button) {
             this.value = value;
             this.label = label;
+            this.button = button;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public CheckBox getButton() {
+            return button;
+        }
+
+        public void setButton(CheckBox button) {
             this.button = button;
         }
 

@@ -9,6 +9,6 @@ public enum ColumnType {
     DATETIME,
     GPS,
     SELECT,
-    MULTI_SELECT
-    
+    MULTI_SELECT,
+    TIMESTAMP /* Not visible*/
 }
