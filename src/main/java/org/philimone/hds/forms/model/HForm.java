@@ -44,7 +44,9 @@ public class HForm {
     }
 
     public void addColumn(ColumnGroup columnGroup){
-        this.columns.add(columnGroup);
+        if (!this.columns.contains(columnGroup)){
+            this.columns.add(columnGroup);
+        }
     }
 
     public boolean hasHeader() {
@@ -53,7 +55,6 @@ public class HForm {
         }
         return false;
     }
-
 
     public ColumnGroup getHeader() {
         for (ColumnGroup cgroup : columns) {

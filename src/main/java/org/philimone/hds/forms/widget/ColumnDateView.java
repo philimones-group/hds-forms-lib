@@ -67,8 +67,8 @@ public class ColumnDateView extends ColumnView {
         return date;
     }
 
-    public LocalDate getValueAsDate() {
-        return StringTools.toLocalDate(getValue());
+    public Date getValueAsDate() {
+        return StringTools.toDate(getValue());
     }
 
     @Override

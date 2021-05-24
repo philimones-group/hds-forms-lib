@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.GpsPermissionListener;
-import org.philimone.hds.forms.main.FormActivity;
+import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import org.philimone.hds.forms.widget.dialog.LoadingDialog;
@@ -53,11 +53,6 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
     }
 
     private void initialize(){
-
-        if (this.mContext instanceof FormActivity) {
-            ((FormActivity) this.mContext).setPermissionListener(this);
-        }
-
         createView();
     }
 
@@ -120,7 +115,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
 
         if (denied) { //without access
             //request permissions
-            ActivityCompat.requestPermissions(this.getActivity(), permissions, FormActivity.REQUEST_GPS_PERMISSION);
+            ActivityCompat.requestPermissions(this.getActivity(), permissions, FormFragment.REQUEST_GPS_PERMISSION);
         } else {
             detectGpsLocation();
         }

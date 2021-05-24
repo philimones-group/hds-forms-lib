@@ -8,6 +8,9 @@ import java.util.Date;
 
 public class StringTools {
 
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
+    public static final String DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     public static boolean isBlank(String value){
         return value==null || value.trim().isEmpty();
     }

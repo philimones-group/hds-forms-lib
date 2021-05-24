@@ -12,8 +12,8 @@ import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.utilities.StringTools;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,15 +52,17 @@ public class ColumnDateTimeView extends ColumnView {
     }
 
     private void updateDatepicker() {
-        LocalDateTime date = StringTools.toLocalDateTime(this.column.getValue());
+        Date date = StringTools.toDateTime(this.column.getValue());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
 
         if (date != null) {
-            int y = date.getYear();
-            int m = date.getMonthValue();
-            int d = date.getDayOfMonth();
-            int hh = date.getHour();
-            int mm = date.getMinute();
-            int ss = date.getSecond();
+            int y = calendar.get(Calendar.YEAR);
+            int m = calendar.get(Calendar.MONTH);
+            int d = calendar.get(Calendar.DAY_OF_MONTH);
+            int hh = calendar.get(Calendar.HOUR);
+            int mm = calendar.get(Calendar.MONTH);
+            int ss = calendar.get(Calendar.SECOND);
 
             dtpColumnDateValue.updateDate(y, m, d);
             dtpColumnTimeValue.setHour(hh);
@@ -83,8 +85,8 @@ public class ColumnDateTimeView extends ColumnView {
         return date;
     }
 
-    public LocalDateTime getValueAsDate() {
-        return StringTools.toLocalDateTime(getValue());
+    public Date getValueAsDate() {
+        return StringTools.toDateTime(getValue());
     }
 
     @Override

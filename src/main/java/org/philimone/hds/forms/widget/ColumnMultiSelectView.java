@@ -72,7 +72,7 @@ public class ColumnMultiSelectView extends ColumnView {
         }
     }
 
-    private String getSelectedValue(){
+    public String getSelectedValue(){
 
         int id = this.rdgColumnRadioGroup.getCheckedRadioButtonId();
 

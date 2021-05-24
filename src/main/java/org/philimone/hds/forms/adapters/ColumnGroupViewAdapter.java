@@ -40,7 +40,11 @@ public class ColumnGroupViewAdapter extends RecyclerView.Adapter<ColumnGroupView
         holder.removeViews();
 
         ColumnGroupView columnGroupView = columnGroupList.get(position);
-        holder.setColumnGroupView(columnGroupView);
+        if (columnGroupView != null) {
+            holder.setColumnGroupView(columnGroupView);
+        }
+
+
     }
 
     @Override

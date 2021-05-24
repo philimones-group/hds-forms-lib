@@ -13,16 +13,14 @@ public class Column {
     private Map<String, String> typeOptions; //if SELECT/MULTI_SELECT
     private String label;
     private String value;
-    private Map<String, String> translatedLabel;
     private boolean required;
     private boolean readOnly;
 
     public Column() {
         this.typeOptions = new LinkedHashMap<>();
-        this.translatedLabel = new HashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, String> typeOptions, String label, String value, Map<String, String> translatedLabel, boolean required, boolean readOnly) {
+    public Column(String name, ColumnType type, Map<String, String> typeOptions, String label, String value, boolean required, boolean readOnly) {
         this();
 
         this.name = name;
@@ -30,7 +28,6 @@ public class Column {
         this.typeOptions = typeOptions;
         this.value = value;
         this.label = label;
-        this.translatedLabel = translatedLabel;
         this.required = required;
         this.readOnly = readOnly;
     }
@@ -79,19 +76,6 @@ public class Column {
 
     public void setLabel(String label) {
         this.label = label;
-    }
-
-    public Map<String, String> getTranslatedLabel() {
-        return translatedLabel;
-    }
-
-    public void setTranslatedLabel(Map<String, String> translatedLabel) {
-        if (translatedLabel != null)
-            this.translatedLabel.putAll(translatedLabel);
-    }
-
-    public void addLabel(String language, String labelText) {
-        this.translatedLabel.put(language, labelText);
     }
 
     public boolean isRequired() {
