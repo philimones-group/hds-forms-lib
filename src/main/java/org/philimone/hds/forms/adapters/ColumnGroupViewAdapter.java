@@ -19,7 +19,12 @@ public class ColumnGroupViewAdapter extends RecyclerView.Adapter<ColumnGroupView
     private List<ColumnGroupView> columnGroupList = new ArrayList<>();
 
     public ColumnGroupViewAdapter(List<ColumnGroupView> groups) {
-        this.columnGroupList.addAll(groups);
+        groups.forEach(columnGroupView -> {
+            if (!columnGroupView.isHidden()) {
+                this.columnGroupList.add(columnGroupView);
+            }
+        });
+
     }
 
     @NonNull

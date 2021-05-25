@@ -26,9 +26,11 @@ public class ColumnGroupView extends LinearLayout {
     private TextView txtColumnGroupName;
     private LinearLayout formColumnGroupLayout;
     private List<ColumnView> columnViews;
+    private boolean hidden;
 
-    public ColumnGroupView(Context context, @Nullable AttributeSet attrs, ColumnGroup columnGroup) {
+    public ColumnGroupView(FormFragment formPanel, Context context, @Nullable AttributeSet attrs, ColumnGroup columnGroup) {
         super(context, attrs);
+        this.formPanel = formPanel;
         this.mContext = context;
         this.columnGroup = columnGroup;
         this.columnViews = new ArrayList<>();
@@ -37,10 +39,16 @@ public class ColumnGroupView extends LinearLayout {
     }
 
     public ColumnGroupView(FormFragment formPanel, Context context, ColumnGroup columnGroup) {
-        this(context, null, columnGroup);
-        this.formPanel = formPanel;
+        this(formPanel, context, null, columnGroup);
     }
 
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
 
     private void buildViews() {
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -76,6 +84,25 @@ public class ColumnGroupView extends LinearLayout {
                 if (this.formPanel != null) {
                     this.formPanel.setPermissionListener(gpsView);
                 }
+            }
+
+            if (column.getType() == ColumnType.DEVICE_ID) {
+                column.setValue(formPanel.getDeviceId());
+
+                view = new ColumnTextView(this.mContext, column);
+                this.setHidden(true);
+            }
+
+            if (column.getType() == ColumnType.COLLECTED_BY) {
+                column.setValue(formPanel.getUsername());
+
+                view = new ColumnTextView(this.mContext, column);
+                this.setHidden(true);
+            }
+
+            if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
+                view = new ColumnTextView(this.mContext, column);
+                this.setHidden(true);
             }
 
             if (view != null) {

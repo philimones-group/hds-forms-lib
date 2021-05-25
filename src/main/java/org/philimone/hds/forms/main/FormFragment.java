@@ -1,8 +1,14 @@
 package org.philimone.hds.forms.main;
 
+import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,18 +27,25 @@ import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
+import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 import org.philimone.hds.forms.widget.ColumnView;
 
 import java.io.File;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -48,6 +61,8 @@ public class FormFragment extends DialogFragment {
     private Button btSave;
     private List<ColumnGroupView> columnGroupViewList;
     private String username;
+    private String startTimestamp;
+    private String endTimestamp;
 
     //Listeners
     private GpsPermissionListener permissionListener;
@@ -97,6 +112,14 @@ public class FormFragment extends DialogFragment {
         initialize(view);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        //get start timestamp
+        this.startTimestamp = getTimestamp();
+    }
+
     private void initialize(View view) {
 
         this.formMainViewPager = (ViewPager2) view.findViewById(R.id.formMainViewPager);
@@ -138,6 +161,10 @@ public class FormFragment extends DialogFragment {
     }
 
     private void onSaveClicked() {
+
+        //get end timestamp
+        this.endTimestamp = getTimestamp();
+
         //get column values
         List<ColumnValue> columnValueList = getCollectedData();
 
@@ -196,6 +223,15 @@ public class FormFragment extends DialogFragment {
         columnGroupViewList.forEach( columnGroupView -> {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
                 ColumnValue columnValue = new ColumnValue(columnGroupView, columnView);
+
+                if (columnValue.getColumnType() == ColumnType.START_TIMESTAMP) {
+                    columnValue.setValue(startTimestamp);
+                }
+
+                if (columnValue.getColumnType() == ColumnType.END_TIMESTAMP) {
+                    columnValue.setValue(endTimestamp);
+                }
+
                 list.add(columnValue);
             }
         });
@@ -224,5 +260,85 @@ public class FormFragment extends DialogFragment {
             }
 
         }
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getDeviceId(){
+        TelephonyManager mTelephonyManager = (TelephonyManager) this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+        if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            //return TODO;
+        }
+
+        String deviceId = mTelephonyManager.getImei();
+        String orDeviceId;
+
+        if (deviceId != null ) {
+            if ((deviceId.contains("*") || deviceId.contains("000000000000000"))) {
+                deviceId = Settings.Secure.getString(this.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+                orDeviceId = Settings.Secure.ANDROID_ID + ":" + deviceId;
+            } else {
+                orDeviceId = "imei:" + deviceId;
+            }
+        }
+        if ( deviceId == null ) {
+            // no SIM -- WiFi only
+            // Retrieve WiFiManager
+            WifiManager wifi = (WifiManager) this.getContext().getSystemService(Context.WIFI_SERVICE);
+
+            // Get WiFi status
+            WifiInfo info = wifi.getConnectionInfo();
+
+            if ( info != null ) {
+                deviceId = info.getMacAddress();
+                orDeviceId = "mac:" + deviceId;
+            }
+        }
+        // if it is still null, use ANDROID_ID
+        if ( deviceId == null ) {
+            deviceId = Settings.Secure.getString(this.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+            orDeviceId = Settings.Secure.ANDROID_ID + ":" + deviceId;
+
+            //sbuilder.append("<deviceId>"+ orDeviceId +"</deviceId>" + "\r\n");
+
+            return  orDeviceId;
+        }
+
+        //sbuilder.append("<deviceId>"+ deviceId +"</deviceId>" + "\r\n");
+
+        return deviceId;
+    }
+
+    private String getTimestamp() {
+        //TimeZone tz = TimeZone.getDefault();
+        //Calendar cal = Calendar.getInstance(tz);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        //long gmt = TimeUnit.HOURS.convert(tz.getRawOffset(), TimeUnit.MILLISECONDS);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+
+        sdf.setCalendar(cal);
+
+
+        //Log.d("timezone", "GMT "+gmt);
+        //Log.d("realtime", StringUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"));
+        //Log.d("original-date", ""+sdf.format(cal.getTime()));
+
+        //cal.add(Calendar.HOUR_OF_DAY, (int) (-1 * gmt)); //Fixing ODK Error on this variable (ODK is adding GMT Hours number to the datetime of "start" variable)
+
+        String dateString = sdf.format(cal.getTime());
+        //Log.d("fixed-datetime", ""+dateString);
+
+
+        return dateString;
     }
 }

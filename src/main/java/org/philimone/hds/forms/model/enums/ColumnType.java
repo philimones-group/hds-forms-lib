@@ -13,11 +13,10 @@ public enum ColumnType {
     GPS ("gps"),
     SELECT ("select"),
     MULTI_SELECT ("multi_select"),
-    TIMESTAMP ("timestamp"), /* Not visible*/
-    START_TIMESTAMP ("start"),
-    END_TIMESTAMP ("end"),
-    DEVICE_ID ("device_id"),
-    COLLECTED_BY ("username");
+    START_TIMESTAMP ("start"), /* Not visible*/
+    END_TIMESTAMP ("end"),     /* Not visible*/
+    DEVICE_ID ("device_id"),   /* Not visible*/
+    COLLECTED_BY ("username"); /* Not visible*/
     //collectedBy
     //collectedDate
 
