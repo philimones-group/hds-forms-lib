@@ -24,19 +24,19 @@ public class ColumnDateTimeView extends ColumnView {
     private DatePicker dtpColumnDateValue;
     private TimePicker dtpColumnTimeValue;
 
-    public ColumnDateTimeView(Context context, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(context, R.layout.column_datetime_item, attrs, column);
+    public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
+        super(view, R.layout.column_datetime_item, attrs, column);
 
         createView();
     }
 
-    public ColumnDateTimeView(Context context, @NonNull Column column) {
-        this(context, null, column);
+    public ColumnDateTimeView(ColumnGroupView view, @NonNull Column column) {
+        this(view, null, column);
     }
 
     private void createView() {
 
-        LayoutInflater inflater = LayoutInflater.from(this.mContext);
+        LayoutInflater inflater = LayoutInflater.from(this.getContext());
         View rowView = inflater.inflate(R.layout.column_datetime_item, this);
 
         this.txtColumnRequired = findViewById(R.id.txtColumnRequired);

@@ -23,14 +23,14 @@ public class ColumnTextboxView extends ColumnView {
     private TextView txtName;
     private EditText txtValue;
 
-    public ColumnTextboxView(Context context, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(context, R.layout.column_string_item, attrs, column);
+    public ColumnTextboxView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
+        super(view, R.layout.column_string_item, attrs, column);
 
         createView();
     }
 
-    public ColumnTextboxView(Context context, @NonNull Column column) {
-        this(context, null, column);
+    public ColumnTextboxView(ColumnGroupView view, @NonNull Column column) {
+        this(view, null, column);
     }
 
     private void createView() {

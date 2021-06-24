@@ -67,7 +67,9 @@ public class XmlFormResult {
         }
 
         Element element = doc.createElement(columnValue.getColumnName());
-        element.appendChild(doc.createTextNode(textData));
+        if (textData != null){
+            element.appendChild(doc.createTextNode(textData));
+        }
         rootElement.appendChild(element); //add to root
 
         return element;

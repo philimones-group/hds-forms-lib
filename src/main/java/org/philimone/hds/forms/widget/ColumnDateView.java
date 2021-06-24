@@ -22,14 +22,14 @@ public class ColumnDateView extends ColumnView {
     private TextView txtName;
     private DatePicker dtpColumnValue;
 
-    public ColumnDateView(Context context, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(context, R.layout.column_date_item, attrs, column);
+    public ColumnDateView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
+        super(view, R.layout.column_date_item, attrs, column);
 
         createView();
     }
 
-    public ColumnDateView(Context context, @NonNull Column column) {
-        this(context, null, column);
+    public ColumnDateView(ColumnGroupView view, @NonNull Column column) {
+        this(view, null, column);
     }
 
     private void createView() {

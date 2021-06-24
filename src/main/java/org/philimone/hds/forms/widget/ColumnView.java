@@ -1,15 +1,13 @@
 package org.philimone.hds.forms.widget;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import androidx.annotation.LayoutRes;
@@ -18,24 +16,24 @@ import androidx.annotation.Nullable;
 
 public abstract class ColumnView extends LinearLayout {
 
-    protected Context mContext;
+    protected ColumnGroupView columnGroupView;
     protected Column column;
     protected TextView txtColumnRequired;
 
-    public ColumnView(Context context, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(context, attrs);
-        this.mContext = context;
+    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull Column column) {
+        super(view.getContext(), attrs);
+        this.columnGroupView = view;
         this.column = column;
 
         buildViews(resource);
     }
 
-    public ColumnView(Context context, @LayoutRes int resource, @NonNull Column column) {
-        this(context, resource,null, column);
+    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @NonNull Column column) {
+        this(view, resource,null, column);
     }
 
-    public Activity getActivity(){
-        return (Activity) this.mContext;
+    public FormFragment getActivity() {
+        return this.columnGroupView.getFormPanel();
     }
 
     public ColumnType getType(){
@@ -51,7 +49,7 @@ public abstract class ColumnView extends LinearLayout {
     }
 
     private void buildViews(@LayoutRes int resource) {
-        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(resource, this);
     }
 

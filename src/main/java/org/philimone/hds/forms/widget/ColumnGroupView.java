@@ -3,7 +3,6 @@ package org.philimone.hds.forms.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -42,6 +41,10 @@ public class ColumnGroupView extends LinearLayout {
         this(formPanel, context, null, columnGroup);
     }
 
+    public FormFragment getFormPanel() {
+        return formPanel;
+    }
+
     public boolean isHidden() {
         return hidden;
     }
@@ -63,45 +66,39 @@ public class ColumnGroupView extends LinearLayout {
             ColumnView view = null;
 
             if (column.getType() == ColumnType.INTEGER || column.getType() == ColumnType.DECIMAL || column.getType() == ColumnType.STRING) {
-                view = column.isReadOnly() ? new ColumnTextView(this.mContext, column) : new ColumnTextboxView(this.mContext, column);
+                view = column.isReadOnly() ? new ColumnTextView(this, column) : new ColumnTextboxView(this, column);
             }
             if (column.getType() == ColumnType.DATE) {
-                view = new ColumnDateView(this.mContext, column);
+                view = new ColumnDateView(this, column);
             }
             if (column.getType() == ColumnType.DATETIME) {
-                view = new ColumnDateTimeView(this.mContext, column);
+                view = new ColumnDateTimeView(this, column);
             }
             if (column.getType() == ColumnType.SELECT){
-                view = new ColumnSelectView(this.mContext, column);
+                view = new ColumnSelectView(this, column);
             }
             if (column.getType() == ColumnType.MULTI_SELECT) {
-                view = new ColumnMultiSelectView(this.mContext, column);
+                view = new ColumnMultiSelectView(this, column);
             }
             if (column.getType() == ColumnType.GPS) {
-                ColumnGpsView gpsView = new ColumnGpsView(this.mContext, column);
+                ColumnGpsView gpsView = new ColumnGpsView(this, column);
                 view = gpsView;
-
-                if (this.formPanel != null) {
-                    this.formPanel.setPermissionListener(gpsView);
-                }
             }
 
             if (column.getType() == ColumnType.DEVICE_ID) {
-                column.setValue(formPanel.getDeviceId());
-
-                view = new ColumnTextView(this.mContext, column);
+                view = new ColumnTextView(this, column);
                 this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.COLLECTED_BY) {
                 column.setValue(formPanel.getUsername());
 
-                view = new ColumnTextView(this.mContext, column);
+                view = new ColumnTextView(this, column);
                 this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
-                view = new ColumnTextView(this.mContext, column);
+                view = new ColumnTextView(this, column);
                 this.setHidden(true);
             }
 

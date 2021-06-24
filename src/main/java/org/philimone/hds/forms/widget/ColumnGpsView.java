@@ -13,22 +13,24 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
-import org.philimone.hds.forms.listeners.GpsPermissionListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import org.philimone.hds.forms.widget.dialog.LoadingDialog;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class ColumnGpsView extends ColumnView implements LocationListener, GpsPermissionListener {
+public class ColumnGpsView extends ColumnView implements LocationListener {
 
     private TextView txtName;
     private Button btGetGps;
@@ -41,19 +43,33 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
     private LocationManager locationManager;
     private LoadingDialog loadingDialog;
 
+    private ActivityResultLauncher<String[]> requestPermissions;
 
-    public ColumnGpsView(Context context, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(context, R.layout.column_gps_item, attrs, column);
+    public ColumnGpsView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
+        super(view, R.layout.column_gps_item, attrs, column);
 
         initialize();        ;
     }
 
-    public ColumnGpsView(Context context, @NonNull Column column) {
-        this(context, null, column);
+    public ColumnGpsView(ColumnGroupView view, @NonNull Column column) {
+        this(view, null, column);
     }
 
     private void initialize(){
         createView();
+        initPermissions();
+    }
+
+    private void initPermissions() {
+        this.requestPermissions = this.getActivity().registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissionResults -> {
+            boolean granted = !permissionResults.values().contains(false);
+
+            if (granted) {
+                detectGpsLocation();
+            } else {
+                DialogFactory.createMessageInfo(this.getContext(), R.string.gps_title_lbl, R.string.gps_permissions_error).show();
+            }
+        });
     }
 
     private void createView() {
@@ -66,7 +82,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
         this.txtGpsAltitude = findViewById(R.id.txtGpsAltitude);
         this.txtGpsAccuracy = findViewById(R.id.txtGpsAccuracy);
 
-        this.loadingDialog = new LoadingDialog(this.mContext);
+        this.loadingDialog = new LoadingDialog(this.getContext());
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
@@ -94,7 +110,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
     }
 
     private void showLoadingDialog(@StringRes int msgResId, boolean show) {
-        showLoadingDialog(this.mContext.getString(msgResId), show);
+        showLoadingDialog(this.getContext().getString(msgResId), show);
     }
 
     private void showLoadingDialog(String msg, boolean show) {
@@ -106,21 +122,14 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
         }
     }
 
-    private boolean ensurePermissionsGranted(final String... permissions) {
-
-        boolean denied = false;
-        for (String permission : permissions) {
-            denied = denied || ContextCompat.checkSelfPermission(this.getContext(), permission) == PackageManager.PERMISSION_DENIED;
-        }
+    private void ensurePermissionsGranted(final String... permissions) {
+        boolean denied = Arrays.stream(permissions).anyMatch(permission -> ContextCompat.checkSelfPermission(this.getContext(), permission) == PackageManager.PERMISSION_DENIED);
 
         if (denied) { //without access
-            //request permissions
-            ActivityCompat.requestPermissions(this.getActivity(), permissions, FormFragment.REQUEST_GPS_PERMISSION);
+            requestPermissions.launch(permissions);
         } else {
             detectGpsLocation();
         }
-
-        return !denied;
     }
 
     private void onGetGpsClicked() {
@@ -129,12 +138,12 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
 
     private void detectGpsLocation() {
 
-        if (ActivityCompat.checkSelfPermission(this.mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            DialogFactory.createMessageInfo(this.mContext, R.string.gps_title_lbl, R.string.gps_permissions_error).show();
+        if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            DialogFactory.createMessageInfo(this.getContext(), R.string.gps_title_lbl, R.string.gps_permissions_error).show();
             return;
         }
 
-        this.locationManager = this.locationManager == null ? (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE) : locationManager;
+        this.locationManager = this.locationManager == null ? (LocationManager)this.getContext().getSystemService(Context.LOCATION_SERVICE) : locationManager;
 
         boolean gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         boolean network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
@@ -142,7 +151,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
 
         if (provider.isEmpty()) {
             //No provider available
-            DialogFactory.createMessageInfo(this.mContext, R.string.gps_title_lbl, R.string.gps_no_provider_available_error).show();
+            DialogFactory.createMessageInfo(this.getContext(), R.string.gps_title_lbl, R.string.gps_no_provider_available_error).show();
             return;
         }
 
@@ -207,13 +216,4 @@ public class ColumnGpsView extends ColumnView implements LocationListener, GpsPe
         showLoadingDialog(null, false);
     }
 
-    @Override
-    public void onGpsPermissionGranted() {
-        detectGpsLocation();
-    }
-
-    @Override
-    public void onGpsPermissionDenied() {
-        DialogFactory.createMessageInfo(this.mContext, R.string.gps_title_lbl, R.string.gps_permissions_error).show();
-    }
 }

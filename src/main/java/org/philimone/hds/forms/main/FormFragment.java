@@ -1,7 +1,6 @@
 package org.philimone.hds.forms.main;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
@@ -13,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,7 +19,6 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
-import org.philimone.hds.forms.listeners.GpsPermissionListener;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.HForm;
@@ -30,28 +27,28 @@ import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.widget.ColumnGroupView;
+import org.philimone.hds.forms.widget.ColumnTextView;
 import org.philimone.hds.forms.widget.ColumnView;
+import org.philimone.hds.forms.widget.dialog.DialogFactory;
 
 import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 public class FormFragment extends DialogFragment {
-
-    public static final int REQUEST_GPS_PERMISSION = 34;
 
     private HForm form;
     private ViewPager2 formMainViewPager;
@@ -61,17 +58,22 @@ public class FormFragment extends DialogFragment {
     private Button btSave;
     private List<ColumnGroupView> columnGroupViewList;
     private String username;
+    private String deviceId;
     private String startTimestamp;
     private String endTimestamp;
 
+    private ActivityResultLauncher<String> requestPermission;
+
     //Listeners
-    private GpsPermissionListener permissionListener;
+    private GpsPermissionListener gpsPermissionListener;
     private FormCollectionListener formListener;
 
     public FormFragment() {
         super();
 
         this.columnGroupViewList = new ArrayList<>();
+
+        initPermissions();
     }
 
     public static FormFragment newInstance(HForm form, String username, FormCollectionListener formListener) {
@@ -118,6 +120,20 @@ public class FormFragment extends DialogFragment {
 
         //get start timestamp
         this.startTimestamp = getTimestamp();
+
+        checkPermissionAndGetDeviceId();
+    }
+
+    private void initPermissions() {
+        this.requestPermission = registerForActivityResult(new RequestPermission(), granted -> {
+            if (granted) {
+                String deviceId = readDeviceId();
+                Log.d("deviceid", ""+deviceId);
+            } else {
+                //Log.d("deviceid", "no permission to read it");
+                DialogFactory.createMessageInfo(this.getContext(), R.string.device_id_title_lbl, R.string.device_id_permissions_error).show();
+            }
+        });
     }
 
     private void initialize(View view) {
@@ -146,14 +162,15 @@ public class FormFragment extends DialogFragment {
         this.txtFormTitle.setText(form.getFormName());
 
         initColumnViews();
+
     }
 
-    public GpsPermissionListener getPermissionListener() {
-        return permissionListener;
+    public GpsPermissionListener getGpsPermissionListener() {
+        return gpsPermissionListener;
     }
 
-    public void setPermissionListener(GpsPermissionListener permissionListener) {
-        this.permissionListener = permissionListener;
+    public void setGpsPermissionListener(GpsPermissionListener gpsPermissionListener) {
+        this.gpsPermissionListener = gpsPermissionListener;
     }
 
     private void onCancelClicked(){
@@ -171,7 +188,7 @@ public class FormFragment extends DialogFragment {
         if (formListener != null) {
             ValidationResult result = formListener.onFormValidate(form, columnValueList);
 
-            if (result.hasErrors()) {
+            if (result==null || result.hasErrors()) {
                 //Show Errors
                 Log.d("errors", "errors - result");
             } else {
@@ -185,6 +202,7 @@ public class FormFragment extends DialogFragment {
     }
 
     private void initColumnViews(){
+
         //add header layout content
         if (this.form.hasHeader()) {
             ColumnGroup columnGroup = this.form.getHeader();
@@ -240,26 +258,20 @@ public class FormFragment extends DialogFragment {
 
     }
 
-    private void exitForm(){
-        this.dismiss();
+    private void updateSpecialColumns(){
+        columnGroupViewList.forEach( columnGroupView -> {
+            for (ColumnView columnView : columnGroupView.getColumnViews()) {
+
+                if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
+                    ((ColumnTextView) columnView).setValue(this.getDeviceId());
+                }
+
+            }
+        });
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQUEST_GPS_PERMISSION) {
-            //call gps detector if
-
-            long granted = Arrays.stream(grantResults).filter(g -> g== PackageManager.PERMISSION_GRANTED).count();
-
-            if (granted == grantResults.length) {
-                if (permissionListener!=null) permissionListener.onGpsPermissionGranted();
-            } else {
-                if (permissionListener!=null) permissionListener.onGpsPermissionDenied();
-            }
-
-        }
+    private void exitForm(){
+        this.dismiss();
     }
 
     public String getUsername() {
@@ -267,19 +279,28 @@ public class FormFragment extends DialogFragment {
     }
 
     public String getDeviceId(){
-        TelephonyManager mTelephonyManager = (TelephonyManager) this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        return this.deviceId;
+    }
+
+    public void checkPermissionAndGetDeviceId() {
+        if (ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) { //without access
+            this.requestPermission.launch(Manifest.permission.READ_PHONE_STATE);
+        } else {
+            this.deviceId = readDeviceId();
+            updateSpecialColumns();
+        }
+    }
+
+    public String readDeviceId(){
 
         if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //return TODO;
+            return "";
         }
 
+        TelephonyManager mTelephonyManager = (TelephonyManager) this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+
         String deviceId = mTelephonyManager.getImei();
-        String orDeviceId;
+        String orDeviceId = "";
 
         if (deviceId != null ) {
             if ((deviceId.contains("*") || deviceId.contains("000000000000000"))) {
@@ -289,7 +310,7 @@ public class FormFragment extends DialogFragment {
                 orDeviceId = "imei:" + deviceId;
             }
         }
-        if ( deviceId == null ) {
+        if (deviceId == null) {
             // no SIM -- WiFi only
             // Retrieve WiFiManager
             WifiManager wifi = (WifiManager) this.getContext().getSystemService(Context.WIFI_SERVICE);
@@ -297,13 +318,13 @@ public class FormFragment extends DialogFragment {
             // Get WiFi status
             WifiInfo info = wifi.getConnectionInfo();
 
-            if ( info != null ) {
+            if (info != null) {
                 deviceId = info.getMacAddress();
                 orDeviceId = "mac:" + deviceId;
             }
         }
         // if it is still null, use ANDROID_ID
-        if ( deviceId == null ) {
+        if (deviceId == null) {
             deviceId = Settings.Secure.getString(this.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
             orDeviceId = Settings.Secure.ANDROID_ID + ":" + deviceId;
 

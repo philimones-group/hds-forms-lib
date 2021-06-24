@@ -30,16 +30,16 @@ public class ColumnSelectView extends ColumnView {
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
 
-    public ColumnSelectView(Context context, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(context, R.layout.column_select_item, attrs, column);
+    public ColumnSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
+        super(view, R.layout.column_select_item, attrs, column);
 
         this.rdbOptions = new ArrayList<>();
 
         createView();
     }
 
-    public ColumnSelectView(Context context, @NonNull Column column) {
-        this(context, null, column);
+    public ColumnSelectView(ColumnGroupView view, @NonNull Column column) {
+        this(view, null, column);
     }
 
     private void createView() {
@@ -64,8 +64,8 @@ public class ColumnSelectView extends ColumnView {
             RadioButton button = new RadioButton(this.getContext());
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             button.setText(label);
-            button.setTextSize(mContext.getResources().getDimension(R.dimen.column_value_textsize));
-            button.setTextColor(mContext.getResources().getColor(R.color.black, null));
+            button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
+            button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
 
             this.rdgColumnRadioGroup.addView(button);
 
