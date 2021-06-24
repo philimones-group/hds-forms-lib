@@ -65,7 +65,6 @@ public class FormFragment extends DialogFragment {
     private ActivityResultLauncher<String> requestPermission;
 
     //Listeners
-    private GpsPermissionListener gpsPermissionListener;
     private FormCollectionListener formListener;
 
     public FormFragment() {
@@ -163,14 +162,6 @@ public class FormFragment extends DialogFragment {
 
         initColumnViews();
 
-    }
-
-    public GpsPermissionListener getGpsPermissionListener() {
-        return gpsPermissionListener;
-    }
-
-    public void setGpsPermissionListener(GpsPermissionListener gpsPermissionListener) {
-        this.gpsPermissionListener = gpsPermissionListener;
     }
 
     private void onCancelClicked(){
