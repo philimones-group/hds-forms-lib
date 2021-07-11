@@ -44,11 +44,7 @@ public class ColumnDateTimeView extends ColumnView {
         this.dtpColumnDateValue = findViewById(R.id.dtpColumnDateValue);
         this.dtpColumnTimeValue = findViewById(R.id.dtpColumnTimeValue);
 
-        this.txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        this.txtName.setText(column.getLabel());
-        this.dtpColumnTimeValue.setIs24HourView(true);
-
-        updateDatepicker();
+        updateValues();
     }
 
     private void updateDatepicker() {
@@ -68,6 +64,22 @@ public class ColumnDateTimeView extends ColumnView {
             dtpColumnTimeValue.setHour(hh);
             dtpColumnTimeValue.setMinute(mm);
         }
+    }
+
+    @Override
+    public void updateValues() {
+        this.txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        this.txtName.setText(column.getLabel());
+        this.dtpColumnTimeValue.setIs24HourView(true);
+
+        updateDatepicker();
+    }
+
+    @Override
+    public void setValue(String value) {
+        //value is yyyy-MM-dd HH:mm:ss
+        this.column.setValue(value);
+        updateValues();
     }
 
     @Override
@@ -96,4 +108,7 @@ public class ColumnDateTimeView extends ColumnView {
 
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
+
+
+
 }

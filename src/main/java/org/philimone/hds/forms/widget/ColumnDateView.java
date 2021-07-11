@@ -38,10 +38,9 @@ public class ColumnDateView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.dtpColumnValue = findViewById(R.id.dtpColumnValue);
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
 
-        updateDatepicker();
+
+
     }
 
     private void updateDatepicker() {
@@ -54,6 +53,21 @@ public class ColumnDateView extends ColumnView {
 
             dtpColumnValue.updateDate(y, m, d);
         }
+    }
+
+    @Override
+    public void updateValues() {
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        txtName.setText(column.getLabel());
+
+        updateDatepicker();
+    }
+
+    @Override
+    public void setValue(String value) {
+        //value is yyyy-MM-dd
+        this.column.setValue(value);
+        updateValues();
     }
 
     @Override
@@ -78,4 +92,5 @@ public class ColumnDateView extends ColumnView {
 
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
+
 }

@@ -84,13 +84,9 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.loadingDialog = new LoadingDialog(this.getContext());
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
-
-        clearGpsResultTexts();
-
         this.btGetGps.setOnClickListener(v -> onGetGpsClicked());
 
+        updateValues();
     }
 
     private void clearGpsResultTexts() {
@@ -159,6 +155,40 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         locationManager.requestLocationUpdates(provider, 5, 0, this);
         showLoadingDialog(R.string.gps_loading_lbl, true);
+    }
+
+    @Override
+    public void updateValues() {
+        clearGpsResultTexts();
+
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        txtName.setText(column.getLabel());
+
+        showResults();
+    }
+
+    @Override
+    public void setValue(String value) { //do nothing
+        //this.column.setValue(value);
+        //updateValues();
+    }
+
+    public void setValues(Map<String,Double> gpsValues) {
+        if (gpsValues == null) return;
+
+        this.gpsLocationResult = new Location("fake");
+
+        Double lat = gpsValues.get(column.getName()+"_lat");
+        Double lon = gpsValues.get(column.getName()+"_lon");
+        Double alt = gpsValues.get(column.getName()+"_alt");
+        Double acc = gpsValues.get(column.getName()+"_acc");
+
+        if (lat != null) this.gpsLocationResult.setLatitude(lat);
+        if (lon != null) this.gpsLocationResult.setLongitude(lon);
+        if (alt != null) this.gpsLocationResult.setAltitude(alt);
+        if (acc != null) this.gpsLocationResult.setAccuracy((float) (acc*1F));
+
+        updateValues();
     }
 
     @Override

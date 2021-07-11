@@ -47,10 +47,9 @@ public class ColumnMultiSelectView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.rdgColumnRadioGroup = findViewById(R.id.rdgColumnRadioGroup);
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
-
         fillOptions();
+
+        updateValues();
     }
 
     private void fillOptions(){
@@ -58,7 +57,6 @@ public class ColumnMultiSelectView extends ColumnView {
 
         for (String value : options.keySet()){
             String label = options.get(value);
-
 
             CheckBox button = new CheckBox(this.getContext());
             button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -74,8 +72,6 @@ public class ColumnMultiSelectView extends ColumnView {
 
     public String getSelectedValue(){
 
-        int id = this.rdgColumnRadioGroup.getCheckedRadioButtonId();
-
         Set<SelectOption> sop = this.rdbOptions.stream().filter(op -> op.button.isChecked()).collect(toSet());
 
         if (sop.size()>0) {
@@ -88,6 +84,33 @@ public class ColumnMultiSelectView extends ColumnView {
         }
 
         return null;
+    }
+
+    @Override
+    public void updateValues() {
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        txtName.setText(column.getLabel());
+
+        String value = column.getValue();
+
+        if (value != null) {
+            String[] values = value.split(";");
+
+            for (String optionValue : values) {
+                SelectOption sop = this.rdbOptions.stream().filter(op -> op.value==optionValue).findFirst().orElse(null);
+
+                if (sop != null) {
+                    this.rdgColumnRadioGroup.check(sop.button.getId());
+                }
+            }
+
+        }
+    }
+
+    @Override
+    public void setValue(String value) {
+        this.column.setValue(value);
+        updateValues();
     }
 
     @Override

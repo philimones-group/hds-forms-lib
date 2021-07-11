@@ -52,6 +52,8 @@ public class ColumnSelectView extends ColumnView {
         txtName.setText(column.getLabel());
 
         fillOptions();
+
+        updateValues();
     }
 
     private void fillOptions(){
@@ -80,6 +82,29 @@ public class ColumnSelectView extends ColumnView {
         SelectOption sop = this.rdbOptions.stream().filter( op -> op.button.getId()==id).findFirst().orElse(null);
 
         return sop==null ? null : sop.value;
+    }
+
+    @Override
+    public void updateValues() {
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        txtName.setText(column.getLabel());
+
+        String value = column.getValue();
+
+        if (value != null) {
+            SelectOption sop = this.rdbOptions.stream().filter( op -> op.value==value).findFirst().orElse(null);
+
+            if (sop != null) {
+                this.rdgColumnRadioGroup.check(sop.button.getId());
+            }
+        }
+
+    }
+
+    @Override
+    public void setValue(String value) {
+        this.column.setValue(value);
+        updateValues();
     }
 
     @Override

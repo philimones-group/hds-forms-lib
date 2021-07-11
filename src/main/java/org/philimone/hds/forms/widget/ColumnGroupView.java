@@ -11,9 +11,11 @@ import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.utilities.StringTools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import androidx.annotation.Nullable;
 
@@ -85,11 +87,6 @@ public class ColumnGroupView extends LinearLayout {
                 view = gpsView;
             }
 
-            if (column.getType() == ColumnType.DEVICE_ID) {
-                view = new ColumnTextView(this, column);
-                this.setHidden(true);
-            }
-
             if (column.getType() == ColumnType.COLLECTED_BY) {
                 column.setValue(formPanel.getUsername());
 
@@ -97,9 +94,24 @@ public class ColumnGroupView extends LinearLayout {
                 this.setHidden(true);
             }
 
+            if (column.getType() == ColumnType.INSTANCE_UUID) {
+                view = new ColumnTextView(this, column);
+                this.setHidden(true);
+            }
+
+            if (column.getType() == ColumnType.DEVICE_ID) {
+                view = new ColumnTextView(this, column);
+                this.setHidden(true);
+            }
+
             if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
                 view = new ColumnTextView(this, column);
                 this.setHidden(true);
+            }
+
+            if (column.getType() == ColumnType.TIMESTAMP) {
+                view = new ColumnTextView(this, column);
+                //this.setHidden(true);
             }
 
             if (view != null) {

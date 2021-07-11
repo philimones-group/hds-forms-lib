@@ -44,6 +44,10 @@ public abstract class ColumnView extends LinearLayout {
 
     public abstract String getValueAsXml();
 
+    public abstract void setValue(String value);
+
+    public abstract void updateValues();
+
     public Column getColumn() {
         return this.column;
     }

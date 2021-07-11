@@ -39,6 +39,7 @@ public class ColumnTextView extends ColumnView {
         txtValue.setText(column.getValue()==null ? "" : column.getValue());
     }
 
+    @Override
     public void setValue(String value) {
         this.column.setValue(value);
         updateValues();

@@ -19,6 +19,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
+import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.HForm;
@@ -26,6 +27,8 @@ import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
+import org.philimone.hds.forms.utilities.StringTools;
+import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 import org.philimone.hds.forms.widget.ColumnTextView;
 import org.philimone.hds.forms.widget.ColumnView;
@@ -35,9 +38,14 @@ import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
@@ -61,6 +69,7 @@ public class FormFragment extends DialogFragment {
     private String deviceId;
     private String startTimestamp;
     private String endTimestamp;
+    private Map<String, String> preloadedColumnValues;
 
     private ActivityResultLauncher<String> requestPermission;
 
@@ -75,21 +84,26 @@ public class FormFragment extends DialogFragment {
         initPermissions();
     }
 
-    public static FormFragment newInstance(HForm form, String username, FormCollectionListener formListener) {
+    public static FormFragment newInstance(HForm form, String username, Map<String, String> preloadedValues, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.form = form;
         formFragment.username = username;
         formFragment.formListener = formListener;
+        formFragment.preloadedColumnValues = new LinkedHashMap<>();
+
+        if (preloadedValues != null){
+            formFragment.preloadedColumnValues.putAll(preloadedValues);
+        }
 
         return formFragment;
     }
 
-    public static FormFragment newInstance(File hFormXlsFile, String username, FormCollectionListener formListener) {
-        return newInstance(new ExcelFormParser(hFormXlsFile).getForm(), username, formListener);
+    public static FormFragment newInstance(File hFormXlsFile, String username, Map<String, String> preloadedValues, FormCollectionListener formListener) {
+        return newInstance(new ExcelFormParser(hFormXlsFile).getForm(), username, preloadedValues, formListener);
     }
 
-    public static FormFragment newInstance(InputStream fileInputStream, String username, FormCollectionListener formListener) {
-        return newInstance(new ExcelFormParser(fileInputStream).getForm(), username, formListener);
+    public static FormFragment newInstance(InputStream fileInputStream, Map<String, String> preloadedValues, String username, FormCollectionListener formListener) {
+        return newInstance(new ExcelFormParser(fileInputStream).getForm(), username, preloadedValues, formListener);
     }
 
     @Override
@@ -121,6 +135,7 @@ public class FormFragment extends DialogFragment {
         this.startTimestamp = getTimestamp();
 
         checkPermissionAndGetDeviceId();
+        loadColumnValues();
     }
 
     private void initPermissions() {
@@ -233,7 +248,7 @@ public class FormFragment extends DialogFragment {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
                 ColumnValue columnValue = new ColumnValue(columnGroupView, columnView);
 
-                if (columnValue.getColumnType() == ColumnType.START_TIMESTAMP) {
+                if (columnValue.getColumnType() == ColumnType.START_TIMESTAMP && StringTools.isBlank(columnValue.getValue())) { //start must be blank - means the first time form is opened, otherwise is reopening a saved form
                     columnValue.setValue(startTimestamp);
                 }
 
@@ -249,16 +264,52 @@ public class FormFragment extends DialogFragment {
 
     }
 
-    private void updateSpecialColumns(){
+    private void loadColumnValues(){
+
         columnGroupViewList.forEach( columnGroupView -> {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
+
+                Column column = columnView.getColumn();
 
                 if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
                     ((ColumnTextView) columnView).setValue(this.getDeviceId());
                 }
 
+                if (columnView.getType() == ColumnType.TIMESTAMP && columnView instanceof ColumnTextView) {
+                    ((ColumnTextView) columnView).setValue(this.getTimestamp());
+                }
+
+                if (this.preloadedColumnValues.containsKey(column.getName())){
+                    String value = this.preloadedColumnValues.get(column.getName());
+                    columnView.setValue(value);
+                }
+
+                if (column.getType()==ColumnType.GPS) {
+                    Map<String,Double> gpsValues = getGpsPreloadedValues(column);
+                    ((ColumnGpsView)columnView).setValues(gpsValues);
+                }
+
+                if (column.getType()==ColumnType.INSTANCE_UUID && StringTools.isBlank(column.getValue())) { //id column - set only once
+                    column.setValue(UUID.randomUUID().toString());
+                }
             }
         });
+    }
+
+    private Map<String, Double> getGpsPreloadedValues(Column gpsColumn) {
+        String[] gps_cols = new String[]{ "_lat", "_lon", "_alt", "_acc" };
+        Map<String,Double> gpsValues = new LinkedHashMap<>();
+
+        for (String ext : gps_cols) {
+            String column = gpsColumn.getName()+ext;
+
+            if (preloadedColumnValues.containsKey(column)){
+                String stringValue = preloadedColumnValues.get(column);
+                gpsValues.put(column, Double.parseDouble(stringValue));
+            }
+        }
+
+        return gpsValues.size()==0 ? null : gpsValues;
     }
 
     private void exitForm(){
@@ -278,7 +329,6 @@ public class FormFragment extends DialogFragment {
             this.requestPermission.launch(Manifest.permission.READ_PHONE_STATE);
         } else {
             this.deviceId = readDeviceId();
-            updateSpecialColumns();
         }
     }
 

@@ -1,11 +1,7 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
 import android.text.InputType;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -45,6 +41,17 @@ public class ColumnTextboxView extends ColumnView {
             case DECIMAL:  txtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
         }
 
+        updateValues();
+    }
+
+    @Override
+    public void setValue(String value) {
+        this.column.setValue(value);
+        updateValues();
+    }
+
+    @Override
+    public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
         txtValue.setText(column.getValue()==null ? "" : column.getValue());
