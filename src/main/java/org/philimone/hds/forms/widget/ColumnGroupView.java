@@ -91,7 +91,7 @@ public class ColumnGroupView extends LinearLayout {
                 column.setValue(formPanel.getUsername());
 
                 view = new ColumnTextView(this, column);
-                this.setHidden(true);
+                //this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.INSTANCE_UUID) {
@@ -105,6 +105,11 @@ public class ColumnGroupView extends LinearLayout {
             }
 
             if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
+                view = new ColumnTextView(this, column);
+                this.setHidden(true);
+            }
+
+            if (column.getType() == ColumnType.EXECUTION_STATUS) {
                 view = new ColumnTextView(this, column);
                 this.setHidden(true);
             }

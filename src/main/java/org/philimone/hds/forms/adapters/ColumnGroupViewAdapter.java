@@ -56,4 +56,8 @@ public class ColumnGroupViewAdapter extends RecyclerView.Adapter<ColumnGroupView
     public int getItemCount() {
         return columnGroupList.size();
     }
+
+    public ColumnGroupView getItemView(int position) {
+        return this.columnGroupList.get(position);
+    }
 }

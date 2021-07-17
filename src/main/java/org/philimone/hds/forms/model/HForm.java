@@ -30,12 +30,14 @@ public class HForm {
         Column column2 = new Column("start",     ColumnType.START_TIMESTAMP, null, "", "", true, true);
         Column column3 = new Column("end",       ColumnType.END_TIMESTAMP,   null, "", "", true, true);
         Column column4 = new Column("device_id", ColumnType.DEVICE_ID,       null, "", "", true, true);
+        Column column5 = new Column("postExecution", ColumnType.EXECUTION_STATUS,   null, "", "false", true, true);
 
         ColumnGroup initialGroup = new ColumnGroup();
         initialGroup.addColumn(column1);
         initialGroup.addColumn(column2);
         initialGroup.addColumn(column3);
         initialGroup.addColumn(column4);
+        initialGroup.addColumn(column5);
 
         addColumn(initialGroup);
     }

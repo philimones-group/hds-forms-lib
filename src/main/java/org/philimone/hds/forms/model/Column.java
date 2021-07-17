@@ -15,6 +15,8 @@ public class Column {
     private String value;
     private boolean required;
     private boolean readOnly;
+    private boolean hidden;
+    private String skipCondition; /* [#variable|value][><=!=][#variable|value]*/
 
     public Column() {
         this.typeOptions = new LinkedHashMap<>();
@@ -92,5 +94,21 @@ public class Column {
 
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+
+    public String getSkipCondition() {
+        return skipCondition;
+    }
+
+    public void setSkipCondition(String skipCondition) {
+        this.skipCondition = skipCondition;
     }
 }

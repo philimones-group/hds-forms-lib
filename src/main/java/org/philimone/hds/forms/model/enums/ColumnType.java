@@ -16,10 +16,12 @@ public enum ColumnType {
     TIMESTAMP ("timestamp"),
     COLLECTED_BY ("username"), /* Not visible*/
 
+    /*Internal Types*/
     INSTANCE_UUID ("uuid"),
     START_TIMESTAMP ("start"), /* Not visible*/
     END_TIMESTAMP ("end"),     /* Not visible*/
-    DEVICE_ID ("device_id");   /* Not visible*/
+    DEVICE_ID ("device_id"),   /* Not visible*/
+    EXECUTION_STATUS ("server_execution_status");
     //collectedBy
     //collectedDate
 

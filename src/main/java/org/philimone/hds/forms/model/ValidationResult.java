@@ -6,39 +6,41 @@ import java.util.List;
 public class ValidationResult {
 
     private boolean errors;
-    private List<ColumnValue> columnValues;
+    private List<Error> columnErrors;
 
     public ValidationResult(){
-        this.columnValues = new ArrayList<>();
+        this.columnErrors = new ArrayList<>();
     }
 
-    public ValidationResult(boolean hasErrors) {
+    public static ValidationResult noErrors(){
+        return new ValidationResult();
+    }
+
+    public ValidationResult(ColumnValue columnValue, String errorMessage) {
         this();
-        this.errors = hasErrors;
-    }
-
-    public ValidationResult(boolean hasErrors, List<ColumnValue> columnValues) {
-        this(hasErrors);
-        this.setColumnValues(columnValues);
+        this.addError(columnValue, errorMessage);
     }
 
     public boolean hasErrors() {
         return errors;
     }
 
-    public void setErrors(boolean hasErrors) {
-        this.errors = errors;
+    public List<Error> getColumnErrors(){
+        return this.columnErrors;
     }
 
-    public List<ColumnValue> getColumnValues() {
-        return columnValues;
+    public void addError(ColumnValue columnValue, String errorMessage) {
+        this.columnErrors.add(new Error(columnValue, errorMessage));
+        this.errors = true;
     }
 
-    public void setColumnValues(List<ColumnValue> columnValues) {
-        this.columnValues.addAll(columnValues);
-    }
+    public class Error {
+        public ColumnValue columnValue;
+        public String errorMessage;
 
-    public void addColumnWithError(ColumnValue columnValue) {
-        this.columnValues.add(columnValue);
+        public Error(ColumnValue columnValue, String errorMessage) {
+            this.columnValue = columnValue;
+            this.errorMessage = errorMessage;
+        }
     }
 }

@@ -5,6 +5,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -21,12 +22,12 @@ public class XmlFormResult {
     private HForm form;
     private String xmlResult;
 
-    public XmlFormResult(HForm form, List<ColumnValue> collectedValues) {
+    public XmlFormResult(HForm form, Collection<ColumnValue> collectedValues) {
         this.form = form;
         this.xmlResult = generateXml(collectedValues);
     }
 
-    private String generateXml(List<ColumnValue> collectedValues) {
+    private String generateXml(Collection<ColumnValue> collectedValues) {
 
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();

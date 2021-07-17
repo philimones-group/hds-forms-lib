@@ -32,20 +32,19 @@ import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 import org.philimone.hds.forms.widget.ColumnTextView;
 import org.philimone.hds.forms.widget.ColumnView;
+import org.philimone.hds.forms.widget.FormColumnSlider;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 
 import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
@@ -54,12 +53,11 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.viewpager2.widget.ViewPager2;
 
 public class FormFragment extends DialogFragment {
 
     private HForm form;
-    private ViewPager2 formMainViewPager;
+    private FormColumnSlider formSlider;
     private TextView txtFormTitle;
     private LinearLayout formHeaderLayout;
     private Button btCancel;
@@ -69,6 +67,7 @@ public class FormFragment extends DialogFragment {
     private String deviceId;
     private String startTimestamp;
     private String endTimestamp;
+    private boolean executeOnUpload;
     private Map<String, String> preloadedColumnValues;
 
     private ActivityResultLauncher<String> requestPermission;
@@ -84,10 +83,11 @@ public class FormFragment extends DialogFragment {
         initPermissions();
     }
 
-    public static FormFragment newInstance(HForm form, String username, Map<String, String> preloadedValues, FormCollectionListener formListener) {
+    public static FormFragment newInstance(HForm form, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.form = form;
         formFragment.username = username;
+        formFragment.executeOnUpload = executeOnUpload;
         formFragment.formListener = formListener;
         formFragment.preloadedColumnValues = new LinkedHashMap<>();
 
@@ -98,12 +98,12 @@ public class FormFragment extends DialogFragment {
         return formFragment;
     }
 
-    public static FormFragment newInstance(File hFormXlsFile, String username, Map<String, String> preloadedValues, FormCollectionListener formListener) {
-        return newInstance(new ExcelFormParser(hFormXlsFile).getForm(), username, preloadedValues, formListener);
+    public static FormFragment newInstance(File hFormXlsFile, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+        return newInstance(new ExcelFormParser(hFormXlsFile).getForm(), username, preloadedValues, executeOnUpload, formListener);
     }
 
-    public static FormFragment newInstance(InputStream fileInputStream, Map<String, String> preloadedValues, String username, FormCollectionListener formListener) {
-        return newInstance(new ExcelFormParser(fileInputStream).getForm(), username, preloadedValues, formListener);
+    public static FormFragment newInstance(InputStream fileInputStream, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+        return newInstance(new ExcelFormParser(fileInputStream).getForm(), username, preloadedValues, executeOnUpload, formListener);
     }
 
     @Override
@@ -152,7 +152,8 @@ public class FormFragment extends DialogFragment {
 
     private void initialize(View view) {
 
-        this.formMainViewPager = (ViewPager2) view.findViewById(R.id.formMainViewPager);
+        //this.formViewPagerLayout = view.findViewById(R.id.formViewPagerLayout);
+        this.formSlider = view.findViewById(R.id.formSlider);
         this.txtFormTitle = (TextView) view.findViewById(R.id.txtFormTitle);
         this.formHeaderLayout = (LinearLayout) view.findViewById(R.id.formHeaderLayout);
         this.btCancel = view.findViewById(R.id.btCancel);
@@ -189,18 +190,26 @@ public class FormFragment extends DialogFragment {
         this.endTimestamp = getTimestamp();
 
         //get column values
-        List<ColumnValue> columnValueList = getCollectedData();
+        Map<String, ColumnValue> columnValueMap = getCollectedData();
 
         if (formListener != null) {
-            ValidationResult result = formListener.onFormValidate(form, columnValueList);
+            ValidationResult result = formListener.onFormValidate(form, columnValueMap);
 
             if (result==null || result.hasErrors()) {
-                //Show Errors
+                //Show Errors - Get Focus
+
+                for (ValidationResult.Error error : result.getColumnErrors()) {
+
+                    DialogFactory.createMessageInfo(this.getContext(), getString(R.string.info_lbl), error.errorMessage).show();
+
+                    setFocus(error.columnValue);
+                }
+
                 Log.d("errors", "errors - result");
             } else {
-                XmlFormResult xmlResults = new XmlFormResult(form, columnValueList);
+                XmlFormResult xmlResults = new XmlFormResult(form, columnValueMap.values());
                 Log.d("result", ""+xmlResults.getXmlResult());
-                formListener.onFormFinished(form, columnValueList, xmlResults);
+                formListener.onFormFinished(form, columnValueMap, xmlResults);
                 dismiss();
             }
         }
@@ -229,7 +238,8 @@ public class FormFragment extends DialogFragment {
 
         // VIEWPAGER
         ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(groupViews);
-        formMainViewPager.setAdapter(adapter);
+        formSlider.setAdapter(adapter);
+
     }
 
     /**
@@ -237,12 +247,11 @@ public class FormFragment extends DialogFragment {
      * 2. ON SAVE CLICKED - DONT CLOSE OR HIDE
      *   2.1. RETRIEVE COLLECTED DATA (MAP OF COLUMN-VALUE AND XML/JSON)
      *   2.2. BUT CALL A LISTENER TO VALIDATE THE DATA
-     * 3. RECEIVE CSV/JSON FROM INTENT DATA AND THEN CONVERT INTO A HFORM  (CsvHFormParser,JsonHFormParser)
-     * 4. Convert SQLite to ObjectBox
      */
 
-    private List<ColumnValue> getCollectedData(){
-        List<ColumnValue> list = new ArrayList<>();
+    private Map<String, ColumnValue> getCollectedData(){
+        Map<String, ColumnValue> map = new LinkedHashMap<>();
+        //List<ColumnValue> list = new ArrayList<>();
 
         columnGroupViewList.forEach( columnGroupView -> {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
@@ -256,11 +265,12 @@ public class FormFragment extends DialogFragment {
                     columnValue.setValue(endTimestamp);
                 }
 
-                list.add(columnValue);
+                map.put(columnValue.getColumnName(), columnValue);
+                //list.add(columnValue);
             }
         });
 
-        return list;
+        return map;
 
     }
 
@@ -310,6 +320,18 @@ public class FormFragment extends DialogFragment {
         }
 
         return gpsValues.size()==0 ? null : gpsValues;
+    }
+
+    private void setFocus(ColumnValue columnValue) {
+        ColumnGroupView groupView = columnGroupViewList.stream().filter(t -> t.getId()==columnValue.getColumnGroupId()).findFirst().orElse(null);
+        ColumnView columnView = groupView.findViewById(columnValue.getColumnId());
+
+        if (groupView != null && columnView != null) {
+            groupView.setFocusable(true);
+            columnView.setFocusable(true);
+            groupView.requestFocus();
+            columnView.requestFocus();
+        }
     }
 
     private void exitForm(){

@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import androidx.annotation.LayoutRes;
@@ -55,6 +56,11 @@ public abstract class ColumnView extends LinearLayout {
     private void buildViews(@LayoutRes int resource) {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(resource, this);
+    }
+
+    public ColumnValue getColumnValue(){
+        ColumnValue columnValue = new ColumnValue(columnGroupView, this);
+        return columnValue;
     }
 
 }

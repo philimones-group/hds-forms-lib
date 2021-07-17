@@ -193,7 +193,12 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
     @Override
     public String getValue() {
-        return this.gpsLocationResult.toString();
+        Location gps = this.gpsLocationResult;
+        if (gps != null){
+            return gps.getLatitude()+";"+gps.getLongitude()+";"+gps.getAltitude()+";"+gps.getAccuracy();
+        }
+
+        return null;
     }
 
     public Map<String, Double> getValues(){

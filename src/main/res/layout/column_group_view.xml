@@ -32,6 +32,8 @@
         android:paddingBottom="@dimen/columngroup_view_padding_bottom"
         android:background="@drawable/nui_list_rborder_panel">
 
+        <!-- -->
+
     </LinearLayout>
 
 </LinearLayout>

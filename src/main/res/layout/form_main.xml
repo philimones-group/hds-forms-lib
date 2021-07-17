@@ -50,11 +50,12 @@
     </LinearLayout>
 
     <!-- Form Content - swipeable columns - view pager-->
-    <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/formMainViewPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
+
+    <org.philimone.hds.forms.widget.FormColumnSlider
+        android:id="@+id/formSlider"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
 
     <!-- Form Action Buttons -->
     <LinearLayout
