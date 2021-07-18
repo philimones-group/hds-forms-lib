@@ -128,4 +128,12 @@ public class StringTools {
             return null;
         }
     }
+
+    public static String formatUnderscoreDate(String collectedDate) {
+        //yyyy-MM-dd_HH_mm_ss
+        collectedDate = collectedDate.replaceAll(" ", "_");
+        collectedDate = collectedDate.replaceAll(":", "_");
+
+        return collectedDate;
+    }
 }

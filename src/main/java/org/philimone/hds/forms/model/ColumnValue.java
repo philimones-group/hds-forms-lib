@@ -73,8 +73,9 @@ public class ColumnValue implements Serializable {
             this.value = column.getSelectedValue();
         }
         if (columnView instanceof ColumnGpsView) {
-            this.gpsValues = ((ColumnGpsView) columnView).getValues();
-            this.value = gpsValues.toString();
+            ColumnGpsView gpsView = (ColumnGpsView) columnView;
+            this.gpsValues = gpsView.getValues();
+            this.value = gpsView.getValue();
         }
     }
 

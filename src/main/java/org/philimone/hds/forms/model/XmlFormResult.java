@@ -1,6 +1,7 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.utilities.StringTools;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -21,10 +22,14 @@ public class XmlFormResult {
 
     private HForm form;
     private String xmlResult;
+    private String formUuid;
+    private String filename;
+    private String collectedDate;
 
-    public XmlFormResult(HForm form, Collection<ColumnValue> collectedValues) {
+    public XmlFormResult(HForm form, Collection<ColumnValue> collectedValues, String instancesDirPath) {
         this.form = form;
         this.xmlResult = generateXml(collectedValues);
+        this.filename = generateFilename(instancesDirPath);
     }
 
     private String generateXml(Collection<ColumnValue> collectedValues) {
@@ -38,6 +43,14 @@ public class XmlFormResult {
             collectedValues.forEach( columnValue -> {
                 //members
                 createElement(doc, rootElement, columnValue);
+
+                if (columnValue.getColumnType()==ColumnType.INSTANCE_UUID) {
+                    this.formUuid = columnValue.getValue();
+                }
+
+                if (columnValue.getColumnType()==ColumnType.TIMESTAMP && columnValue.getColumnName().equals("collectedDate")) {
+                    this.collectedDate = columnValue.getValue();
+                }
             });
 
             // write the content into xml file
@@ -55,6 +68,11 @@ public class XmlFormResult {
 
         return null;
 
+    }
+
+    private String generateFilename(String basePath) {
+        //form-id + form-uuid + date
+        return basePath + form.getFormId() + "-" + formUuid + "-" + StringTools.formatUnderscoreDate(collectedDate) + ".xml";
     }
 
     private Element createElement(Document doc, Element rootElement, ColumnValue columnValue) {
@@ -92,8 +110,12 @@ public class XmlFormResult {
         return form;
     }
 
-    public void setForm(HForm form) {
-        this.form = form;
+    public String getFormUuid() {
+        return formUuid;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 
     public String getXmlResult() {

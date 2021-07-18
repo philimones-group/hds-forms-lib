@@ -36,7 +36,10 @@ import org.philimone.hds.forms.widget.FormColumnSlider;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -53,9 +56,11 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 public class FormFragment extends DialogFragment {
 
+    private FragmentManager fragmentManager;
     private HForm form;
     private FormColumnSlider formSlider;
     private TextView txtFormTitle;
@@ -69,6 +74,7 @@ public class FormFragment extends DialogFragment {
     private String endTimestamp;
     private boolean executeOnUpload;
     private Map<String, String> preloadedColumnValues;
+    private String instancesDirPath;
 
     private ActivityResultLauncher<String> requestPermission;
 
@@ -83,13 +89,15 @@ public class FormFragment extends DialogFragment {
         initPermissions();
     }
 
-    public static FormFragment newInstance(HForm form, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
+        formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
         formFragment.username = username;
         formFragment.executeOnUpload = executeOnUpload;
         formFragment.formListener = formListener;
         formFragment.preloadedColumnValues = new LinkedHashMap<>();
+        formFragment.instancesDirPath = instancesDirPath;
 
         if (preloadedValues != null){
             formFragment.preloadedColumnValues.putAll(preloadedValues);
@@ -98,12 +106,12 @@ public class FormFragment extends DialogFragment {
         return formFragment;
     }
 
-    public static FormFragment newInstance(File hFormXlsFile, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(new ExcelFormParser(hFormXlsFile).getForm(), username, preloadedValues, executeOnUpload, formListener);
+    public static FormFragment newInstance(FragmentManager fragmentManager, File hFormXlsFile, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+        return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, formListener);
     }
 
-    public static FormFragment newInstance(InputStream fileInputStream, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(new ExcelFormParser(fileInputStream).getForm(), username, preloadedValues, executeOnUpload, formListener);
+    public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+        return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, formListener);
     }
 
     @Override
@@ -207,10 +215,16 @@ public class FormFragment extends DialogFragment {
 
                 Log.d("errors", "errors - result");
             } else {
-                XmlFormResult xmlResults = new XmlFormResult(form, columnValueMap.values());
+
+                XmlFormResult xmlResults = new XmlFormResult(form, columnValueMap.values(), instancesDirPath);
                 Log.d("result", ""+xmlResults.getXmlResult());
+
+                //createXmlFile
+                createXmlResultsFile(xmlResults);
+
                 formListener.onFormFinished(form, columnValueMap, xmlResults);
                 dismiss();
+
             }
         }
 
@@ -300,7 +314,13 @@ public class FormFragment extends DialogFragment {
                 }
 
                 if (column.getType()==ColumnType.INSTANCE_UUID && StringTools.isBlank(column.getValue())) { //id column - set only once
-                    column.setValue(UUID.randomUUID().toString());
+                    String uuid = UUID.randomUUID().toString();
+
+
+
+                    columnView.setValue(uuid);
+
+                    Log.d("uuid-tag", ""+columnView.getValue());
                 }
             }
         });
@@ -424,5 +444,30 @@ public class FormFragment extends DialogFragment {
 
 
         return dateString;
+    }
+
+    private boolean createXmlResultsFile(XmlFormResult xmlFormResult) {
+        try {
+
+            File file = new File(xmlFormResult.getFilename());
+            file.createNewFile();
+
+
+            PrintStream output = new PrintStream(xmlFormResult.getFilename());
+            output.print(xmlFormResult.getXmlResult());
+            output.close();
+
+            return true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public void startCollecting(){
+        show(fragmentManager, "hform");
     }
 }
