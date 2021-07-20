@@ -178,10 +178,10 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.gpsLocationResult = new Location("fake");
 
-        Double lat = gpsValues.get(column.getName()+"_lat");
-        Double lon = gpsValues.get(column.getName()+"_lon");
-        Double alt = gpsValues.get(column.getName()+"_alt");
-        Double acc = gpsValues.get(column.getName()+"_acc");
+        Double lat = gpsValues.get(column.getName()+"Lat");
+        Double lon = gpsValues.get(column.getName()+"Lon");
+        Double alt = gpsValues.get(column.getName()+"Alt");
+        Double acc = gpsValues.get(column.getName()+"Acc");
 
         if (lat != null) this.gpsLocationResult.setLatitude(lat);
         if (lon != null) this.gpsLocationResult.setLongitude(lon);
@@ -207,10 +207,10 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         if (gpsLocationResult != null) {
             String name = this.column.getName();
 
-            map.put(name+"_lat", gpsLocationResult.getLatitude());
-            map.put(name+"_lon", gpsLocationResult.getLongitude());
-            map.put(name+"_alt", gpsLocationResult.getAltitude());
-            map.put(name+"_acc", gpsLocationResult.getAccuracy()*1d);
+            map.put(name+"Lat", gpsLocationResult.getLatitude());
+            map.put(name+"Lon", gpsLocationResult.getLongitude());
+            map.put(name+"Alt", gpsLocationResult.getAltitude());
+            map.put(name+"Acc", gpsLocationResult.getAccuracy()*1d);
         }
 
         return map;

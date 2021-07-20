@@ -98,7 +98,7 @@ public class FormFragment extends DialogFragment {
         formFragment.formListener = formListener;
         formFragment.preloadedColumnValues = new LinkedHashMap<>();
         formFragment.instancesDirPath = instancesDirPath;
-        
+
         formFragment.form.setPostExecution(executeOnUpload);
 
         if (preloadedValues != null){
@@ -330,7 +330,7 @@ public class FormFragment extends DialogFragment {
     }
 
     private Map<String, Double> getGpsPreloadedValues(Column gpsColumn) {
-        String[] gps_cols = new String[]{ "_lat", "_lon", "_alt", "_acc" };
+        String[] gps_cols = new String[]{ "Lat", "Lon", "Alt", "Acc" };
         Map<String,Double> gpsValues = new LinkedHashMap<>();
 
         for (String ext : gps_cols) {
