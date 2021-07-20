@@ -1,6 +1,7 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.utilities.StringTools;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -66,6 +67,10 @@ public class Column {
 
     public String getValue() {
         return value;
+    }
+
+    public boolean isValueBlank() {
+        return StringTools.isBlank(value);
     }
 
     public void setValue(String value) {

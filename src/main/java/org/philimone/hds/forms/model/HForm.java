@@ -7,9 +7,16 @@ import java.util.List;
 
 public class HForm {
 
+    public static final String COLUMN_ID = "id";
+    public static final String COLUMN_START = "start";
+    public static final String COLUMN_END = "end";
+    public static final String COLUMN_DEVICE_ID = "device_id";
+    public static final String COLUMN_POST_EXECUTION = "postExecution";
+
     private String formId;
     private String formName;
     private List<ColumnGroup> columns;
+    private boolean postExecution;
 
     public HForm() {
         this.columns = new ArrayList<>();
@@ -23,14 +30,23 @@ public class HForm {
         initDefaultColumns();
     }
 
+    public HForm(String formId, String formName, boolean postExecution) {
+        this();
+        this.formId = formId;
+        this.formName = formName;
+        this.postExecution = postExecution;
+
+        initDefaultColumns();
+    }
+
     private void initDefaultColumns() {
         //id, start, end, device_id
 
-        Column column1 = new Column("id",        ColumnType.INSTANCE_UUID,   null, "", "", true, true);
-        Column column2 = new Column("start",     ColumnType.START_TIMESTAMP, null, "", "", true, true);
-        Column column3 = new Column("end",       ColumnType.END_TIMESTAMP,   null, "", "", true, true);
-        Column column4 = new Column("device_id", ColumnType.DEVICE_ID,       null, "", "", true, true);
-        Column column5 = new Column("postExecution", ColumnType.EXECUTION_STATUS,   null, "", "false", true, true);
+        Column column1 = new Column(COLUMN_ID,        ColumnType.INSTANCE_UUID,   null, "", "", true, true);
+        Column column2 = new Column(COLUMN_START,     ColumnType.START_TIMESTAMP, null, "", "", true, true);
+        Column column3 = new Column(COLUMN_END,       ColumnType.END_TIMESTAMP,   null, "", "", true, true);
+        Column column4 = new Column(COLUMN_DEVICE_ID, ColumnType.DEVICE_ID,       null, "", "", true, true);
+        Column column5 = new Column(COLUMN_POST_EXECUTION, ColumnType.EXECUTION_STATUS,   null, "", postExecution+"", true, true);
 
         ColumnGroup initialGroup = new ColumnGroup();
         initialGroup.addColumn(column1);
@@ -84,5 +100,20 @@ public class HForm {
             if (cgroup.isHeader()) return cgroup;
         }
         return null;
+    }
+
+    public boolean isPostExecution() {
+        return postExecution;
+    }
+
+    public void setPostExecution(boolean postExecution) {
+        this.postExecution = postExecution;
+
+        ColumnGroup initialGroup = columns.get(0);
+        Column colPostExec = (initialGroup != null) ? initialGroup.getColumns().stream().filter(t -> t.getName().equals(COLUMN_POST_EXECUTION)).findFirst().orElse(null) : null;
+
+        if (colPostExec != null) {
+            colPostExec.setValue(postExecution+"");
+        }
     }
 }

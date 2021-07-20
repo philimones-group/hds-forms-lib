@@ -98,6 +98,8 @@ public class FormFragment extends DialogFragment {
         formFragment.formListener = formListener;
         formFragment.preloadedColumnValues = new LinkedHashMap<>();
         formFragment.instancesDirPath = instancesDirPath;
+        
+        formFragment.form.setPostExecution(executeOnUpload);
 
         if (preloadedValues != null){
             formFragment.preloadedColumnValues.putAll(preloadedValues);
@@ -303,6 +305,15 @@ public class FormFragment extends DialogFragment {
                     ((ColumnTextView) columnView).setValue(this.getTimestamp());
                 }
 
+                if (column.getType()==ColumnType.INSTANCE_UUID && column.isValueBlank()) { //id column - set only once
+                    String uuid = UUID.randomUUID().toString().replaceAll("-","");
+
+                    columnView.setValue(uuid);
+
+                    //Log.d("uuid-tag", ""+columnView.getValue());
+                }
+
+                //overwrite values with pre-loaded data
                 if (this.preloadedColumnValues.containsKey(column.getName())){
                     String value = this.preloadedColumnValues.get(column.getName());
                     columnView.setValue(value);
@@ -313,15 +324,7 @@ public class FormFragment extends DialogFragment {
                     ((ColumnGpsView)columnView).setValues(gpsValues);
                 }
 
-                if (column.getType()==ColumnType.INSTANCE_UUID && StringTools.isBlank(column.getValue())) { //id column - set only once
-                    String uuid = UUID.randomUUID().toString();
 
-
-
-                    columnView.setValue(uuid);
-
-                    Log.d("uuid-tag", ""+columnView.getValue());
-                }
             }
         });
     }
