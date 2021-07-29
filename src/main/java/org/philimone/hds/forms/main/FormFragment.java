@@ -16,8 +16,14 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
+import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
@@ -75,6 +81,8 @@ public class FormFragment extends DialogFragment {
     private boolean executeOnUpload;
     private Map<String, String> preloadedColumnValues;
     private String instancesDirPath;
+
+    private JexlEngine expressionEngine;
 
     private ActivityResultLauncher<String> requestPermission;
 
@@ -188,6 +196,19 @@ public class FormFragment extends DialogFragment {
 
         initColumnViews();
 
+        initExpEngine();
+
+    }
+
+    private void initExpEngine() {
+        this.expressionEngine = new JexlBuilder().create();
+    }
+
+    public Object evaluateExpression(String expressionText) {
+        JexlContext jexlContext = new MapContext();
+        JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
+
+        return jxelExpression.evaluate(jexlContext);
     }
 
     private void onCancelClicked(){
@@ -252,8 +273,30 @@ public class FormFragment extends DialogFragment {
 
         this.columnGroupViewList.addAll(groupViews);
 
+        final ColumnView[] previous = {null};
+        final ColumnGroupView[] previousGroups = {null};
+        this.columnGroupViewList.forEach(columnGroupView -> {
+
+            if (previousGroups[0] != null) {
+                previousGroups[0].setNextGroupView(columnGroupView);
+                columnGroupView.setParentGroupView(previousGroups[0]);
+            }
+            previousGroups[0] = columnGroupView;
+
+            columnGroupView.getColumnViews().forEach(columnView -> {
+
+                if (previous[0] != null) {
+                    previous[0].setNextColumn(columnView);
+                    columnView.setParentColumn(previous[0]);
+                }
+                previous[0] = columnView;
+
+            });
+        });
+
         // VIEWPAGER
         ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(groupViews);
+        //ColumnGroupViewPageAdapter adapter = new ColumnGroupViewPageAdapter(this, groupViews);
         formSlider.setAdapter(adapter);
 
     }

@@ -74,7 +74,7 @@ public class ExcelFormParser implements FormParser {
             int default_value_index = mapHeaderIndex.get("default_value");
             int required_index = mapHeaderIndex.get("required");
             int readonly_index = mapHeaderIndex.get("readonly");
-
+            int display_index = mapHeaderIndex.get("display_condition");
 
 
             HForm form = new HForm(settings.formId, settings.formName);
@@ -92,6 +92,7 @@ public class ExcelFormParser implements FormParser {
                     String defaultValue = getCellValue(row.getCell(default_value_index));
                     String cellRequired = getCellValue(row.getCell(required_index));
                     String cellReadonly = getCellValue(row.getCell(readonly_index));
+                    String cellDisplay = getCellValue(row.getCell(display_index));
 
                     if (cellName == null || cellName.isEmpty()) continue;
 
@@ -108,7 +109,7 @@ public class ExcelFormParser implements FormParser {
                         }
                     }
 
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly));
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellDisplay);
                     group.addColumn(column);
 
                     form.addColumn(group);

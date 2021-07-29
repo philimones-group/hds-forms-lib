@@ -153,8 +153,10 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.gpsLocationResult = null;
 
-        locationManager.requestLocationUpdates(provider, 5, 0, this);
+
         showLoadingDialog(R.string.gps_loading_lbl, true);
+        locationManager.requestLocationUpdates(provider, 5, 0, this);
+
     }
 
     @Override

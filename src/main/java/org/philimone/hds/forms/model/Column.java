@@ -3,7 +3,6 @@ package org.philimone.hds.forms.model;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.utilities.StringTools;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,13 +16,13 @@ public class Column {
     private boolean required;
     private boolean readOnly;
     private boolean hidden;
-    private String skipCondition; /* [#variable|value][><=!=][#variable|value]*/
+    private String displayCondition; /* [#variable|value][><=!=][#variable|value]*/
 
     public Column() {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, String> typeOptions, String label, String value, boolean required, boolean readOnly) {
+    public Column(String name, ColumnType type, Map<String, String> typeOptions, String label, String value, boolean required, boolean readOnly, String displayCondition) {
         this();
 
         this.name = name;
@@ -33,6 +32,7 @@ public class Column {
         this.label = label;
         this.required = required;
         this.readOnly = readOnly;
+        this.displayCondition = displayCondition;
     }
 
     public String getName() {
@@ -109,11 +109,11 @@ public class Column {
         this.hidden = hidden;
     }
 
-    public String getSkipCondition() {
-        return skipCondition;
+    public String getDisplayCondition() {
+        return displayCondition;
     }
 
-    public void setSkipCondition(String skipCondition) {
-        this.skipCondition = skipCondition;
+    public void setDisplayCondition(String displayCondition) {
+        this.displayCondition = displayCondition;
     }
 }

@@ -11,16 +11,19 @@ import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.utilities.StringTools;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import androidx.annotation.Nullable;
 
 public class ColumnGroupView extends LinearLayout {
 
+    private static long ITEM_ID_COUNT;
+
+    private String uuid;
     private FormFragment formPanel;
     private Context mContext;
     private ColumnGroup columnGroup;
@@ -28,9 +31,15 @@ public class ColumnGroupView extends LinearLayout {
     private LinearLayout formColumnGroupLayout;
     private List<ColumnView> columnViews;
     private boolean hidden;
+    private boolean displayable = true;
+    private boolean fragmentVisible = true;
+    private ColumnGroupView parentGroupView;
+    private ColumnGroupView nextGroupView;
 
     public ColumnGroupView(FormFragment formPanel, Context context, @Nullable AttributeSet attrs, ColumnGroup columnGroup) {
         super(context, attrs);
+
+        uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
         this.formPanel = formPanel;
         this.mContext = context;
         this.columnGroup = columnGroup;
@@ -47,12 +56,17 @@ public class ColumnGroupView extends LinearLayout {
         return formPanel;
     }
 
+    public String getUuid() {
+        return uuid;
+    }
+
     public boolean isHidden() {
         return hidden;
     }
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+        this.fragmentVisible = !hidden;
     }
 
     private void buildViews() {
@@ -123,6 +137,7 @@ public class ColumnGroupView extends LinearLayout {
                 formColumnGroupLayout.addView(view);
                 columnViews.add(view);
             }
+
         }
 
     }
@@ -131,4 +146,62 @@ public class ColumnGroupView extends LinearLayout {
         return this.columnViews;
     }
 
+    public boolean isDisplayable() {
+        return displayable;
+    }
+
+    public void setDisplayable(boolean displayable) {
+        this.displayable = displayable;
+    }
+
+    public ColumnGroupView getParentGroupView() {
+        return parentGroupView;
+    }
+
+    public void setParentGroupView(ColumnGroupView parentGroupView) {
+        this.parentGroupView = parentGroupView;
+    }
+
+    public ColumnGroupView getNextGroupView() {
+        return nextGroupView;
+    }
+
+    public void setNextGroupView(ColumnGroupView nextGroupView) {
+        this.nextGroupView = nextGroupView;
+    }
+
+    public void updateVisibility() {
+        boolean invisible = this.columnViews.stream().filter(t -> t.displayable == true).count()==0;
+        setDisplayable(!invisible);
+    }
+
+    public boolean evaluateDisplayCondition() {
+
+        this.columnViews.forEach(columnView -> { columnView.evaluateDisplayCondition(); });
+
+        updateVisibility();
+
+        return isDisplayable();
+    }
+
+    public boolean isFragmentVisible() {
+        return fragmentVisible;
+    }
+
+    public void setFragmentVisible(boolean fragmentVisible) {
+        this.fragmentVisible = fragmentVisible;
+    }
+
+    public boolean equalsTo(ColumnGroupView groupView){
+        return this.uuid.equals(groupView.uuid);
+    }
+
+    @Override
+    public String toString() {
+        return "ColumnGroupView{" + getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(",")) + "}";
+    }
+
+    public long getItemId() {
+        return Long.parseLong(uuid);
+    }
 }
