@@ -1,6 +1,5 @@
 package org.philimone.hds.forms.widget.dialog;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.Window;
@@ -10,8 +9,9 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDialog;
 
-public class LoadingDialog extends Dialog {
+public class LoadingDialog extends AppCompatDialog {
 
     private Context mContext;
     private ProgressBar progressBarLoading;

@@ -1,28 +1,26 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.DatePicker;
+import android.widget.Button;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.utilities.StringTools;
+import org.philimone.hds.forms.widget.dialog.DateTimeSelector;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class ColumnDateTimeView extends ColumnView {
+public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.OnSelectedListener {
 
     private TextView txtName;
-    private DatePicker dtpColumnDateValue;
-    private TimePicker dtpColumnTimeValue;
+    private Button btnSelectDate;
+    private TextView txtSelectedDate;
+    private DateTimeSelector datePicker;
+    private Date dateValue;
 
     public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
         super(view, R.layout.column_datetime_item, attrs, column);
@@ -36,69 +34,58 @@ public class ColumnDateTimeView extends ColumnView {
 
     private void createView() {
 
-        LayoutInflater inflater = LayoutInflater.from(this.getContext());
-        View rowView = inflater.inflate(R.layout.column_datetime_item, this);
-
         this.txtColumnRequired = findViewById(R.id.txtColumnRequired);
         this.txtName = findViewById(R.id.txtColumnName);
-        this.dtpColumnDateValue = findViewById(R.id.dtpColumnDateValue);
-        this.dtpColumnTimeValue = findViewById(R.id.dtpColumnTimeValue);
+        this.btnSelectDate = findViewById(R.id.btnSelectDate);
+        this.txtSelectedDate = findViewById(R.id.txtSelectedDate);
 
-        updateValues();
+        this.datePicker = DateTimeSelector.createDateTimeWidget(this.getContext(), this);
+
+        btnSelectDate.setOnClickListener(v -> {
+            onButtonSelectDateClicked();
+        });
+
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        txtName.setText(column.getLabel());
+        btnSelectDate.setEnabled(!this.column.isReadOnly());
     }
 
-    private void updateDatepicker() {
-        Date date = StringTools.toDateTime(this.column.getValue());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+    private void onButtonSelectDateClicked() {
+        this.datePicker.show();
+    }
 
-        if (date != null) {
-            int y = calendar.get(Calendar.YEAR);
-            int m = calendar.get(Calendar.MONTH);
-            int d = calendar.get(Calendar.DAY_OF_MONTH);
-            int hh = calendar.get(Calendar.HOUR);
-            int mm = calendar.get(Calendar.MONTH);
-            int ss = calendar.get(Calendar.SECOND);
-
-            dtpColumnDateValue.updateDate(y, m, d);
-            dtpColumnTimeValue.setHour(hh);
-            dtpColumnTimeValue.setMinute(mm);
-        }
+    @Override
+    public void onDateSelected(Date selectedDate, String selectedDateText) {
+        this.txtSelectedDate.setText(selectedDateText);
+        this.dateValue = selectedDate;
+        this.column.setValue(selectedDateText);
     }
 
     @Override
     public void updateValues() {
-        this.txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        this.txtName.setText(column.getLabel());
-        this.dtpColumnTimeValue.setIs24HourView(true);
-
-        updateDatepicker();
+        txtSelectedDate.setText(this.column.getValue());
+        btnSelectDate.setEnabled(!this.column.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        //value is yyyy-MM-dd HH:mm:ss
         this.column.setValue(value);
+        this.dateValue = StringTools.toDateTime(value);
         updateValues();
     }
 
     @Override
     public String getValue() {
-        int y = this.dtpColumnDateValue.getYear();
-        int m = this.dtpColumnDateValue.getMonth();
-        int d = this.dtpColumnDateValue.getDayOfMonth();
-        int hh = this.dtpColumnTimeValue.getHour();
-        int mm = this.dtpColumnTimeValue.getMinute();
-        int ss = 0;
 
+        if (dateValue == null){
+            return null;
+        }
 
-        String date = y + "-" + String.format("%02d", m) + "-" + String.format("%02d", d) + " " + String.format("%02d", hh) + ":" + String.format("%02d", mm) + ":00";
-
-        return date;
+        return txtSelectedDate.getText().toString();
     }
 
     public Date getValueAsDate() {
-        return StringTools.toDateTime(getValue());
+        return dateValue;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.parsers.ExcelFormParser;
+import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import org.philimone.hds.forms.utilities.StringTools;
 
 import java.util.LinkedHashMap;
@@ -10,7 +12,7 @@ public class Column {
 
     private String name;
     private ColumnType type;
-    private Map<String, String> typeOptions; //if SELECT/MULTI_SELECT
+    private Map<String, FormOptions.OptionValue> typeOptions; //if SELECT/MULTI_SELECT
     private String label;
     private String value;
     private boolean required;
@@ -22,7 +24,7 @@ public class Column {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, String> typeOptions, String label, String value, boolean required, boolean readOnly, String displayCondition) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String label, String value, boolean required, boolean readOnly, String displayCondition) {
         this();
 
         this.name = name;
@@ -51,18 +53,18 @@ public class Column {
         this.type = type;
     }
 
-    public Map<String, String> getTypeOptions() {
+    public Map<String, FormOptions.OptionValue> getTypeOptions() {
         return typeOptions;
     }
 
-    public void setTypeOptions(Map<String, String> typeOptions) {
+    public void setTypeOptions(Map<String, FormOptions.OptionValue> typeOptions) {
         if (typeOptions != null)
             this.typeOptions.putAll(typeOptions);
     }
 
-    public void addTypeOptions(String optionValue, String optionLabel) {
+    public void addTypeOptions(String optionValue, String optionLabel, boolean optionReadonly) {
         if (optionValue != null && optionLabel != null)
-            this.typeOptions.put(optionValue, optionLabel);
+            this.typeOptions.put(optionValue, new FormOptions.OptionValue(optionLabel, optionReadonly));
     }
 
     public String getValue() {

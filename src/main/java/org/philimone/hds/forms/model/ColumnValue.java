@@ -61,11 +61,11 @@ public class ColumnValue implements Serializable {
         }
         if (columnView instanceof ColumnDateView) {
             this.dateValue = ((ColumnDateView) columnView).getValueAsDate();
-            this.value = StringTools.format(this.dateValue, StringTools.DATE_FORMAT);
+            this.value = columnView.getValue();
         }
         if (columnView instanceof ColumnDateTimeView) {
             this.dateValue = ((ColumnDateTimeView) columnView).getValueAsDate();
-            this.value = StringTools.format(this.dateValue, StringTools.DATETIME_FORMAT);
+            this.value = columnView.getValue();
         }
         if (columnView instanceof ColumnMultiSelectView) {
             ColumnMultiSelectView column = ((ColumnMultiSelectView) columnView);

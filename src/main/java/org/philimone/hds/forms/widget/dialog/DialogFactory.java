@@ -1,6 +1,6 @@
 package org.philimone.hds.forms.widget.dialog;
 
-import android.app.Dialog;
+import androidx.appcompat.app.AppCompatDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +13,7 @@ import org.philimone.hds.forms.R;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
-public class DialogFactory extends Dialog {
+public class DialogFactory extends AppCompatDialog {
 
     private Context mContext;
     private TextView txtDialogTitle;

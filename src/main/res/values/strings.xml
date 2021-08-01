@@ -33,6 +33,11 @@
 
     <string name="column_required_lbl">This field is required</string>
 
+    <string name="datetime_selector_title_lbl">Select the date</string>
+    <string name="datetime_selector_button_lbl">Select date</string>
+    <string name="datetime_selector_not_selected_lbl">Date not selected</string>
+
+
     <string name="info_lbl">Info</string>
     <string name="error_lbl">Error</string>
 </resources>

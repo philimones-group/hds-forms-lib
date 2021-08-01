@@ -12,6 +12,8 @@ import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.parsers.form.model.FormOptions;
+import org.philimone.hds.forms.parsers.form.model.FormSettings;
 import org.philimone.hds.forms.utilities.StringTools;
 
 import java.io.File;
@@ -158,6 +160,7 @@ public class ExcelFormParser implements FormParser {
         Map<String, Integer> mapLocaleCellIndex = getLocalizedCellsIndex(sheet1);
         Integer defaultLabelIndex = mapHeaderIndex.get("label");
         Integer localizLabelIndex = mapLocaleCellIndex.get("label");
+        Integer readonlyIndex = mapHeaderIndex.get("readonly");
         int labelIndex = (localizLabelIndex==null) ? defaultLabelIndex : localizLabelIndex;
 
         for (Row row : sheet1) {
@@ -167,12 +170,14 @@ public class ExcelFormParser implements FormParser {
             Cell cellName = row.getCell(0);
             Cell cellValue = row.getCell(1);
             Cell cellLabel = row.getCell(labelIndex);
+            Cell cellReadonly = readonlyIndex!=null ? row.getCell(readonlyIndex) : null;
 
             String name = getCellValue(cellName);
             String value = getCellValue(cellValue);
             String label = getCellValue(cellLabel);
+            boolean readonly = cellReadonly!=null ? cellReadonly.getBooleanCellValue() : false;
 
-            formOptions.put(name, value, label);
+            formOptions.put(name, value, label, readonly);
 
         }
 
@@ -251,36 +256,7 @@ public class ExcelFormParser implements FormParser {
         return this.form;
     }
 
-    class FormOptions {
-        private Map<String, LinkedHashMap<String, String>> mapOptions;
 
-        public FormOptions() {
-            this.mapOptions = new HashMap<>();
-        }
-
-        public void put(String optionName, String optionValue, String optionLabel) {
-            LinkedHashMap<String, String> map = this.mapOptions.get(optionName) == null ? new LinkedHashMap<>() : this.mapOptions.get(optionName) ;
-
-            map.put(optionValue, optionLabel);
-
-            this.mapOptions.put(optionName, map);
-        }
-
-        public Map<String, String> getOptions(String name) {
-            return this.mapOptions.get(name);
-        }
-
-    }
-
-    class FormSettings {
-        public String formId;
-        public String formName;
-
-        public FormSettings(String formId, String formName) {
-            this.formId = formId;
-            this.formName = formName;
-        }
-    }
 
 
 }

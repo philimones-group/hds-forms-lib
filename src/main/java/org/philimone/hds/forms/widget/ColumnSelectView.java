@@ -15,6 +15,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.parsers.form.model.FormOptions;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -57,22 +58,26 @@ public class ColumnSelectView extends ColumnView {
     }
 
     private void fillOptions(){
-        Map<String,String> options = this.column.getTypeOptions();
+        Map<String, FormOptions.OptionValue> options = this.column.getTypeOptions();
 
         for (String value : options.keySet()){
-            String label = options.get(value);
+            FormOptions.OptionValue optionValue = options.get(value);
 
 
             RadioButton button = new RadioButton(this.getContext());
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            button.setText(label);
+            button.setText(optionValue.label);
             button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
             button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
+            button.setEnabled(!optionValue.readonly);
+
 
             this.rdgColumnRadioGroup.addView(button);
 
-            this.rdbOptions.add(new SelectOption(value, label, button));
+            this.rdbOptions.add(new SelectOption(value, optionValue.label, button, optionValue.readonly));
         }
+
+        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
     }
 
     private String getSelectedValue(){
@@ -96,6 +101,10 @@ public class ColumnSelectView extends ColumnView {
 
             if (sop != null) {
                 this.rdgColumnRadioGroup.check(sop.button.getId());
+
+                //like HOH selected, if a readonly value is checked the other options should be disabled
+                this.rdgColumnRadioGroup.setEnabled(!sop.readonly);
+                sop.button.setEnabled(!sop.readonly);
             }
         }
 
@@ -124,11 +133,13 @@ public class ColumnSelectView extends ColumnView {
         public String value;
         public String label;
         public RadioButton button;
+        public boolean readonly;
 
-        public SelectOption(String value, String label, RadioButton button) {
+        public SelectOption(String value, String label, RadioButton button, boolean readonly) {
             this.value = value;
             this.label = label;
             this.button = button;
+            this.readonly = readonly;
         }
 
         @Override

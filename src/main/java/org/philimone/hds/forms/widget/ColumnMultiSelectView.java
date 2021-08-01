@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.parsers.form.model.FormOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,21 +54,26 @@ public class ColumnMultiSelectView extends ColumnView {
     }
 
     private void fillOptions(){
-        Map<String,String> options = this.column.getTypeOptions();
+        Map<String, FormOptions.OptionValue> options = this.column.getTypeOptions();
 
         for (String value : options.keySet()){
-            String label = options.get(value);
+
+            FormOptions.OptionValue optionValue = options.get(value);
+            String label = optionValue.label;
 
             CheckBox button = new CheckBox(this.getContext());
             button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             button.setText(label);
             button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
             button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
+            button.setEnabled(!optionValue.readonly);
 
             this.rdgColumnRadioGroup.addView(button);
 
-            this.rdbOptions.add(new SelectOption(value, label, button));
+            this.rdbOptions.add(new SelectOption(value, label, button, optionValue.readonly));
         }
+
+        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
     }
 
     public String getSelectedValue(){
@@ -136,11 +142,13 @@ public class ColumnMultiSelectView extends ColumnView {
         public String value;
         public String label;
         public CheckBox button;
+        public boolean readonly;
 
-        public SelectOption(String value, String label, CheckBox button) {
+        public SelectOption(String value, String label, CheckBox button, boolean readonly) {
             this.value = value;
             this.label = label;
             this.button = button;
+            this.readonly = readonly;
         }
 
         public String getValue() {

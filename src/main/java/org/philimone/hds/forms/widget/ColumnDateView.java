@@ -1,26 +1,28 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.DatePicker;
+import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.utilities.StringTools;
+import org.philimone.hds.forms.widget.dialog.DateTimeSelector;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class ColumnDateView extends ColumnView {
+public class ColumnDateView extends ColumnView implements DateTimeSelector.OnSelectedListener {
 
     private TextView txtName;
-    private DatePicker dtpColumnValue;
+    private Button btnSelectDate;
+    private TextView txtSelectedDate;
+    private DateTimeSelector datePicker;
+    private Date dateValue;
+
 
     public ColumnDateView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
         super(view, R.layout.column_date_item, attrs, column);
@@ -36,53 +38,55 @@ public class ColumnDateView extends ColumnView {
 
         this.txtColumnRequired = findViewById(R.id.txtColumnRequired);
         this.txtName = findViewById(R.id.txtColumnName);
-        this.dtpColumnValue = findViewById(R.id.dtpColumnValue);
+        this.btnSelectDate = findViewById(R.id.btnSelectDate);
+        this.txtSelectedDate = findViewById(R.id.txtSelectedDate);
 
+        this.datePicker = DateTimeSelector.createDateWidget(this.getContext(), this);
 
+        btnSelectDate.setOnClickListener(v -> {
+            onButtonSelectDateClicked();
+        });
 
-
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        txtName.setText(column.getLabel());
+        btnSelectDate.setEnabled(!this.column.isReadOnly());
     }
 
-    private void updateDatepicker() {
-        LocalDate date = StringTools.toLocalDate(this.column.getValue());
+    private void onButtonSelectDateClicked() {
+        this.datePicker.show();
+    }
 
-        if (date != null) {
-            int y = date.getYear();
-            int m = date.getMonthValue();
-            int d = date.getDayOfMonth();
-
-            dtpColumnValue.updateDate(y, m, d);
-        }
+    @Override
+    public void onDateSelected(Date selectedDate, String selectedDateText) {
+        this.txtSelectedDate.setText(selectedDateText);
+        this.dateValue = selectedDate;
+        this.column.setValue(selectedDateText);
     }
 
     @Override
     public void updateValues() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
-
-        updateDatepicker();
+        txtSelectedDate.setText(this.column.getValue());
+        btnSelectDate.setEnabled(!this.column.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        //value is yyyy-MM-dd
         this.column.setValue(value);
+        this.dateValue = StringTools.toDate(value);
         updateValues();
     }
 
     @Override
     public String getValue() {
-        int y = this.dtpColumnValue.getYear();
-        int m = this.dtpColumnValue.getMonth();
-        int d = this.dtpColumnValue.getDayOfMonth();
+        if (dateValue == null){
+            return null;
+        }
 
-        String date = y + "-" + String.format("%02d", m) + "-" + String.format("%02d", d);
-
-        return date;
+        return txtSelectedDate.getText().toString();
     }
 
     public Date getValueAsDate() {
-        return StringTools.toDate(getValue());
+        return dateValue;
     }
 
     @Override
@@ -92,5 +96,6 @@ public class ColumnDateView extends ColumnView {
 
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
+
 
 }

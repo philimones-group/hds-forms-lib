@@ -166,6 +166,8 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
 
+        btGetGps.setEnabled(!this.column.isReadOnly());
+
         showResults();
     }
 
