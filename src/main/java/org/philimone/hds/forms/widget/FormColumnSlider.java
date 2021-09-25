@@ -1,15 +1,9 @@
 package org.philimone.hds.forms.widget;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.philimone.hds.forms.R;
@@ -90,7 +84,7 @@ public class FormColumnSlider extends LinearLayout {
 
     private void onSlideForwards() {
         //handle required columns
-        if (hasRequiredAndEmptyField()){
+        if (isCurrentRequiredEmptyField()){
             return;
         }
 
@@ -101,10 +95,9 @@ public class FormColumnSlider extends LinearLayout {
         int next = getNextItem(current);
 
         while (nextGroupView != null) {
+            Log.d("next-try", ""+next+", "+nextGroupView+", displayable="+nextGroupView.isDisplayable()+", fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
             nextGroupView.evaluateDisplayCondition(); //execute the display condition script
-
-            Log.d("next-try", ""+next+", "+nextGroupView+", displayable="+nextGroupView.isDisplayable()+", fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
             if (nextGroupView.isDisplayable()) {
                 boolean wasVisible = nextGroupView.isFragmentVisible();
@@ -141,7 +134,7 @@ public class FormColumnSlider extends LinearLayout {
         return prev;
     }
 
-    private boolean hasRequiredAndEmptyField() {
+    private boolean isCurrentRequiredEmptyField() {
 
         int position = formViewPager.getCurrentItem();
         ColumnGroupView view = getAdapter().getItemView(position);
@@ -158,7 +151,7 @@ public class FormColumnSlider extends LinearLayout {
         return false;
     }
 
-    private void showCustomToast(ColumnView columnView, String message) {
+    public void showCustomToast(ColumnView columnView, String message) {
 
         Log.d("showtoast", ""+message);
         ToastX toast = new ToastX(this.getContext());
@@ -175,15 +168,32 @@ public class FormColumnSlider extends LinearLayout {
 
     }
 
-    public void setAdapter(ColumnGroupViewAdapter adapter) {
-        this.formViewPager.setAdapter(adapter);
+    public boolean hasAnyRequiredEmptyField() {
 
-        minPages = 0;
-        maxPages = getAdapter().getItemCount()-1;
+        if (isCurrentRequiredEmptyField()){
+            return true;
+        }
+
+        for (int position=0; position < getAdapter().getVisibleFragments().size(); position++) {
+            ColumnGroupView columnGroupView = getAdapter().getItemView(position);
+
+            for (ColumnView cview : columnGroupView.getColumnViews()){
+                ColumnValue columnValue = cview.getColumnValue();
+
+                if (columnValue.isRequired() && StringTools.isBlank(columnValue.getValue())){
+
+                    formViewPager.setCurrentItem(position, false);
+                    isCurrentRequiredEmptyField();
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
-    public void setAdapter(ColumnGroupViewPageAdapter adapter) {
-        this.formViewPager.setOffscreenPageLimit(adapter.getItemCount());
+    public void setAdapter(ColumnGroupViewAdapter adapter) {
         this.formViewPager.setAdapter(adapter);
 
         minPages = 0;

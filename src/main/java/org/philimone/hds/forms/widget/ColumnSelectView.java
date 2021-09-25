@@ -3,6 +3,7 @@ package org.philimone.hds.forms.widget;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -97,7 +98,9 @@ public class ColumnSelectView extends ColumnView {
         String value = column.getValue();
 
         if (value != null) {
-            SelectOption sop = this.rdbOptions.stream().filter( op -> op.value==value).findFirst().orElse(null);
+            SelectOption sop = this.rdbOptions.stream().filter( op -> op.value.equalsIgnoreCase(value)).findFirst().orElse(null);
+
+            Log.d("selected-"+this.getName(), ""+sop+", value="+value);
 
             if (sop != null) {
                 this.rdgColumnRadioGroup.check(sop.button.getId());

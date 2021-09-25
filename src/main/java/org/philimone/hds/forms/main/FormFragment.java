@@ -23,7 +23,6 @@ import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
-import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
@@ -82,6 +81,8 @@ public class FormFragment extends DialogFragment {
     private Map<String, String> preloadedColumnValues;
     private String instancesDirPath;
 
+    private boolean backgroundMode;
+
     private JexlEngine expressionEngine;
 
     private ActivityResultLauncher<String> requestPermission;
@@ -94,10 +95,12 @@ public class FormFragment extends DialogFragment {
 
         this.columnGroupViewList = new ArrayList<>();
 
+        initExpEngine();
+
         initPermissions();
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, boolean bgMode, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
@@ -106,6 +109,7 @@ public class FormFragment extends DialogFragment {
         formFragment.formListener = formListener;
         formFragment.preloadedColumnValues = new LinkedHashMap<>();
         formFragment.instancesDirPath = instancesDirPath;
+        formFragment.backgroundMode = bgMode;
 
         formFragment.form.setPostExecution(executeOnUpload);
 
@@ -116,12 +120,16 @@ public class FormFragment extends DialogFragment {
         return formFragment;
     }
 
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+        return newInstance(fragmentManager, form, instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
+    }
+
     public static FormFragment newInstance(FragmentManager fragmentManager, File hFormXlsFile, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, formListener);
+        return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
     }
 
     public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, formListener);
+        return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
     }
 
     @Override
@@ -149,11 +157,11 @@ public class FormFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
 
-        //get start timestamp
-        this.startTimestamp = getTimestamp();
+        initLoading();
 
-        checkPermissionAndGetDeviceId();
-        loadColumnValues();
+        if (backgroundMode) {
+            //onSaveClicked();
+        }
     }
 
     private void initPermissions() {
@@ -163,7 +171,7 @@ public class FormFragment extends DialogFragment {
                 Log.d("deviceid", ""+deviceId);
             } else {
                 //Log.d("deviceid", "no permission to read it");
-                DialogFactory.createMessageInfo(this.getContext(), R.string.device_id_title_lbl, R.string.device_id_permissions_error).show();
+                DialogFactory.createMessageInfo(getCurrentContext(), R.string.device_id_title_lbl, R.string.device_id_permissions_error).show();
             }
         });
     }
@@ -191,13 +199,17 @@ public class FormFragment extends DialogFragment {
             }
         });
 
-
         this.txtFormTitle.setText(form.getFormName());
 
         initColumnViews();
+    }
 
-        initExpEngine();
+    private void initLoading(){
+        //get start timestamp
+        this.startTimestamp = getTimestamp();
 
+        checkPermissionAndGetDeviceId();
+        loadColumnValues();
     }
 
     private void initExpEngine() {
@@ -205,6 +217,7 @@ public class FormFragment extends DialogFragment {
     }
 
     public Object evaluateExpression(String expressionText) {
+        Log.d("expression", ""+expressionText);
         JexlContext jexlContext = new MapContext();
         JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
 
@@ -216,6 +229,11 @@ public class FormFragment extends DialogFragment {
     }
 
     private void onSaveClicked() {
+
+        //check required fiels
+        if (this.formSlider.hasAnyRequiredEmptyField()){
+            return;
+        }
 
         //get end timestamp
         this.endTimestamp = getTimestamp();
@@ -231,7 +249,7 @@ public class FormFragment extends DialogFragment {
 
                 for (ValidationResult.Error error : result.getColumnErrors()) {
 
-                    DialogFactory.createMessageInfo(this.getContext(), getString(R.string.info_lbl), error.errorMessage).show();
+                    DialogFactory.createMessageInfo(getCurrentContext(), getString(R.string.info_lbl), error.errorMessage).show();
 
                     setFocus(error.columnValue);
                 }
@@ -240,7 +258,7 @@ public class FormFragment extends DialogFragment {
             } else {
 
                 XmlFormResult xmlResults = new XmlFormResult(form, columnValueMap.values(), instancesDirPath);
-                Log.d("result", ""+xmlResults.getXmlResult());
+                //Log.d("result", ""+xmlResults.getXmlResult());
 
                 //createXmlFile
                 createXmlResultsFile(xmlResults);
@@ -252,23 +270,32 @@ public class FormFragment extends DialogFragment {
         }
 
     }
+    
+    private Context getCurrentContext() {
+        return this.getContext();
+    }
 
     private void initColumnViews(){
 
         //add header layout content
         if (this.form.hasHeader()) {
             ColumnGroup columnGroup = this.form.getHeader();
-            ColumnGroupView columnGroupView = new ColumnGroupView(this, this.getContext(), columnGroup);
+            ColumnGroupView columnGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup);
             this.columnGroupViewList.add(columnGroupView);
 
-            formHeaderLayout.addView(columnGroupView);;
+            if (formHeaderLayout != null) {
+                formHeaderLayout.addView(columnGroupView);
+            }
         }
 
         //For the view groups
         List<ColumnGroupView> groupViews = new ArrayList<>();
         for (ColumnGroup group : form.getColumns() ) {
-            if (!group.isHeader()) //ignore headers
-                groupViews.add(new ColumnGroupView(this, this.getContext(), group));
+
+            if (!group.isHeader()) {//ignore headers
+                Log.d("Ycolumns", ""+group);
+                groupViews.add(new ColumnGroupView(this, getCurrentContext(), group));
+            }
         }
 
         this.columnGroupViewList.addAll(groupViews);
@@ -296,9 +323,10 @@ public class FormFragment extends DialogFragment {
 
         // VIEWPAGER
         ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(groupViews);
-        //ColumnGroupViewPageAdapter adapter = new ColumnGroupViewPageAdapter(this, groupViews);
-        formSlider.setAdapter(adapter);
 
+        if (formSlider != null) {
+            formSlider.setAdapter(adapter);
+        }
     }
 
     /**
@@ -330,7 +358,6 @@ public class FormFragment extends DialogFragment {
         });
 
         return map;
-
     }
 
     private void loadColumnValues(){
@@ -413,7 +440,7 @@ public class FormFragment extends DialogFragment {
     }
 
     public void checkPermissionAndGetDeviceId() {
-        if (ContextCompat.checkSelfPermission(this.getContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) { //without access
+        if (ContextCompat.checkSelfPermission(getCurrentContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) { //without access
             this.requestPermission.launch(Manifest.permission.READ_PHONE_STATE);
         } else {
             this.deviceId = readDeviceId();
@@ -422,18 +449,18 @@ public class FormFragment extends DialogFragment {
 
     public String readDeviceId(){
 
-        if (ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(getCurrentContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             return "";
         }
 
-        TelephonyManager mTelephonyManager = (TelephonyManager) this.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager mTelephonyManager = (TelephonyManager) getCurrentContext().getSystemService(Context.TELEPHONY_SERVICE);
 
         String deviceId = mTelephonyManager.getImei();
         String orDeviceId = "";
 
         if (deviceId != null ) {
             if ((deviceId.contains("*") || deviceId.contains("000000000000000"))) {
-                deviceId = Settings.Secure.getString(this.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+                deviceId = Settings.Secure.getString(getCurrentContext().getContentResolver(), Settings.Secure.ANDROID_ID);
                 orDeviceId = Settings.Secure.ANDROID_ID + ":" + deviceId;
             } else {
                 orDeviceId = "imei:" + deviceId;
@@ -442,7 +469,7 @@ public class FormFragment extends DialogFragment {
         if (deviceId == null) {
             // no SIM -- WiFi only
             // Retrieve WiFiManager
-            WifiManager wifi = (WifiManager) this.getContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifi = (WifiManager) getCurrentContext().getSystemService(Context.WIFI_SERVICE);
 
             // Get WiFi status
             WifiInfo info = wifi.getConnectionInfo();
@@ -454,7 +481,7 @@ public class FormFragment extends DialogFragment {
         }
         // if it is still null, use ANDROID_ID
         if (deviceId == null) {
-            deviceId = Settings.Secure.getString(this.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+            deviceId = Settings.Secure.getString(getCurrentContext().getContentResolver(), Settings.Secure.ANDROID_ID);
             orDeviceId = Settings.Secure.ANDROID_ID + ":" + deviceId;
 
             //sbuilder.append("<deviceId>"+ orDeviceId +"</deviceId>" + "\r\n");
@@ -514,6 +541,15 @@ public class FormFragment extends DialogFragment {
     }
 
     public void startCollecting(){
+/*
+        if (backgroundMode){
+            // Executes the form without visualizing it
+            initColumnViews();
+            initLoading();
+            onSaveClicked();
+            return;
+        }*/
+
         show(fragmentManager, "hform");
     }
 }

@@ -103,7 +103,7 @@ public class ColumnMultiSelectView extends ColumnView {
             String[] values = value.split(";");
 
             for (String optionValue : values) {
-                SelectOption sop = this.rdbOptions.stream().filter(op -> op.value==optionValue).findFirst().orElse(null);
+                SelectOption sop = this.rdbOptions.stream().filter(op -> op.value.equalsIgnoreCase(optionValue)).findFirst().orElse(null);
 
                 if (sop != null) {
                     this.rdgColumnRadioGroup.check(sop.button.getId());

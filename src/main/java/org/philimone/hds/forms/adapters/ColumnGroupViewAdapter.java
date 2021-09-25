@@ -23,6 +23,7 @@ public class ColumnGroupViewAdapter extends RecyclerView.Adapter<ColumnGroupView
 
     public ColumnGroupViewAdapter(List<ColumnGroupView> groups) {
         groups.forEach(columnGroupView -> {
+            Log.d("columns", ""+columnGroupView);
             if (!columnGroupView.isHidden()) {
                 this.defaultFragments.add(columnGroupView);
                 this.visibleFragments.add(columnGroupView);
@@ -148,5 +149,11 @@ public class ColumnGroupViewAdapter extends RecyclerView.Adapter<ColumnGroupView
         }
     }
 
+    public List<ColumnGroupView> getDefaultFragments() {
+        return defaultFragments;
+    }
 
+    public List<ColumnGroupView> getVisibleFragments() {
+        return visibleFragments;
+    }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ColumnGroup {
 
@@ -66,5 +67,10 @@ public class ColumnGroup {
 
     public void setHeader(boolean header) {
         this.header = header;
+    }
+
+    @Override
+    public String toString() {
+        return "ColumnGroup{" +  getColumns().stream().map(t -> t.getName()+":"+t.getType()).collect(Collectors.joining(",")) + "}";
     }
 }

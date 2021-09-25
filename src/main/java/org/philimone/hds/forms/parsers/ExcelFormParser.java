@@ -239,7 +239,7 @@ public class ExcelFormParser implements FormParser {
         headerRow.forEach( cell -> {
 
             String cellValue = cell.getStringCellValue();
-            Log.d("tag", ""+cellValue);
+            //Log.d("tag", ""+cellValue);
 
             if (cellValue != null && cellValue.endsWith("::"+language)) {
                 String[] values = cellValue.split("::");
@@ -255,8 +255,5 @@ public class ExcelFormParser implements FormParser {
     public HForm getForm() {
         return this.form;
     }
-
-
-
 
 }

@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class ColumnValue implements Serializable {
     private BigDecimal decimalValue; //value for DECIMAL
     private Date dateValue; //value for DATE
     private List<String> multiSelectValues; //value for MULTISELECT
-    private Map<String,Double> gpsValues; //value for GPS
+    private Map<String,Double> gpsValues = new LinkedHashMap<>(); //value for GPS
 
     private boolean errors;
     private String errorMessage;
