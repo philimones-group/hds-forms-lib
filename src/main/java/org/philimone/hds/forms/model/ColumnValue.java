@@ -47,7 +47,9 @@ public class ColumnValue implements Serializable {
         this.columnId = columnView.getId();
         this.column = columnView.getColumn();
 
-        retrieveValues(columnView);
+        if (columnGroupView.isDisplayable()) { //if it is not displayable just be null/empty
+            retrieveValues(columnView);
+        }
     }
 
     private void retrieveValues(ColumnView columnView) {

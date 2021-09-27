@@ -160,7 +160,7 @@ public class FormFragment extends DialogFragment {
         initLoading();
 
         if (backgroundMode) {
-            //onSaveClicked();
+            onSaveClicked();
         }
     }
 
@@ -217,7 +217,6 @@ public class FormFragment extends DialogFragment {
     }
 
     public Object evaluateExpression(String expressionText) {
-        Log.d("expression", ""+expressionText);
         JexlContext jexlContext = new MapContext();
         JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
 
@@ -226,11 +225,15 @@ public class FormFragment extends DialogFragment {
 
     private void onCancelClicked(){
         dismiss();
+        if (formListener != null) formListener.onFormCancelled();
     }
 
     private void onSaveClicked() {
 
-        //check required fiels
+        //update displayable of all fields
+        this.formSlider.evaluateAllDisplayConditions();
+
+        //check required fields
         if (this.formSlider.hasAnyRequiredEmptyField()){
             return;
         }
@@ -293,7 +296,6 @@ public class FormFragment extends DialogFragment {
         for (ColumnGroup group : form.getColumns() ) {
 
             if (!group.isHeader()) {//ignore headers
-                Log.d("Ycolumns", ""+group);
                 groupViews.add(new ColumnGroupView(this, getCurrentContext(), group));
             }
         }
@@ -322,7 +324,7 @@ public class FormFragment extends DialogFragment {
         });
 
         // VIEWPAGER
-        ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(groupViews);
+        ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(this, groupViews);
 
         if (formSlider != null) {
             formSlider.setAdapter(adapter);
@@ -552,4 +554,5 @@ public class FormFragment extends DialogFragment {
 
         show(fragmentManager, "hform");
     }
+
 }
