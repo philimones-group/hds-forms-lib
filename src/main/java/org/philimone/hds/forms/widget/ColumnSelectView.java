@@ -100,8 +100,6 @@ public class ColumnSelectView extends ColumnView {
         if (value != null) {
             SelectOption sop = this.rdbOptions.stream().filter( op -> op.value.equalsIgnoreCase(value)).findFirst().orElse(null);
 
-            Log.d("selected-"+this.getName(), ""+sop+", value="+value);
-
             if (sop != null) {
                 this.rdgColumnRadioGroup.check(sop.button.getId());
 

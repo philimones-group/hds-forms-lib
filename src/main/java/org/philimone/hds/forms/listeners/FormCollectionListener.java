@@ -20,4 +20,6 @@ public interface FormCollectionListener {
      */
     void onFormFinished(HForm form, Map<String, ColumnValue> collectedValues, XmlFormResult result);
 
+    void onFormCancelled();
+
 }

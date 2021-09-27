@@ -30,7 +30,7 @@ public class ColumnGroupViewFragment extends Fragment {
     }
 
     public long getItemId() {
-        return itemId;
+        return groupView.getItemId();
     }
 
     public long setNewItemId() {

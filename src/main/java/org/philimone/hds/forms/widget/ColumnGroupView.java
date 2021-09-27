@@ -1,9 +1,13 @@
 package org.philimone.hds.forms.widget;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
@@ -18,6 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 public class ColumnGroupView extends LinearLayout {
 
@@ -29,6 +34,8 @@ public class ColumnGroupView extends LinearLayout {
     private ColumnGroup columnGroup;
     private TextView txtColumnGroupName;
     private LinearLayout formColumnGroupLayout;
+    private RelativeLayout formToastLayout;
+    private TextView formToastMessage;
     private List<ColumnView> columnViews;
     private boolean hidden;
     private boolean displayable = true;
@@ -75,8 +82,12 @@ public class ColumnGroupView extends LinearLayout {
 
         this.txtColumnGroupName = findViewById(R.id.txtColumnGroupName);
         this.formColumnGroupLayout = findViewById(R.id.formColumnGroupLayout);
+        this.formToastLayout = findViewById(R.id.formToastLayout);
+        this.formToastMessage = findViewById(R.id.formToastMessage);
 
         this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
+
+        this.formToastMessage.setText("");
 
         for (Column column : this.columnGroup.getColumns() ) {
             ColumnView view = null;
@@ -139,6 +150,27 @@ public class ColumnGroupView extends LinearLayout {
             }
 
         }
+
+    }
+
+    public void showToastMessage(@StringRes int messageResId){
+        this.formToastMessage.setText(mContext.getString(messageResId));
+
+        this.formToastLayout.setAlpha(2f);
+        this.formToastLayout.setVisibility(VISIBLE);
+        this.formToastLayout.animate().alpha(1f).setDuration(200).setListener(null);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                formToastLayout.animate().alpha(0f).setDuration(500).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        formToastLayout.setVisibility(GONE);
+                    }
+                });
+            }
+        }, 1500);
 
     }
 

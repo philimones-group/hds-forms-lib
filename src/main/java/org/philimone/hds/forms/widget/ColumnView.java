@@ -105,7 +105,7 @@ public abstract class ColumnView extends LinearLayout {
 
         String displayCondition = column.getDisplayCondition();
 
-        Log.d("evaluating", getName()+" -> "+displayCondition);
+        //Log.d("evaluating", getName()+" -> "+displayCondition);
 
         if (StringTools.isBlank(displayCondition)) {
             setDisplayable(true);
@@ -115,7 +115,7 @@ public abstract class ColumnView extends LinearLayout {
             Map<String, String> previousValues = new LinkedHashMap<>();
             ColumnView parent = parentColumn;
             while (parent != null) {
-                Log.d("parent-ev", ""+parent);
+                //Log.d("parent-ev", ""+parent);
 
                 String name = parent.getName();
                 String value = parent.getValue();
