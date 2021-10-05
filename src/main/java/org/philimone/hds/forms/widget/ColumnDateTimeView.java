@@ -47,7 +47,7 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
-        btnSelectDate.setEnabled(!this.column.isReadOnly());
+        btnSelectDate.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
     }
 
     private void onButtonSelectDateClicked() {

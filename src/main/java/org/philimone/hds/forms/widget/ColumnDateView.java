@@ -49,7 +49,7 @@ public class ColumnDateView extends ColumnView implements DateTimeSelector.OnSel
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
-        btnSelectDate.setEnabled(!this.column.isReadOnly());
+        btnSelectDate.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
     }
 
     private void onButtonSelectDateClicked() {

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
@@ -33,6 +34,7 @@ import androidx.core.content.ContextCompat;
 public class ColumnGpsView extends ColumnView implements LocationListener {
 
     private TextView txtName;
+    private LinearLayout getGpsLayout;
     private Button btGetGps;
     private TextView txtGpsLatitude;
     private TextView txtGpsLongitude;
@@ -76,6 +78,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.txtColumnRequired = findViewById(R.id.txtColumnRequired);
         this.txtName = findViewById(R.id.txtColumnName);
+        this.getGpsLayout = findViewById(R.id.getGpsLayout);
         this.btGetGps = findViewById(R.id.btGetGps);
         this.txtGpsLatitude = findViewById(R.id.txtGpsLatitude);
         this.txtGpsLongitude = findViewById(R.id.txtGpsLongitude);
@@ -85,6 +88,8 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         this.loadingDialog = new LoadingDialog(this.getContext());
 
         this.btGetGps.setOnClickListener(v -> onGetGpsClicked());
+
+        this.getGpsLayout.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
 
         updateValues();
     }

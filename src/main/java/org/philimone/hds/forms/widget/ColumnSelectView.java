@@ -53,6 +53,8 @@ public class ColumnSelectView extends ColumnView {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
 
+        this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
+
         fillOptions();
 
         updateValues();
@@ -107,6 +109,7 @@ public class ColumnSelectView extends ColumnView {
                 this.rdgColumnRadioGroup.setEnabled(!sop.readonly);
                 sop.button.setEnabled(!sop.readonly);
             }
+
         }
 
     }

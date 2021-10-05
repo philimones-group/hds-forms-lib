@@ -48,6 +48,8 @@ public class ColumnMultiSelectView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.rdgColumnRadioGroup = findViewById(R.id.rdgColumnRadioGroup);
 
+        this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
+
         fillOptions();
 
         updateValues();
