@@ -74,7 +74,6 @@ public class ColumnSelectView extends ColumnView {
             button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
             button.setEnabled(!optionValue.readonly);
 
-
             this.rdgColumnRadioGroup.addView(button);
 
             this.rdbOptions.add(new SelectOption(value, optionValue.label, button, optionValue.readonly));
@@ -106,7 +105,12 @@ public class ColumnSelectView extends ColumnView {
                 this.rdgColumnRadioGroup.check(sop.button.getId());
 
                 //like HOH selected, if a readonly value is checked the other options should be disabled
-                this.rdgColumnRadioGroup.setEnabled(!sop.readonly);
+                if (sop.readonly) {
+                    this.rdbOptions.forEach( selectOption -> {
+                        selectOption.button.setClickable(false);
+                    });
+                }
+
                 sop.button.setEnabled(!sop.readonly);
             }
 

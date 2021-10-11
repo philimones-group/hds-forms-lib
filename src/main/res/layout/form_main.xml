@@ -1,96 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="5dp"
-    android:orientation="vertical"
+    android:scrollbars="none"
+    android:fillViewport="true"
     tools:context=".main.FormFragment">
 
-    <!-- Form Title -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/nui_dialog_border_thin"
-        android:orientation="horizontal"
-        android:elevation="5dp"
-        android:layout_gravity="top">
-
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            android:alpha="0.75"
-            android:background="@mipmap/nui_form_red_filled_icon"
-            android:contentDescription="TODO" />
-
-        <TextView
-            android:id="@+id/txtFormTitle"
-            android:layout_width="500dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="10dp"
-            android:gravity="center_vertical"
-            android:text="Form Name or Label"
-            android:textSize="18sp"
-            android:textColor="@color/nui_color_text_red"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <!-- Form Header Columns - Fixed columns - generally read-only -->
-    <LinearLayout
-        android:id="@+id/formHeaderLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-    </LinearLayout>
-
-    <!-- Form Content - swipeable columns - view pager-->
-
-    <org.philimone.hds.forms.widget.FormColumnSlider
-        android:id="@+id/formSlider"
+        android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:orientation="vertical">
 
-    <!-- Form Action Buttons -->
-    <LinearLayout
-        android:id="@+id/formButtonsLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center|bottom"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:layout_gravity="bottom"
-        android:orientation="horizontal">
+        <!-- Form Title -->
+        <LinearLayout
+            android:id="@+id/titleLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/nui_dialog_border_thin"
+            android:elevation="5dp"
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/btCancel"
-            android:layout_width="@dimen/member_form_dialog_button_size"
-            android:layout_height="@dimen/member_details_bt_height"
-            android:layout_marginRight="10dp"
-            android:textSize="@dimen/member_form_dialog_button_textsize"
-            android:textStyle="bold"
-            android:text="@string/bt_cancel_lbl"
-            android:background="@drawable/nui_btnd_rone_gflat"/>
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:alpha="0.75"
+                android:background="@mipmap/nui_form_red_filled_icon"
+                android:contentDescription="TODO" />
 
-        <Button
-            android:id="@+id/btSave"
-            android:layout_width="@dimen/member_form_dialog_button_size"
-            android:layout_height="@dimen/member_details_bt_height"
-            android:layout_marginLeft="10dp"
-            android:textSize="@dimen/member_form_dialog_button_textsize"
-            android:textStyle="bold"
-            android:text="@string/bt_save_lbl"
-            android:background="@drawable/nui_btnd_rone_dgbevel"/>
+            <TextView
+                android:id="@+id/txtFormTitle"
+                android:layout_width="500dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:gravity="center_vertical"
+                android:text="Form Name or Label"
+                android:textColor="@color/nui_color_text_red"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Form Header Columns - Fixed columns - generally read-only -->
+        <LinearLayout
+            android:id="@+id/formHeaderLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        </LinearLayout>
+
+        <!-- Form Content - swipeable columns - view pager-->
+        <org.philimone.hds.forms.widget.FormColumnSlider
+            android:id="@+id/formSlider"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="19dp" />
+
+        <!-- Form Action Buttons -->
+        <LinearLayout
+            android:id="@+id/formButtonsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|bottom"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btCancel"
+                android:layout_width="@dimen/member_form_dialog_button_size"
+                android:layout_height="@dimen/member_details_bt_height"
+                android:layout_marginRight="10dp"
+                android:textSize="@dimen/member_form_dialog_button_textsize"
+                android:textStyle="bold"
+                android:text="@string/bt_cancel_lbl"
+                android:background="@drawable/nui_btnd_rone_gflat"/>
+
+            <Button
+                android:id="@+id/btSave"
+                android:layout_width="@dimen/member_form_dialog_button_size"
+                android:layout_height="@dimen/member_details_bt_height"
+                android:layout_marginLeft="10dp"
+                android:textSize="@dimen/member_form_dialog_button_textsize"
+                android:textStyle="bold"
+                android:text="@string/bt_save_lbl"
+                android:background="@drawable/nui_btnd_rone_dgbevel"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
-
-
-
-</LinearLayout>
+</ScrollView>

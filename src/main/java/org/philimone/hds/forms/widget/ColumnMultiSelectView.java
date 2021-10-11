@@ -103,13 +103,23 @@ public class ColumnMultiSelectView extends ColumnView {
 
         if (value != null) {
             String[] values = value.split(";");
+            boolean readonlyChecked = false;
 
             for (String optionValue : values) {
                 SelectOption sop = this.rdbOptions.stream().filter(op -> op.value.equalsIgnoreCase(optionValue)).findFirst().orElse(null);
 
                 if (sop != null) {
                     this.rdgColumnRadioGroup.check(sop.button.getId());
+                    if (sop.readonly){
+                        readonlyChecked = true;
+                    }
                 }
+            }
+
+            if (readonlyChecked) { //any readonly checked
+                this.rdbOptions.forEach( selectOption -> {
+                    selectOption.button.setClickable(false);
+                });
             }
 
         }

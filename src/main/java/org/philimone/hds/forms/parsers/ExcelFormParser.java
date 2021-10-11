@@ -175,7 +175,8 @@ public class ExcelFormParser implements FormParser {
             String name = getCellValue(cellName);
             String value = getCellValue(cellValue);
             String label = getCellValue(cellLabel);
-            boolean readonly = cellReadonly!=null ? cellReadonly.getBooleanCellValue() : false;
+            String readonlyValue = getCellValue(cellReadonly);
+            boolean readonly = (readonlyValue != null && !readonlyValue.isEmpty()) ? getBooleanValue(readonlyValue) : false;
 
             formOptions.put(name, value, label, readonly);
 
