@@ -103,7 +103,7 @@ public class DateTimeSelector extends AppCompatDialog {
     private void onDateSelected(){
 
         int y = this.dtpColumnDateValue.getYear();
-        int m = this.dtpColumnDateValue.getMonth();
+        int m = this.dtpColumnDateValue.getMonth()+1;
         int d = this.dtpColumnDateValue.getDayOfMonth();
         int hh = dateWithTime ? this.dtpColumnTimeValue.getHour() : 0;
         int mm = dateWithTime ? this.dtpColumnTimeValue.getMinute() : 0;
