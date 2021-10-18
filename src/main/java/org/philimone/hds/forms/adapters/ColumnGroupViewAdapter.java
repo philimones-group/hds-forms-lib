@@ -34,11 +34,35 @@ public class ColumnGroupViewAdapter extends FragmentStateAdapter {
                 columnGroupView.evaluateDisplayCondition();
 
                 if (columnGroupView.isDisplayable()) { //only add previously visible items
+                    columnGroupView.setFragmentVisible(true);
                     this.visibleFragments.add(columnGroupView);
+                } else {
+                    columnGroupView.setFragmentVisible(false);
                 }
 
             }
         });
+    }
+
+    /**
+     * better call after updating column values
+     */
+    public void reEvaluateDisplayConditions(){
+        //this.defaultFragments.
+        this.visibleFragments.clear();
+
+        defaultFragments.forEach(columnGroupView -> {
+            columnGroupView.evaluateDisplayCondition();
+
+            if (columnGroupView.isDisplayable()) { //only add previously visible items
+                columnGroupView.setFragmentVisible(true);
+                this.visibleFragments.add(columnGroupView);
+            } else {
+                columnGroupView.setFragmentVisible(false);
+            }
+        });
+
+        notifyDataSetChanged();
     }
 
     @NonNull

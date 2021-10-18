@@ -132,7 +132,7 @@ public class FormFragment extends DialogFragment {
         return formFragment;
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, String xmlSavedFormPath, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, String xmlSavedFormPath, Map<String, String> updatedPreloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
@@ -145,6 +145,10 @@ public class FormFragment extends DialogFragment {
         formFragment.resumeMode = gotoResume;
 
         formFragment.form.setPostExecution(executeOnUpload);
+
+        if (updatedPreloadedValues != null) {
+            formFragment.preloadedColumnValues.putAll(updatedPreloadedValues);
+        }
 
         if (!StringTools.isBlank(xmlSavedFormPath)){
 
@@ -498,6 +502,11 @@ public class FormFragment extends DialogFragment {
 
             }
         });
+
+        //update visibility of fragments
+        if (formSlider.getAdapter() != null) {
+            formSlider.getAdapter().reEvaluateDisplayConditions();
+        }
     }
 
     private Map<String, Double> getGpsPreloadedValues(Column gpsColumn) {
