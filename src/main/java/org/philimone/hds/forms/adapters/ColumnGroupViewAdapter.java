@@ -136,6 +136,11 @@ public class ColumnGroupViewAdapter extends FragmentStateAdapter {
         return position;
     }
 
+    public int getItemPosition(ColumnGroupView columnGroupView) {
+        int index = this.visibleFragments.indexOf(columnGroupView);
+        return index;
+    }
+
     public int getCorrectPosition(ColumnGroupView groupView) {
         //get where item is in visibleFragments or where it should be
 

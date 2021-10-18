@@ -33,13 +33,13 @@
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp"
                 android:alpha="0.75"
-                android:background="@mipmap/nui_form_red_filled_icon"
-                android:contentDescription="TODO" />
+                android:background="@mipmap/nui_form_red_filled_icon" />
 
             <TextView
                 android:id="@+id/txtFormTitle"
-                android:layout_width="500dp"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:layout_marginLeft="10dp"
                 android:gravity="center_vertical"
                 android:text="Form Name or Label"
@@ -47,23 +47,75 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <Button
+                android:id="@+id/btOpenResume"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/nui_btnd_resume"
+                />
+
         </LinearLayout>
 
-        <!-- Form Header Columns - Fixed columns - generally read-only -->
+        <!-- main -->
         <LinearLayout
-            android:id="@+id/formHeaderLayout"
+            android:id="@+id/formContentLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
             android:orientation="vertical">
+
+            <!-- Form Header Columns - Fixed columns - generally read-only -->
+            <LinearLayout
+                android:id="@+id/formHeaderLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+            </LinearLayout>
+
+            <!-- Form Content - swipeable columns - view pager-->
+            <org.philimone.hds.forms.widget.FormColumnSlider
+                android:id="@+id/formSlider"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="19dp" />
+
         </LinearLayout>
 
-        <!-- Form Content - swipeable columns - view pager-->
-        <org.philimone.hds.forms.widget.FormColumnSlider
-            android:id="@+id/formSlider"
+        <RelativeLayout
+            android:id="@+id/formResumeLayout"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginBottom="19dp" />
+            android:visibility="gone">
+
+            <ListView
+                android:id="@+id/lvResumeColumns"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:paddingStart="18dp"
+                android:paddingTop="15dp"
+                android:paddingEnd="18dp"
+                android:paddingBottom="15dp"
+                android:background="@drawable/nui_list_rborder_panel"/>
+
+            <Button
+                android:id="@+id/btCloseResume"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginRight="15dp"
+                android:background="@drawable/nui_btnd_back_two"
+                android:text=""
+                android:visibility="visible" />
+
+        </RelativeLayout>
 
         <!-- Form Action Buttons -->
         <LinearLayout

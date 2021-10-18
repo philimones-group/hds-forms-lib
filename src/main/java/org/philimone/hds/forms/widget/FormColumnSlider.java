@@ -223,6 +223,15 @@ public class FormColumnSlider extends LinearLayout {
         });
     }
 
+    public void gotoPage(ColumnView columnView) {
+        int position = getAdapter().getItemPosition(columnView.columnGroupView);
+
+        if (position >= 0) {
+            pageEvents = OnNewPageSelectedEvents.NO_ACTION;
+            formViewPager.setCurrentItem(position, false);
+        }
+    }
+
     public void setAdapter(ColumnGroupViewAdapter adapter) {
         this.formViewPager.setAdapter(adapter);
 

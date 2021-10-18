@@ -45,6 +45,10 @@ public abstract class ColumnView extends LinearLayout {
         return this.columnGroupView.getFormPanel();
     }
 
+    public String getLabel() {
+        return this.column.getLabel();
+    }
+
     public String getName() {
         return this.column.getName();
     }

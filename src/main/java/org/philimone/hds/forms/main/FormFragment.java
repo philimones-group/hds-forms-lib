@@ -12,8 +12,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.apache.commons.jexl3.JexlBuilder;
@@ -23,6 +26,7 @@ import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
+import org.philimone.hds.forms.adapters.ColumnViewDataAdapter;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
@@ -32,6 +36,7 @@ import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
+import org.philimone.hds.forms.parsers.XmlDataReader;
 import org.philimone.hds.forms.utilities.StringTools;
 import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
@@ -71,6 +76,11 @@ public class FormFragment extends DialogFragment {
     private FormColumnSlider formSlider;
     private TextView txtFormTitle;
     private LinearLayout formHeaderLayout;
+    private LinearLayout formContentLayout;
+    private RelativeLayout formResumeLayout;
+    private ListView lvResumeColumns;
+    private Button btOpenResume;
+    private Button btCloseResume;
     private Button btCancel;
     private Button btSave;
     private List<ColumnGroupView> columnGroupViewList;
@@ -83,6 +93,7 @@ public class FormFragment extends DialogFragment {
     private String instancesDirPath;
 
     private boolean backgroundMode;
+    private boolean resumeMode;
 
     private JexlEngine expressionEngine;
 
@@ -116,6 +127,29 @@ public class FormFragment extends DialogFragment {
 
         if (preloadedValues != null){
             formFragment.preloadedColumnValues.putAll(preloadedValues);
+        }
+
+        return formFragment;
+    }
+
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, String xmlSavedFormPath, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
+        FormFragment formFragment = new FormFragment();
+        formFragment.fragmentManager = fragmentManager;
+        formFragment.form = form;
+        formFragment.username = username;
+        formFragment.executeOnUpload = executeOnUpload;
+        formFragment.formListener = formListener;
+        formFragment.preloadedColumnValues = new LinkedHashMap<>();
+        formFragment.instancesDirPath = instancesDirPath;
+        formFragment.backgroundMode = bgMode;
+        formFragment.resumeMode = gotoResume;
+
+        formFragment.form.setPostExecution(executeOnUpload);
+
+        if (!StringTools.isBlank(xmlSavedFormPath)){
+
+            Map<String,String> map = XmlDataReader.getXmlMappedData(xmlSavedFormPath);
+            formFragment.preloadedColumnValues.putAll(map);
         }
 
         return formFragment;
@@ -164,6 +198,8 @@ public class FormFragment extends DialogFragment {
 
         if (backgroundMode) {
             onSaveClicked();
+        } else if (resumeMode) {
+            onOpenResumeClicked();
         }
     }
 
@@ -185,21 +221,28 @@ public class FormFragment extends DialogFragment {
         this.formSlider = view.findViewById(R.id.formSlider);
         this.txtFormTitle = (TextView) view.findViewById(R.id.txtFormTitle);
         this.formHeaderLayout = (LinearLayout) view.findViewById(R.id.formHeaderLayout);
+        this.formContentLayout = view.findViewById(R.id.formContentLayout);
+        this.formResumeLayout = view.findViewById(R.id.formResumeLayout);
+        this.lvResumeColumns = view.findViewById(R.id.lvResumeColumns);
+        this.btOpenResume = view.findViewById(R.id.btOpenResume);
+        this.btCloseResume = view.findViewById(R.id.btCloseResume);
         this.btCancel = view.findViewById(R.id.btCancel);
         this.btSave = view.findViewById(R.id.btSave);
 
-        this.btCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onCancelClicked();
-            }
+        this.btCancel.setOnClickListener(v -> onCancelClicked());
+
+        this.btSave.setOnClickListener(v -> onSaveClicked());
+
+        this.btOpenResume.setOnClickListener(v -> {
+            onOpenResumeClicked();
         });
 
-        this.btSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onSaveClicked();
-            }
+        this.btCloseResume.setOnClickListener(v -> {
+            onCloseResumeClicked();
+        });
+
+        this.lvResumeColumns.setOnItemClickListener((parent, view1, position, id) -> {
+            onResumeListItemClicked(position);
         });
 
         this.txtFormTitle.setText(form.getFormName());
@@ -276,7 +319,55 @@ public class FormFragment extends DialogFragment {
         }
 
     }
-    
+
+    private void onOpenResumeClicked(){
+        openResumeView();
+    }
+
+    private void onCloseResumeClicked(){
+        closeResumeView();
+    }
+
+    private void onResumeListItemClicked(int position) {
+        ColumnViewDataAdapter adapter = (ColumnViewDataAdapter) this.lvResumeColumns.getAdapter();
+        Log.d("position", ""+position +", adapter="+adapter);
+        if (adapter != null) {
+            closeResumeView();
+            ColumnView columnView = adapter.getItem(position);
+            this.formSlider.gotoPage(columnView);
+        }
+    }
+
+    private void closeResumeView(){
+        this.resumeMode = false;
+        this.formResumeLayout.setVisibility(View.GONE);
+        this.formContentLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void openResumeView(){
+        this.resumeMode = true;
+
+        loadResumeListView();
+
+        this.formResumeLayout.setVisibility(View.VISIBLE);
+        this.formContentLayout.setVisibility(View.GONE);
+    }
+
+    private void loadResumeListView() {
+        List<ColumnView> list = new ArrayList<>();
+
+        columnGroupViewList.forEach( columnGroupView -> {
+            if (!columnGroupView.isHidden()){
+                columnGroupView.getColumnViews().forEach(columnView -> {
+                    list.add(columnView);
+                });
+            }
+        });
+
+        ColumnViewDataAdapter adapter = new ColumnViewDataAdapter(this.getContext(), list);
+        this.lvResumeColumns.setAdapter(adapter);
+    }
+
     private Context getCurrentContext() {
         return this.getContext();
     }
@@ -284,13 +375,15 @@ public class FormFragment extends DialogFragment {
     private void initColumnViews(){
 
         //add header layout content
+        ColumnGroupView headerGroupView = null;
+
         if (this.form.hasHeader()) {
             ColumnGroup columnGroup = this.form.getHeader();
-            ColumnGroupView columnGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup);
-            this.columnGroupViewList.add(columnGroupView);
+            headerGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup);
+            //this.columnGroupViewList.add(headerGroupView);
 
             if (formHeaderLayout != null) {
-                formHeaderLayout.addView(columnGroupView);
+                formHeaderLayout.addView(headerGroupView);
             }
         }
 
@@ -299,11 +392,14 @@ public class FormFragment extends DialogFragment {
         for (ColumnGroup group : form.getColumns() ) {
 
             if (!group.isHeader()) {//ignore headers
-                groupViews.add(new ColumnGroupView(this, getCurrentContext(), group));
+                ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), group);
+                groupViews.add(groupView);
+
+                this.columnGroupViewList.add(groupView);
+            } else {
+                this.columnGroupViewList.add(headerGroupView);
             }
         }
-
-        this.columnGroupViewList.addAll(groupViews);
 
         final ColumnView[] previous = {null};
         final ColumnGroupView[] previousGroups = {null};
