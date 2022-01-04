@@ -70,6 +70,10 @@ public class ColumnMultiSelectView extends ColumnView {
             button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
             button.setEnabled(!optionValue.readonly);
 
+            if (column.isReadOnly()) {
+                button.setClickable(false);
+            }
+
             this.rdgColumnRadioGroup.addView(button);
 
             this.rdbOptions.add(new SelectOption(value, label, button, optionValue.readonly));

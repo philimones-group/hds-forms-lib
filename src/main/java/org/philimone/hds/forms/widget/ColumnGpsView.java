@@ -16,6 +16,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.utilities.GpsFormatter;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import org.philimone.hds.forms.widget.dialog.LoadingDialog;
 
@@ -204,7 +205,8 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     public String getValue() {
         Location gps = this.gpsLocationResult;
         if (gps != null){
-            return gps.getLatitude()+";"+gps.getLongitude()+";"+gps.getAltitude()+";"+gps.getAccuracy();
+
+            return GpsFormatter.format(gps.getLatitude(), gps.getLongitude(), gps.getAltitude(), gps.getAccuracy()*1D);
         }
 
         return null;

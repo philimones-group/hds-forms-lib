@@ -21,7 +21,9 @@ public class XmlDataReader {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             XmlPullParser parser = factory.newPullParser();
 
-            parser.setInput(new FileInputStream(xmlFileName), null);
+            FileInputStream fis = new FileInputStream(xmlFileName);
+
+            parser.setInput(fis, null);
 
             int eventType = parser.getEventType();
 
@@ -43,6 +45,9 @@ public class XmlDataReader {
 
                 eventType = parser.next();
             }
+
+            fis.close();
+
         }  catch (XmlPullParserException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {

@@ -37,6 +37,7 @@ import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.parsers.XmlDataReader;
+import org.philimone.hds.forms.parsers.XmlDataUpdater;
 import org.philimone.hds.forms.utilities.StringTools;
 import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
@@ -604,7 +605,7 @@ public class FormFragment extends DialogFragment {
         return deviceId;
     }
 
-    private String getTimestamp() {
+    private static String getTimestamp() {
         //TimeZone tz = TimeZone.getDefault();
         //Calendar cal = Calendar.getInstance(tz);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -661,6 +662,18 @@ public class FormFragment extends DialogFragment {
         }*/
 
         show(fragmentManager, "hform");
+    }
+
+    public static void UpdateEndTimestamp(HForm form, String xmlSavedFormPath) {
+        if (!StringTools.isBlank(xmlSavedFormPath)){
+
+            Map<String,String> map = new LinkedHashMap<>();
+            map.put(ColumnType.END_TIMESTAMP.getCode(), getTimestamp());
+
+
+            XmlDataUpdater updater = new XmlDataUpdater(form, xmlSavedFormPath);
+            updater.updateValues(map);
+        }
     }
 
 }
