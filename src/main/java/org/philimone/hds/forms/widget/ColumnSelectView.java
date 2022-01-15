@@ -116,6 +116,15 @@ public class ColumnSelectView extends ColumnView {
                     });
                 }
 
+                //hide all non selected if display_style = selected_only
+                if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_SELECTED_ONLY)){
+                    this.rdbOptions.forEach(selectOption -> {
+                        if (!selectOption.value.equals(value)) {
+                            selectOption.button.setVisibility(GONE);
+                        }
+                    });
+                }
+
                 sop.button.setEnabled(!sop.readonly);
             }
 

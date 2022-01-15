@@ -19,12 +19,15 @@ public class Column {
     private boolean readOnly;
     private boolean hidden;
     private String displayCondition; /* [#variable|value][><=!=][#variable|value]*/
+    private String displayStyle; /* selected_only*/
+
+    public static String DISPLAY_STYLE_SELECTED_ONLY = "selected_only";
 
     public Column() {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String label, String value, boolean required, boolean readOnly, String displayCondition) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String label, String value, boolean required, boolean readOnly, String displayCondition, String displayStyle) {
         this();
 
         this.name = name;
@@ -35,6 +38,7 @@ public class Column {
         this.required = required;
         this.readOnly = readOnly;
         this.displayCondition = displayCondition;
+        this.displayStyle = displayStyle;
     }
 
     public String getName() {
@@ -117,5 +121,13 @@ public class Column {
 
     public void setDisplayCondition(String displayCondition) {
         this.displayCondition = displayCondition;
+    }
+
+    public String getDisplayStyle() {
+        return displayStyle;
+    }
+
+    public void setDisplayStyle(String displayStyle) {
+        this.displayStyle = displayStyle;
     }
 }

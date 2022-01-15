@@ -9,11 +9,13 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import org.apache.poi.util.StringUtil;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,6 +128,15 @@ public class ColumnMultiSelectView extends ColumnView {
                 });
             }
 
+            //hide all non selected if display_style = selected_only
+            if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_SELECTED_ONLY)){
+                List<String> valuesList = Arrays.asList(values);
+                this.rdbOptions.forEach(selectOption -> {
+                    if (!valuesList.contains(selectOption.value)) {
+                        selectOption.button.setVisibility(GONE);
+                    }
+                });
+            }
         }
     }
 
