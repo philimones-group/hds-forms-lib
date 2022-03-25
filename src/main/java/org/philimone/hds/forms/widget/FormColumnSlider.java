@@ -3,12 +3,15 @@ package org.philimone.hds.forms.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
+import org.philimone.hds.forms.listeners.GestureListener;
 import org.philimone.hds.forms.listeners.OnSwipeListener;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.utilities.StringTools;
@@ -21,12 +24,15 @@ import androidx.viewpager2.widget.ViewPager2;
 
 public class FormColumnSlider extends LinearLayout {
 
+    private Context mContext;
     private ViewPager2 formViewPager;
+    private GestureDetector gestureDetector;
     private float prevX = -1;
     private SlideDirection currentSlideDirection;
     private int minPages;
     private int maxPages;
     private OnNewPageSelectedEvents pageEvents = OnNewPageSelectedEvents.NO_ACTION;
+
 
     public enum SlideDirection { BACKWARDS, FORWARDS}
 
@@ -34,12 +40,26 @@ public class FormColumnSlider extends LinearLayout {
 
     public FormColumnSlider(Context context) {
         super(context);
+        this.mContext = context;
         init();
     }
 
     public FormColumnSlider(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        this.mContext = context;
         init();
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        boolean handled = onTouchEvent(event);
+        if (event.getAction() == MotionEvent.ACTION_UP) return handled;
+        return false;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return this.gestureDetector.onTouchEvent(event);
     }
 
     private void init() {
@@ -48,6 +68,19 @@ public class FormColumnSlider extends LinearLayout {
         this.formViewPager.setUserInputEnabled(false);
         this.addView(this.formViewPager, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
+        this.gestureDetector = new GestureDetector(mContext, new GestureListener(){
+            @Override
+            public void onSwipeLeft() {
+                onSlideForwards();
+            }
+
+            @Override
+            public void onSwipeRight() {
+                onSlideBackwards();
+            }
+        });
+
+        /*
         this.setOnTouchListener(new OnSwipeListener(this.getContext()){
             public void onSwipeLeft(){
                 onSlideForwards();
@@ -58,6 +91,7 @@ public class FormColumnSlider extends LinearLayout {
                 onSlideBackwards();
             }
         });
+        */
 
         this.formViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
