@@ -72,8 +72,10 @@ public class ExcelFormParser implements FormParser {
             int name_index = mapHeaderIndex.get("name");
             int type_index = mapHeaderIndex.get("type");
             int options_index = mapHeaderIndex.get("options");
+            int foreach_index = mapHeaderIndex.get("foreach_count");
             int label_index = mapLocalizedCellIndex.get("label")==null ? mapHeaderIndex.get("label") : mapLocalizedCellIndex.get("label");
             int default_value_index = mapHeaderIndex.get("default_value");
+            int calculation_index = mapHeaderIndex.get("calculation");
             int required_index = mapHeaderIndex.get("required");
             int readonly_index = mapHeaderIndex.get("readonly");
             int display_index = mapHeaderIndex.get("display_condition");
@@ -91,8 +93,10 @@ public class ExcelFormParser implements FormParser {
                     String cellName = getCellValue(row.getCell(name_index));
                     String cellType = getCellValue(row.getCell(type_index));
                     String cellOptions = getCellValue(row.getCell(options_index));
+                    String cellForeach = getCellValue(row.getCell(foreach_index));
                     String cellLabel = getCellValue(row.getCell(label_index));
                     String defaultValue = getCellValue(row.getCell(default_value_index));
+                    String cellCalculation = getCellValue(row.getCell(calculation_index));
                     String cellRequired = getCellValue(row.getCell(required_index));
                     String cellReadonly = getCellValue(row.getCell(readonly_index));
                     String cellDisplay = getCellValue(row.getCell(display_index));
@@ -113,7 +117,7 @@ public class ExcelFormParser implements FormParser {
                         }
                     }
 
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellDisplay, cellDisplayStyle);
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellForeach, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle);
                     group.addColumn(column);
 
                     form.addColumn(group);
@@ -175,13 +179,12 @@ public class ExcelFormParser implements FormParser {
             Cell cellReadonly = readonlyIndex!=null ? row.getCell(readonlyIndex) : null;
 
             String name = getCellValue(cellName);
-            String value = getCellValue(cellValue);
+            String value = getCellValue(cellValue); //use all as uppercase
             String label = getCellValue(cellLabel);
             String readonlyValue = getCellValue(cellReadonly);
             boolean readonly = (readonlyValue != null && !readonlyValue.isEmpty()) ? getBooleanValue(readonlyValue) : false;
 
-            formOptions.put(name, value, label, readonly);
-
+            formOptions.put(name, value==null ? value : value.toUpperCase(), label, readonly);
         }
 
         return formOptions;

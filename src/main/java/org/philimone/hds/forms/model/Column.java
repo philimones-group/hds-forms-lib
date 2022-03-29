@@ -18,6 +18,8 @@ public class Column {
     private boolean required;
     private boolean readOnly;
     private boolean hidden;
+    private String foreachCount;
+    private String calculation;
     private String displayCondition; /* [#variable|value][><=!=][#variable|value]*/
     private String displayStyle; /* selected_only*/
 
@@ -27,16 +29,18 @@ public class Column {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String label, String value, boolean required, boolean readOnly, String displayCondition, String displayStyle) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String foreach, String label, String value, boolean required, boolean readOnly, String calculation, String displayCondition, String displayStyle) {
         this();
 
         this.name = name;
         this.type = type;
         this.typeOptions = typeOptions;
+        this.foreachCount = foreach;
         this.value = value;
         this.label = label;
         this.required = required;
         this.readOnly = readOnly;
+        this.calculation = calculation;
         this.displayCondition = displayCondition;
         this.displayStyle = displayStyle;
     }
@@ -113,6 +117,22 @@ public class Column {
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+    }
+
+    public String getForeachCount() {
+        return foreachCount;
+    }
+
+    public void setForeachCount(String foreachCount) {
+        this.foreachCount = foreachCount;
+    }
+
+    public String getCalculation() {
+        return calculation;
+    }
+
+    public void setCalculation(String calculation) {
+        this.calculation = calculation;
     }
 
     public String getDisplayCondition() {
