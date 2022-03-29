@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import org.apache.poi.util.StringUtil;
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 
@@ -32,16 +33,16 @@ public class ColumnMultiSelectView extends ColumnView {
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
 
-    public ColumnMultiSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(view, R.layout.column_select_item, attrs, column);
+    public ColumnMultiSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_select_item, attrs, column, callListener);
 
         this.rdbOptions = new ArrayList<>();
 
         createView();
     }
 
-    public ColumnMultiSelectView(ColumnGroupView view, @NonNull Column column) {
-        this(view, null, column);
+    public ColumnMultiSelectView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
+        this(view, null, column, callListener);
     }
 
     private void createView() {

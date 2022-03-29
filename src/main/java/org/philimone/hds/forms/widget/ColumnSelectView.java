@@ -14,6 +14,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
@@ -32,16 +33,16 @@ public class ColumnSelectView extends ColumnView {
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
 
-    public ColumnSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(view, R.layout.column_select_item, attrs, column);
+    public ColumnSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_select_item, attrs, column, callListener);
 
         this.rdbOptions = new ArrayList<>();
 
         createView();
     }
 
-    public ColumnSelectView(ColumnGroupView view, @NonNull Column column) {
-        this(view, null, column);
+    public ColumnSelectView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
+        this(view, null, column, callListener);
     }
 
     private void createView() {

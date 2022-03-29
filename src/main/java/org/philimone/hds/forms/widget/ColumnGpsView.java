@@ -14,9 +14,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.utilities.GpsFormatter;
+import org.philimone.hds.forms.utilities.StringTools;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import org.philimone.hds.forms.widget.dialog.LoadingDialog;
 
@@ -48,14 +50,14 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
     private ActivityResultLauncher<String[]> requestPermissions;
 
-    public ColumnGpsView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(view, R.layout.column_gps_item, attrs, column);
+    public ColumnGpsView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_gps_item, attrs, column, callListener);
 
         initialize();        ;
     }
 
-    public ColumnGpsView(ColumnGroupView view, @NonNull Column column) {
-        this(view, null, column);
+    public ColumnGpsView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
+        this(view, null, column, callListener);
     }
 
     private void initialize(){
@@ -179,6 +181,21 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
     @Override
     public void setValue(String value) { //do nothing
+        if (StringTools.isBlank(value)) return;
+
+        Double[] values = GpsFormatter.getValuesFrom(value);
+        if (values != null) {
+            this.gpsLocationResult = new Location("fake");
+
+            this.gpsLocationResult.setLatitude(values[0]);
+            this.gpsLocationResult.setLongitude(values[1]);
+            this.gpsLocationResult.setAltitude(values[2]);
+            this.gpsLocationResult.setAccuracy((float) (values[3]*1F));
+
+            updateValues();
+        }
+
+
         //this.column.setValue(value);
         //updateValues();
     }

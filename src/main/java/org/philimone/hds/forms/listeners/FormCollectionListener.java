@@ -5,7 +5,6 @@ import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 
-import java.util.List;
 import java.util.Map;
 
 public interface FormCollectionListener {
@@ -21,5 +20,7 @@ public interface FormCollectionListener {
     void onFormFinished(HForm form, Map<String, ColumnValue> collectedValues, XmlFormResult result);
 
     void onFormCancelled();
+
+    String onFormCallMethod(String methodExpression, String[] args);
 
 }

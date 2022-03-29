@@ -27,6 +27,7 @@ import org.apache.commons.jexl3.MapContext;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnViewDataAdapter;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
@@ -70,7 +71,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
-public class FormFragment extends DialogFragment {
+public class FormFragment extends DialogFragment implements ExternalMethodCallListener {
 
     private FragmentManager fragmentManager;
     private HForm form;
@@ -384,7 +385,7 @@ public class FormFragment extends DialogFragment {
 
         if (this.form.hasHeader()) {
             ColumnGroup columnGroup = this.form.getHeader();
-            headerGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup);
+            headerGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup, this);
             //this.columnGroupViewList.add(headerGroupView);
 
             if (formHeaderLayout != null) {
@@ -397,7 +398,7 @@ public class FormFragment extends DialogFragment {
         for (ColumnGroup group : form.getColumns() ) {
 
             if (!group.isHeader()) {//ignore headers
-                ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), group);
+                ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), group, this);
                 groupViews.add(groupView);
 
                 this.columnGroupViewList.add(groupView);
@@ -676,4 +677,11 @@ public class FormFragment extends DialogFragment {
         }
     }
 
+    /*
+     * Used to call a method or function outside of HDS-Explorer
+     */
+    @Override
+    public String onCallMethod(String methodExpression, String[] args) {
+        return this.formListener.onFormCallMethod(methodExpression, args);
+    }
 }

@@ -7,14 +7,19 @@ import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.utilities.StringTools;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -28,17 +33,20 @@ public abstract class ColumnView extends LinearLayout {
     protected ColumnView parentColumn;
     protected ColumnView nextColumn;
     protected boolean displayable;
+    protected ExternalMethodCallListener methodCallListener;
 
-    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull Column column) {
+    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
         super(view.getContext(), attrs);
         this.columnGroupView = view;
         this.column = column;
 
+        this.methodCallListener = callListener;
+
         buildViews(resource);
     }
 
-    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @NonNull Column column) {
-        this(view, resource,null, column);
+    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @NonNull Column column, ExternalMethodCallListener callListener) {
+        this(view, resource,null, column, callListener);
     }
 
     public FormFragment getActivity() {
@@ -105,6 +113,64 @@ public abstract class ColumnView extends LinearLayout {
         this.parentColumn = parentColumn;
     }
 
+    private String translateExpression(String expression) {
+        Map<String, String> previousValues = new LinkedHashMap<>();
+        ColumnView parent = parentColumn;
+        while (parent != null) {
+            //Log.d("parent-ev", ""+parent);
+
+            String name = parent.getName();
+            String value = parent.getValue();
+            previousValues.put(parent.getName(), parent.getValue());
+
+            //replace variables with values
+
+            expression = expression.replaceAll("\\$\\{"+name+"\\}", "'" + value + "'");            
+            
+            parent = parent.parentColumn;
+        }
+        
+        expression = expression.replace("and", "&&");
+        expression = expression.replace("or", "||");
+        expression = expression.replace("!=", "<>"); //to avoid !==
+        expression = expression.replace("=", "==");
+        expression = expression.replace("<>", "!="); //return to normal after =
+        
+        
+        return expression;
+    }
+
+    private List<String> getExpressionCalls(String expression){
+        ArrayList<String> list = new ArrayList<>();
+
+        String callRegex = "call:(.*?)\\)";
+        Pattern pattern_call = Pattern.compile(callRegex);
+        Matcher matcher_call = pattern_call.matcher(expression);
+        while (matcher_call.find()){
+            String method = matcher_call.group(1)+")";
+            list.add(method);
+        }
+
+        return list;
+    }
+
+    private String[] getMethodArgs(String methodCall){
+        ArrayList<String> list = new ArrayList<>();
+
+        String callRegex = "'(.*?)'";
+        Pattern pattern_call = Pattern.compile(callRegex);
+        Matcher matcher_call = pattern_call.matcher(methodCall);
+        while (matcher_call.find()){
+            String arg = matcher_call.group(1);
+            if (arg != null && arg.equalsIgnoreCase("null")){
+                arg = null;
+            }
+            list.add(arg);
+        }
+
+        return list.toArray(new String[list.size()]);
+    }
+
     public void evaluateDisplayCondition(){
 
         String displayCondition = column.getDisplayCondition();
@@ -116,31 +182,9 @@ public abstract class ColumnView extends LinearLayout {
         } else {
             //get all column values (previous)
 
-            Map<String, String> previousValues = new LinkedHashMap<>();
-            ColumnView parent = parentColumn;
-            while (parent != null) {
-                //Log.d("parent-ev", ""+parent);
+            displayCondition = translateExpression(displayCondition);
 
-                String name = parent.getName();
-                String value = parent.getValue();
-                previousValues.put(parent.getName(), parent.getValue());
-
-                //replace variables with values
-
-                displayCondition = displayCondition.replaceAll("\\$\\{"+name+"\\}", "'" + value + "'");
-
-                parent = parent.parentColumn;
-            }
-
-
-            displayCondition = displayCondition.replaceAll("and", "&&");
-            displayCondition = displayCondition.replaceAll("or", "||");
-            displayCondition = displayCondition.replaceAll("!=", "<>"); //to avoid !==
-            displayCondition = displayCondition.replaceAll("=", "==");
-            displayCondition = displayCondition.replaceAll("<>", "!="); //return to normal after =
-
-
-
+            Log.d("displaycondition", ""+displayCondition);
             //evaluate expression on a script engine
             String result = getActivity().evaluateExpression(displayCondition).toString();
             boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
@@ -149,6 +193,35 @@ public abstract class ColumnView extends LinearLayout {
             setDisplayable(visible);
 
         }
+    }
+
+    public void evaluateCalculation(){
+        String calculation = column.getCalculation();
+
+        if (StringTools.isBlank(calculation)) return;
+
+        //replace variables with values
+        calculation = translateExpression(calculation);
+
+        //find method calls, call:methodName()
+        List<String> methodCalls = getExpressionCalls(calculation);
+
+        for (String methodCall : methodCalls) {
+            //execute method calls -> listener call and return
+            String[] methodArgs = getMethodArgs(methodCall);
+            if (methodCallListener != null) {
+                String result = methodCallListener.onCallMethod(methodCall, methodArgs);
+                calculation = calculation.replace("call:"+methodCall, result);
+            }
+        }
+
+        Log.d("expression", calculation);
+        String calculationResult = getActivity().evaluateExpression(calculation).toString();
+
+        Log.d("expression-calc", "result: "+calculationResult);
+
+        //set column value
+        setValue(calculationResult); //Update the value according to the type
     }
 
     @Override

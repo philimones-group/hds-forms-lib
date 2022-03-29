@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 
 import androidx.annotation.NonNull;
@@ -15,14 +16,14 @@ public class ColumnTextView extends ColumnView {
     private TextView txtName;
     private TextView txtValue;
 
-    public ColumnTextView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(view, R.layout.column_string_ro_item, attrs, column);
+    public ColumnTextView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_string_ro_item, attrs, column, callListener);
 
         createView();
     }
 
-    public ColumnTextView(ColumnGroupView view, @NonNull Column column) {
-        this(view, null, column);
+    public ColumnTextView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
+        this(view, null, column, callListener);
     }
 
     private void createView() {

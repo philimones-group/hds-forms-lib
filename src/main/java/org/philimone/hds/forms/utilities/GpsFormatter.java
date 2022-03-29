@@ -23,8 +23,31 @@ public class GpsFormatter {
         String lat = getLatitudeAsDMS(latitude,2);
         String lon = getLongitudeAsDMS(longitude, 2);
 
-        return lat + ", " + lon + " alt: "+altitude+", acc: "+accuracy;
+        return lat + ", " + lon + ", alt: "+altitude+", acc: "+accuracy;
+    }
 
+    public static Double[] getValuesFrom(String formattedGps) {
+
+        if (StringTools.isBlank(formattedGps)) return null;
+
+        Double[] values = new Double[4];
+        formattedGps = formattedGps.replaceAll("alt: ", "");
+        formattedGps = formattedGps.replaceAll("acc: ", "");
+
+        String[] splitted = formattedGps.split(", ");
+
+        try {
+            values[0] = Double.parseDouble(splitted[0]);
+            values[1] = Double.parseDouble(splitted[1]);
+            values[2] = Double.parseDouble(splitted[2]);
+            values[3] = Double.parseDouble(splitted[3]);
+        }catch (Exception exception) {
+            exception.printStackTrace();
+
+            return null;
+        }
+
+        return values;
     }
 
     private String getLatitudeAsDMS(Double latitude, int decimalPlace){

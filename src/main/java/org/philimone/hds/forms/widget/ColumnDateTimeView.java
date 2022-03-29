@@ -5,6 +5,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.utilities.StringTools;
 import org.philimone.hds.forms.widget.dialog.DateTimeSelector;
@@ -22,14 +23,14 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     private DateTimeSelector datePicker;
     private Date dateValue;
 
-    public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column) {
-        super(view, R.layout.column_datetime_item, attrs, column);
+    public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_datetime_item, attrs, column, callListener);
 
         createView();
     }
 
-    public ColumnDateTimeView(ColumnGroupView view, @NonNull Column column) {
-        this(view, null, column);
+    public ColumnDateTimeView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
+        this(view, null, column, callListener);
     }
 
     private void createView() {

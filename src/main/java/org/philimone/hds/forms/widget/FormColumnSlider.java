@@ -80,19 +80,6 @@ public class FormColumnSlider extends LinearLayout {
             }
         });
 
-        /*
-        this.setOnTouchListener(new OnSwipeListener(this.getContext()){
-            public void onSwipeLeft(){
-                onSlideForwards();
-            }
-
-            @Override
-            public void onSwipeRight() {
-                onSlideBackwards();
-            }
-        });
-        */
-
         this.formViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -103,6 +90,8 @@ public class FormColumnSlider extends LinearLayout {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 //Log.d("selected", ""+position+", "+pageEvents);
+
+                evaluateCalculation(position);
 
                 switch (pageEvents) {
                     case CHECK_REQUIRED:
@@ -161,6 +150,10 @@ public class FormColumnSlider extends LinearLayout {
 
 
             if (nextGroupView.isDisplayable()) {
+
+                //if there is calculation execute it
+
+
                 getAdapter().showPage(next, nextGroupView);
 
                 Log.d("show", ""+next+", nextg="+nextGroupView+", current="+ (getAdapter().getItemView(next)) +"/"+ formViewPager.getCurrentItem() +", RealNext="+(getAdapter().getItemView(next+1)));
@@ -237,7 +230,7 @@ public class FormColumnSlider extends LinearLayout {
     }
 
     public void evaluateAllDisplayConditions() {
-        this.getAdapter().getDefaultFragments().forEach( columnGroupView -> {
+        for (ColumnGroupView columnGroupView : this.getAdapter().getDefaultFragments()) {
             columnGroupView.evaluateDisplayCondition();
             //should add or remove from FormColumnSlider
 
@@ -254,7 +247,14 @@ public class FormColumnSlider extends LinearLayout {
                 this.getAdapter().hidePage(columnGroupView);
             }
 
-        });
+        }
+    }
+
+    public void evaluateCalculation(int position){
+        ColumnGroupView currentGroupView = getAdapter().getItemView(position);
+        if (currentGroupView != null){
+            currentGroupView.evaluateCalculations();
+        }
     }
 
     public void gotoPage(ColumnView columnView) {

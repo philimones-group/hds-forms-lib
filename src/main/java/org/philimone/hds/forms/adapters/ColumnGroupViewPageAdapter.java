@@ -28,7 +28,7 @@ public class ColumnGroupViewPageAdapter extends FragmentStateAdapter {
     public ColumnGroupViewPageAdapter(@NonNull Fragment fragment, List<ColumnGroupView> groups) {
         super(fragment);
 
-        groups.forEach(columnGroupView -> {
+        for (ColumnGroupView columnGroupView : groups) {
             if (!columnGroupView.isHidden()) {
                 ColumnGroupViewFragment fg = ColumnGroupViewFragment.newInstance(columnGroupView);
 
@@ -36,7 +36,7 @@ public class ColumnGroupViewPageAdapter extends FragmentStateAdapter {
                 defaultFragments.add(fg);
                 visibleFragments.add(fg);
             }
-        });
+        }
 
     }
 

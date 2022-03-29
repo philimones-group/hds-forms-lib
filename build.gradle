@@ -23,6 +23,9 @@ android {
         }
     }
     compileOptions {
+        // Flag to enable support for the new language APIs - to enable java 8 new features on android < 24
+        coreLibraryDesugaringEnabled true
+
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }

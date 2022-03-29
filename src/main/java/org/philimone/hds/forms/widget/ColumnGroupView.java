@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
@@ -18,7 +19,6 @@ import org.philimone.hds.forms.model.enums.ColumnType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import androidx.annotation.Nullable;
@@ -42,8 +42,9 @@ public class ColumnGroupView extends LinearLayout {
     private boolean fragmentVisible = true;
     private ColumnGroupView parentGroupView;
     private ColumnGroupView nextGroupView;
+    private ExternalMethodCallListener methodCallListener;
 
-    public ColumnGroupView(FormFragment formPanel, Context context, @Nullable AttributeSet attrs, ColumnGroup columnGroup) {
+    public ColumnGroupView(FormFragment formPanel, Context context, @Nullable AttributeSet attrs, ColumnGroup columnGroup, ExternalMethodCallListener callListener) {
         super(context, attrs);
 
         uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
@@ -52,11 +53,13 @@ public class ColumnGroupView extends LinearLayout {
         this.columnGroup = columnGroup;
         this.columnViews = new ArrayList<>();
 
+        this.methodCallListener = callListener;
+
         buildViews();
     }
 
-    public ColumnGroupView(FormFragment formPanel, Context context, ColumnGroup columnGroup) {
-        this(formPanel, context, null, columnGroup);
+    public ColumnGroupView(FormFragment formPanel, Context context, ColumnGroup columnGroup, ExternalMethodCallListener callListener) {
+        this(formPanel, context, null, columnGroup, callListener);
     }
 
     public FormFragment getFormPanel() {
@@ -93,54 +96,54 @@ public class ColumnGroupView extends LinearLayout {
             ColumnView view = null;
 
             if (column.getType() == ColumnType.INTEGER || column.getType() == ColumnType.DECIMAL || column.getType() == ColumnType.STRING) {
-                view = column.isReadOnly() ? new ColumnTextView(this, column) : new ColumnTextboxView(this, column);
+                view = column.isReadOnly() ? new ColumnTextView(this, column, methodCallListener) : new ColumnTextboxView(this, column, methodCallListener);
             }
             if (column.getType() == ColumnType.DATE) {
-                view = new ColumnDateView(this, column);
+                view = new ColumnDateView(this, column, methodCallListener);
             }
             if (column.getType() == ColumnType.DATETIME) {
-                view = new ColumnDateTimeView(this, column);
+                view = new ColumnDateTimeView(this, column, methodCallListener);
             }
             if (column.getType() == ColumnType.SELECT){
-                view = new ColumnSelectView(this, column);
+                view = new ColumnSelectView(this, column, methodCallListener);
             }
             if (column.getType() == ColumnType.MULTI_SELECT) {
-                view = new ColumnMultiSelectView(this, column);
+                view = new ColumnMultiSelectView(this, column, methodCallListener);
             }
             if (column.getType() == ColumnType.GPS) {
-                ColumnGpsView gpsView = new ColumnGpsView(this, column);
+                ColumnGpsView gpsView = new ColumnGpsView(this, column, methodCallListener);
                 view = gpsView;
             }
 
             if (column.getType() == ColumnType.COLLECTED_BY) {
                 column.setValue(formPanel.getUsername());
 
-                view = new ColumnTextView(this, column);
+                view = new ColumnTextView(this, column, methodCallListener);
                 //this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.INSTANCE_UUID) {
-                view = new ColumnTextView(this, column);
+                view = new ColumnTextView(this, column, methodCallListener);
                 this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.DEVICE_ID) {
-                view = new ColumnTextView(this, column);
+                view = new ColumnTextView(this, column, methodCallListener);
                 this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
-                view = new ColumnTextView(this, column);
+                view = new ColumnTextView(this, column, methodCallListener);
                 this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.EXECUTION_STATUS) {
-                view = new ColumnTextView(this, column);
+                view = new ColumnTextView(this, column, methodCallListener);
                 this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.TIMESTAMP) {
-                view = new ColumnTextView(this, column);
+                view = new ColumnTextView(this, column, methodCallListener);
                 //this.setHidden(true);
             }
 
@@ -156,7 +159,7 @@ public class ColumnGroupView extends LinearLayout {
     public void showToastMessage(@StringRes int messageResId){
         this.formToastMessage.setText(mContext.getString(messageResId));
 
-        this.formToastLayout.setAlpha(2f);
+        this.formToastLayout.setAlpha(1f);
         this.formToastLayout.setVisibility(VISIBLE);
         this.formToastLayout.animate().alpha(1f).setDuration(200).setListener(null);
 
@@ -209,11 +212,19 @@ public class ColumnGroupView extends LinearLayout {
 
     public boolean evaluateDisplayCondition() {
 
-        this.columnViews.forEach(columnView -> { columnView.evaluateDisplayCondition(); });
+        for (ColumnView columnView : this.columnViews) {
+            columnView.evaluateDisplayCondition();
+        }
 
         updateVisibility();
 
         return isDisplayable();
+    }
+
+    public void evaluateCalculations(){
+        for (ColumnView columnView : this.columnViews) {
+            columnView.evaluateCalculation();
+        }
     }
 
     public boolean isFragmentVisible() {
