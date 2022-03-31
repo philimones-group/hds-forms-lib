@@ -33,6 +33,7 @@ import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.HForm;
+import org.philimone.hds.forms.model.PreloadMap;
 import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
@@ -91,7 +92,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private String startTimestamp;
     private String endTimestamp;
     private boolean executeOnUpload;
-    private Map<String, String> preloadedColumnValues;
+    private PreloadMap preloadedColumnValues;
     private String instancesDirPath;
 
     private boolean backgroundMode;
@@ -114,14 +115,14 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         initPermissions();
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, boolean bgMode, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, boolean bgMode, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
         formFragment.username = username;
         formFragment.executeOnUpload = executeOnUpload;
         formFragment.formListener = formListener;
-        formFragment.preloadedColumnValues = new LinkedHashMap<>();
+        formFragment.preloadedColumnValues = new PreloadMap();
         formFragment.instancesDirPath = instancesDirPath;
         formFragment.backgroundMode = bgMode;
 
@@ -134,14 +135,14 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         return formFragment;
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, String xmlSavedFormPath, Map<String, String> updatedPreloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, String xmlSavedFormPath, PreloadMap updatedPreloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
         formFragment.username = username;
         formFragment.executeOnUpload = executeOnUpload;
         formFragment.formListener = formListener;
-        formFragment.preloadedColumnValues = new LinkedHashMap<>();
+        formFragment.preloadedColumnValues = new PreloadMap();
         formFragment.instancesDirPath = instancesDirPath;
         formFragment.backgroundMode = bgMode;
         formFragment.resumeMode = gotoResume;
@@ -161,15 +162,15 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         return formFragment;
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         return newInstance(fragmentManager, form, instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, File hFormXlsFile, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, File hFormXlsFile, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, Map<String, String> preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
     }
 
@@ -492,7 +493,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                 //overwrite values with pre-loaded data
                 if (this.preloadedColumnValues.containsKey(column.getName())){
-                    String value = this.preloadedColumnValues.get(column.getName());
+                    String value = this.preloadedColumnValues.getStringValue(column.getName());
                     columnView.setValue(value);
                 }
 
@@ -519,7 +520,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             String column = gpsColumn.getName()+ext;
 
             if (preloadedColumnValues.containsKey(column)){
-                String stringValue = preloadedColumnValues.get(column);
+                String stringValue = preloadedColumnValues.getStringValue(column);
                 gpsValues.put(column, Double.parseDouble(stringValue));
             }
         }
@@ -567,7 +568,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         TelephonyManager mTelephonyManager = (TelephonyManager) getCurrentContext().getSystemService(Context.TELEPHONY_SERVICE);
 
-        String deviceId = mTelephonyManager.getImei();
+        String deviceId = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            deviceId = mTelephonyManager.getImei();
+        }
         String orDeviceId = "";
 
         if (deviceId != null ) {
@@ -581,7 +585,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         if (deviceId == null) {
             // no SIM -- WiFi only
             // Retrieve WiFiManager
-            WifiManager wifi = (WifiManager) getCurrentContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifi = (WifiManager) getCurrentContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
             // Get WiFi status
             WifiInfo info = wifi.getConnectionInfo();

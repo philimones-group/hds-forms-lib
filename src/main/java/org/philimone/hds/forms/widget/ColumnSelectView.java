@@ -72,7 +72,7 @@ public class ColumnSelectView extends ColumnView {
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             button.setText(optionValue.label);
             button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
-            button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
+            button.setTextColor(this.getContext().getResources().getColor(R.color.black));
             button.setEnabled(!optionValue.readonly);
 
             if (column.isReadOnly()) {

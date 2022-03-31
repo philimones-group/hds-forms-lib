@@ -1,7 +1,6 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import org.philimone.hds.forms.utilities.StringTools;
 
@@ -18,7 +17,7 @@ public class Column {
     private boolean required;
     private boolean readOnly;
     private boolean hidden;
-    private String foreachCount;
+    private String repeatCount;
     private String calculation;
     private String displayCondition; /* [#variable|value][><=!=][#variable|value]*/
     private String displayStyle; /* selected_only*/
@@ -29,13 +28,13 @@ public class Column {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String foreach, String label, String value, boolean required, boolean readOnly, String calculation, String displayCondition, String displayStyle) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, boolean required, boolean readOnly, String calculation, String displayCondition, String displayStyle) {
         this();
 
         this.name = name;
         this.type = type;
         this.typeOptions = typeOptions;
-        this.foreachCount = foreach;
+        this.repeatCount = repeatCount;
         this.value = value;
         this.label = label;
         this.required = required;
@@ -119,12 +118,12 @@ public class Column {
         this.hidden = hidden;
     }
 
-    public String getForeachCount() {
-        return foreachCount;
+    public String getRepeatCount() {
+        return repeatCount;
     }
 
-    public void setForeachCount(String foreachCount) {
-        this.foreachCount = foreachCount;
+    public void setRepeatCount(String repeatCount) {
+        this.repeatCount = repeatCount;
     }
 
     public String getCalculation() {

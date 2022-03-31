@@ -10,6 +10,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
+import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
@@ -72,7 +73,7 @@ public class ExcelFormParser implements FormParser {
             int name_index = mapHeaderIndex.get("name");
             int type_index = mapHeaderIndex.get("type");
             int options_index = mapHeaderIndex.get("options");
-            int foreach_index = mapHeaderIndex.get("foreach_count");
+            int repeat_index = mapHeaderIndex.get("repeat_count");
             int label_index = mapLocalizedCellIndex.get("label")==null ? mapHeaderIndex.get("label") : mapLocalizedCellIndex.get("label");
             int default_value_index = mapHeaderIndex.get("default_value");
             int calculation_index = mapHeaderIndex.get("calculation");
@@ -85,6 +86,7 @@ public class ExcelFormParser implements FormParser {
             HForm form = new HForm(settings.formId, settings.formName);
 
             Map<String, ColumnGroup> mapGroup = new LinkedHashMap<>();
+            ColumnRepeatGroup repeatGroup = null;
 
             for (Row row : sheet_columns) {
                 if (row.getRowNum() != 0) {
@@ -93,7 +95,7 @@ public class ExcelFormParser implements FormParser {
                     String cellName = getCellValue(row.getCell(name_index));
                     String cellType = getCellValue(row.getCell(type_index));
                     String cellOptions = getCellValue(row.getCell(options_index));
-                    String cellForeach = getCellValue(row.getCell(foreach_index));
+                    String cellRepeat = getCellValue(row.getCell(repeat_index));
                     String cellLabel = getCellValue(row.getCell(label_index));
                     String defaultValue = getCellValue(row.getCell(default_value_index));
                     String cellCalculation = getCellValue(row.getCell(calculation_index));
@@ -103,6 +105,21 @@ public class ExcelFormParser implements FormParser {
                     String cellDisplayStyle = getCellValue(row.getCell(display_style_index));
 
                     if (cellName == null || cellName.isEmpty()) continue;
+
+                    if (cellType.equals("start repeat")){
+                        repeatGroup = new ColumnRepeatGroup();
+                        repeatGroup.setHeader(false);
+                        repeatGroup.setName(cellName);
+                        repeatGroup.setLabel(cellLabel);
+                        repeatGroup.setRepeatCount(cellRepeat);
+                        repeatGroup.setDisplayCondition(cellDisplay);
+                        continue;
+                    }
+
+                    if (cellType.equals("end repeat")){
+                        form.addColumn(repeatGroup);
+                        repeatGroup = null;
+                    }
 
                     ColumnGroup group = mapGroup.get(cellGroup);
 
@@ -117,9 +134,14 @@ public class ExcelFormParser implements FormParser {
                         }
                     }
 
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellForeach, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle);
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle);
                     group.addColumn(column);
 
+                    if (repeatGroup != null){ //is collecting repeat group inner columns
+                        repeatGroup.addColumn(group);
+                        continue;
+                    }
+                    //add the column group to the form, if its not a repeat group inner column
                     form.addColumn(group);
 
                 }
@@ -222,13 +244,13 @@ public class ExcelFormParser implements FormParser {
 
         XSSFRow headerRow = sheet.getRow(0);
 
-        headerRow.forEach( cell -> {
+        for (Cell cell : headerRow) {
             String cellValue = cell.getStringCellValue();
 
             if (cellValue != null) {
                 map.put(cellValue, cell.getColumnIndex());
             }
-        });
+        }
 
         return map;
     }
@@ -242,17 +264,16 @@ public class ExcelFormParser implements FormParser {
 
         XSSFRow headerRow = sheet.getRow(0);
 
-        headerRow.forEach( cell -> {
-
+        for (Cell cell : headerRow) {
             String cellValue = cell.getStringCellValue();
             //Log.d("tag", ""+cellValue);
 
-            if (cellValue != null && cellValue.endsWith("::"+language)) {
+            if (cellValue != null && cellValue.endsWith("::" + language)) {
                 String[] values = cellValue.split("::");
 
                 map.put(values[0], cell.getColumnIndex());
             }
-        });
+        }
 
         return map;
     }
