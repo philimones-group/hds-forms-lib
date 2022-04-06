@@ -29,14 +29,19 @@ import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnViewDataAdapter;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
+import org.philimone.hds.forms.model.CollectedDataMap;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
+import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.PreloadMap;
+import org.philimone.hds.forms.model.RepeatColumnValue;
+import org.philimone.hds.forms.model.RepeatObject;
 import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.model.enums.RepeatCountType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.parsers.XmlDataReader;
 import org.philimone.hds.forms.parsers.XmlDataUpdater;
@@ -295,7 +300,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         this.endTimestamp = getTimestamp();
 
         //get column values
-        Map<String, ColumnValue> columnValueMap = getCollectedData();
+        CollectedDataMap columnValueMap = getCollectedData();
 
         if (formListener != null) {
             ValidationResult result = formListener.onFormValidate(form, columnValueMap);
@@ -399,10 +404,37 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         for (ColumnGroup group : form.getColumns() ) {
 
             if (!group.isHeader()) {//ignore headers
-                ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), group, this);
-                groupViews.add(groupView);
 
-                this.columnGroupViewList.add(groupView);
+                if (group instanceof ColumnRepeatGroup){
+                    ColumnRepeatGroup repeatGroup = (ColumnRepeatGroup) group;
+
+                    if (repeatGroup.getRepeatCountType()== RepeatCountType.VARIABLE){
+                        //special group view (hidden), used to create anothers - the first instance of a repeat group powered by variable number
+                        ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, repeatGroup.getColumnsGroups().get(0), 0, true, this);
+                        groupViews.add(groupView);
+                        this.columnGroupViewList.add(groupView);
+                        continue;
+                    }
+
+                    //EXTERNAL LOADER OR CONSTANT VALUE
+
+                    Integer repeatGroupSize = repeatGroup.getRepeatSize(this.preloadedColumnValues);
+
+                    for (int repeatIndex = 0; repeatIndex < repeatGroupSize; repeatIndex++) {
+                        for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
+                            ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, innerGroup, repeatIndex, repeatGroupSize, this);
+                            groupViews.add(groupView);
+                            this.columnGroupViewList.add(groupView);
+                        }
+                    }
+                } else {
+
+                    ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), group, this);
+                    groupViews.add(groupView);
+                    this.columnGroupViewList.add(groupView);
+                }
+
+
             } else {
                 this.columnGroupViewList.add(headerGroupView);
             }
@@ -444,8 +476,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
      *   2.2. BUT CALL A LISTENER TO VALIDATE THE DATA
      */
 
-    private Map<String, ColumnValue> getCollectedData(){
-        Map<String, ColumnValue> map = new LinkedHashMap<>();
+    private CollectedDataMap getCollectedData(){
+        CollectedDataMap map = new CollectedDataMap();
         //List<ColumnValue> list = new ArrayList<>();
 
         columnGroupViewList.forEach( columnGroupView -> {
@@ -458,6 +490,18 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                 if (columnValue.getColumnType() == ColumnType.END_TIMESTAMP) {
                     columnValue.setValue(endTimestamp);
+                }
+
+                if (columnGroupView.belongsToRepeatGroup()){
+                    ColumnRepeatGroup repeatGroup = columnGroupView.getColumnRepeatGroup();
+
+                    //repeatGroup.name, columnValue.name, columnGroupView.repeatGroupIndex
+                    RepeatColumnValue repeatColumnValue = map.getRepeatColumn(repeatGroup.getName());
+                    repeatColumnValue = repeatColumnValue==null ? new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName()) : repeatColumnValue;
+                    repeatColumnValue.put(columnGroupView.getRepeatGroupIndex(), columnValue);
+
+                    map.put(repeatColumnValue);
+                    continue;
                 }
 
                 map.put(columnValue.getColumnName(), columnValue);
@@ -489,6 +533,18 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                     columnView.setValue(uuid);
 
                     //Log.d("uuid-tag", ""+columnView.getValue());
+                }
+
+                if (columnGroupView.belongsToRepeatGroup()){
+                    ColumnRepeatGroup repeatGroup = columnGroupView.getColumnRepeatGroup();
+                    Integer repeatIndex = columnGroupView.getRepeatGroupIndex();
+
+                    if (this.preloadedColumnValues.containsKey(repeatGroup.getName())){ //contains a RepeatObject?
+                        RepeatObject repeatObject = this.preloadedColumnValues.getRepeatObject(repeatGroup.getName());
+                        String value = repeatObject.get(repeatIndex, column.getName());
+                        columnView.setValue(value);
+                        continue;
+                    }
                 }
 
                 //overwrite values with pre-loaded data

@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -15,6 +16,7 @@ import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
+import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import java.util.ArrayList;
@@ -31,8 +33,16 @@ public class ColumnGroupView extends LinearLayout {
     private String uuid;
     private FormFragment formPanel;
     private Context mContext;
+    private ColumnRepeatGroup columnRepeatGroup;
     private ColumnGroup columnGroup;
+    private Integer repeatGroupIndex;
+    private Integer repeatGroupSize;
+    private boolean repeatGroupResizable;
     private TextView txtColumnGroupName;
+    private TextView txtRepeatGroupRequired;
+    private TextView txtRepeatGroupName;
+    private TextView txtRepeatGroupIndex;
+    private LinearLayout formRepeatGroupLayout;
     private LinearLayout formColumnGroupLayout;
     private RelativeLayout formToastLayout;
     private TextView formToastMessage;
@@ -58,6 +68,41 @@ public class ColumnGroupView extends LinearLayout {
         buildViews();
     }
 
+    public ColumnGroupView(FormFragment formPanel, Context context, ColumnRepeatGroup columnRepeatGroup, ColumnGroup columnGroup, Integer repeatGroupIndex, Integer repeatGroupSize, ExternalMethodCallListener callListener) {
+        super(context, null);
+
+        uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
+        this.formPanel = formPanel;
+        this.mContext = context;
+        this.columnRepeatGroup = columnRepeatGroup;
+        this.columnGroup = columnGroup;
+        this.repeatGroupIndex = repeatGroupIndex;
+        this.repeatGroupSize = repeatGroupSize;
+        this.methodCallListener = callListener;
+
+        this.columnViews = new ArrayList<>();
+
+        buildViews();
+    }
+
+    public ColumnGroupView(FormFragment formPanel, Context context, ColumnRepeatGroup columnRepeatGroup, ColumnGroup columnGroup, Integer repeatGroupIndex, boolean repeatGroupResizable, ExternalMethodCallListener callListener) {
+        super(context, null);
+
+        uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
+        this.formPanel = formPanel;
+        this.mContext = context;
+        this.columnRepeatGroup = columnRepeatGroup;
+        this.columnGroup = columnGroup;
+        this.repeatGroupIndex = repeatGroupIndex;
+        this.repeatGroupSize = null;
+        this.repeatGroupResizable = repeatGroupResizable;
+        this.methodCallListener = callListener;
+
+        this.columnViews = new ArrayList<>();
+
+        buildViews();
+    }
+
     public ColumnGroupView(FormFragment formPanel, Context context, ColumnGroup columnGroup, ExternalMethodCallListener callListener) {
         this(formPanel, context, null, columnGroup, callListener);
     }
@@ -79,11 +124,31 @@ public class ColumnGroupView extends LinearLayout {
         this.fragmentVisible = !hidden;
     }
 
+    public boolean isRepeatGroupResizable() {
+        return repeatGroupResizable;
+    }
+
+    public boolean belongsToRepeatGroup(){
+        return columnRepeatGroup != null && repeatGroupIndex != null;
+    }
+
+    public ColumnRepeatGroup getColumnRepeatGroup() {
+        return columnRepeatGroup;
+    }
+
+    public Integer getRepeatGroupIndex() {
+        return repeatGroupIndex;
+    }
+
     private void buildViews() {
         LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.column_group_view, this);
 
         this.txtColumnGroupName = findViewById(R.id.txtColumnGroupName);
+        this.txtRepeatGroupRequired = findViewById(R.id.txtRepeatGroupRequired);
+        this.txtRepeatGroupName = findViewById(R.id.txtRepeatGroupName);
+        this.txtRepeatGroupIndex = findViewById(R.id.txtRepeatGroupIndex);
+        this.formRepeatGroupLayout = findViewById(R.id.formRepeatGroupLayout);
         this.formColumnGroupLayout = findViewById(R.id.formColumnGroupLayout);
         this.formToastLayout = findViewById(R.id.formToastLayout);
         this.formToastMessage = findViewById(R.id.formToastMessage);
@@ -91,6 +156,15 @@ public class ColumnGroupView extends LinearLayout {
         this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
 
         this.formToastMessage.setText("");
+
+        if (this.belongsToRepeatGroup()){
+            this.formRepeatGroupLayout.setVisibility(VISIBLE);
+            this.txtRepeatGroupName.setText(this.columnRepeatGroup.getLabel());
+            this.txtRepeatGroupIndex.setText(this.mContext.getString(R.string.repeat_group_instance_index_lbl, (repeatGroupIndex+1)+"", repeatGroupSize.toString()));
+            this.txtColumnGroupName.setText("");
+        } else {
+            this.formRepeatGroupLayout.setVisibility(GONE);
+        }
 
         for (Column column : this.columnGroup.getColumns() ) {
             ColumnView view = null;

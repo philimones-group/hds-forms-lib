@@ -1,11 +1,14 @@
 package org.philimone.hds.forms.model;
 
+import android.util.Log;
+
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.utilities.StringTools;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -41,16 +44,25 @@ public class XmlFormResult {
             doc.appendChild(rootElement);
 
             collectedValues.forEach( columnValue -> {
-                //members
-                createElement(doc, rootElement, columnValue);
 
-                if (columnValue.getColumnType()==ColumnType.INSTANCE_UUID) {
-                    this.formUuid = columnValue.getValue();
+                if (columnValue instanceof RepeatColumnValue) {
+                    //handle it
+                    RepeatColumnValue repeatColumnValue = (RepeatColumnValue) columnValue;
+                    createRepeatElement(doc, rootElement, repeatColumnValue);
+
+                } else {
+                    createElement(doc, rootElement, columnValue);
+
+                    if (columnValue.getColumnType()==ColumnType.INSTANCE_UUID) {
+                        this.formUuid = columnValue.getValue();
+                    }
+
+                    if (columnValue.getColumnType()==ColumnType.TIMESTAMP && columnValue.getColumnName().equals("collectedDate")) {
+                        this.collectedDate = columnValue.getValue();
+                    }
                 }
 
-                if (columnValue.getColumnType()==ColumnType.TIMESTAMP && columnValue.getColumnName().equals("collectedDate")) {
-                    this.collectedDate = columnValue.getValue();
-                }
+
             });
 
             // write the content into xml file
@@ -75,6 +87,49 @@ public class XmlFormResult {
         return basePath + form.getFormId() + "-" + formUuid + "-" + StringTools.formatUnderscoreDate(collectedDate) + ".xml";
     }
 
+    private Element createRepeatElement(Document doc, Element rootElement, RepeatColumnValue repeatColumnValue) {
+        Element groupElement = doc.createElement(repeatColumnValue.getGroupName());
+
+        int repeatCount = repeatColumnValue.getCount();
+
+        for (int i = 0; i < repeatCount; i++) {
+            Element objElement = doc.createElement(repeatColumnValue.getNodeName()); //<rawSome></rawSome>
+
+            Collection<ColumnValue> columnValues = repeatColumnValue.getColumnValues(i);
+
+            for (ColumnValue columnValue : columnValues) {
+                if (columnValue.getColumnType()==ColumnType.GPS){
+                    List<Element> elements = createGpsElement(doc, columnValue);
+                    elements.forEach(element -> {
+                        objElement.appendChild(element);
+                    });
+                } else {
+                    Element element = createElement(doc, columnValue);
+                    objElement.appendChild(element);
+                }
+
+            }
+
+            groupElement.appendChild(objElement);
+        }
+
+        rootElement.appendChild(groupElement);
+
+        return groupElement;
+    }
+
+    private Element createElement(Document doc, ColumnValue columnValue) {
+
+        String textData = columnValue.getValue();
+
+        Element element = doc.createElement(columnValue.getColumnName());
+        if (textData != null){
+            element.appendChild(doc.createTextNode(textData));
+        }
+
+        return element;
+    }
+
     private Element createElement(Document doc, Element rootElement, ColumnValue columnValue) {
 
         String textData = null;
@@ -92,6 +147,20 @@ public class XmlFormResult {
         rootElement.appendChild(element); //add to root
 
         return element;
+    }
+
+    private List<Element> createGpsElement(Document doc, ColumnValue columnValue) {
+        List<Element> elements = new ArrayList<>();
+
+        Map<String, Double> gpsValues = columnValue.getGpsValues();
+
+        gpsValues.forEach( (column, value) -> {
+            Element element = doc.createElement(column);
+            element.appendChild(doc.createTextNode(value==null ? "" : value.toString()));
+            elements.add(element);
+        });
+
+        return elements;
     }
 
     private Element createGpsElement(Document doc, Element rootElement, ColumnValue columnValue) {
