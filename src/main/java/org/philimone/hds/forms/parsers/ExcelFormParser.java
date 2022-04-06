@@ -107,12 +107,14 @@ public class ExcelFormParser implements FormParser {
                     if (cellName == null || cellName.isEmpty()) continue;
 
                     if (cellType.equals("start repeat")){
-                        repeatGroup = new ColumnRepeatGroup();
+
+                        repeatGroup = new ColumnRepeatGroup(cellName, settings.getRepeatNodeName(cellName));
                         repeatGroup.setHeader(false);
                         repeatGroup.setName(cellName);
                         repeatGroup.setLabel(cellLabel);
                         repeatGroup.setRepeatCount(cellRepeat);
                         repeatGroup.setDisplayCondition(cellDisplay);
+
                         continue;
                     }
 
@@ -175,7 +177,8 @@ public class ExcelFormParser implements FormParser {
 
     private String getCellValue(Cell cell) {
         DataFormatter formatter = new DataFormatter();
-        return formatter.formatCellValue(cell);
+        String value = formatter.formatCellValue(cell);
+        return value==null ? null : value.trim();
     }
 
     private FormOptions getFormOptions(XSSFWorkbook workbook) {
@@ -222,6 +225,9 @@ public class ExcelFormParser implements FormParser {
         Integer localizableFormNameIndex = mapLocaleCellIndex.get("form_name");
         Integer defaultFormNameIndex = mapHeaderIndex.get("form_name");
         Integer formNameIndex = (localizableFormNameIndex==null) ? defaultFormNameIndex : localizableFormNameIndex;
+        Integer formVersionIndex = mapHeaderIndex.get("form_version");
+        Integer formRepeatsIndex = mapHeaderIndex.get("repeat_name");
+        Integer formNodeNameIndex = mapHeaderIndex.get("xml_node_name");
 
         if (formNameIndex == null) {
             throw new Exception("There is no default 'form_name'");
@@ -231,8 +237,22 @@ public class ExcelFormParser implements FormParser {
 
         String formId = rowValues.getCell(0).getStringCellValue();
         String formName = getCellValue(rowValues.getCell(formNameIndex));
+        String formVersion = formVersionIndex==null ? null : getCellValue(rowValues.getCell(formVersionIndex));
+        Map<String, String> repeatNameNodesMap = new LinkedHashMap<>();
 
-        return new FormSettings(formId, formName);
+        for (Row row : sheet2) { //to get repeat names
+            if (row.getRowNum() == 0) continue;
+
+            Cell cellRepeatName = formRepeatsIndex==null ? null : row.getCell(formRepeatsIndex);
+            Cell cellRepeatNode = formNodeNameIndex==null ? null : row.getCell(formNodeNameIndex);
+
+            if (cellRepeatName != null && cellRepeatNode != null){
+                repeatNameNodesMap.put(getCellValue(cellRepeatName), getCellValue(cellRepeatNode));
+            }
+
+        }
+
+        return new FormSettings(formId, formName, formVersion, repeatNameNodesMap);
     }
 
     /*

@@ -10,6 +10,11 @@
     <dimen name="columngroup_view_padding_top">20dp</dimen>
     <dimen name="columngroup_view_padding_bottom">20dp</dimen>
 
+    <dimen name="columngroup_repeat_instance_textsize">18sp</dimen>
+    <dimen name="columngroup_repeat_instance_margin">20dp</dimen>
+    <dimen name="columngroup_repeat_instance_margin_top">10dp</dimen>
+    <dimen name="columngroup_repeat_instance_margin_bottom">15dp</dimen>
+
     <dimen name="column_margin_left">15dp</dimen>
     <dimen name="column_margin_top">10dp</dimen>
     <dimen name="column_name_textsize">16sp</dimen>

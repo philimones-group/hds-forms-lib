@@ -149,4 +149,14 @@ public class Column {
     public void setDisplayStyle(String displayStyle) {
         this.displayStyle = displayStyle;
     }
+
+    public void addDisplayCondition(String xdisplayCondition) {
+        if (!StringTools.isBlank(xdisplayCondition)){
+            if (StringTools.isBlank(this.displayCondition)){
+                this.displayCondition = xdisplayCondition;
+            } else {
+                this.displayCondition = "(" + xdisplayCondition + ") and (" + this.displayCondition + ")";
+            }
+        }
+    }
 }

@@ -69,6 +69,12 @@ public class ColumnGroup {
         this.header = header;
     }
 
+    public void addDisplayCondition(String displayCondition){
+        this.columns.forEach( column -> {
+            column.addDisplayCondition(displayCondition);
+        });
+    }
+
     @Override
     public String toString() {
         return "ColumnGroup{" +  getColumns().stream().map(t -> t.getName()+":"+t.getType()).collect(Collectors.joining(",")) + "}";

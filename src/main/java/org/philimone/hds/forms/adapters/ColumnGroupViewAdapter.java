@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 
 import java.util.ArrayList;
@@ -245,5 +246,17 @@ public class ColumnGroupViewAdapter extends FragmentStateAdapter {
 
     public List<ColumnGroupView> getDefaultFragments() {
         return this.defaultFragments;
+    }
+
+    public List<ColumnGroupView> getRepeatGroupViews(ColumnRepeatGroup repeatGroup){
+        List<ColumnGroupView> list = new ArrayList<>();
+
+        this.defaultFragments.forEach( cgView -> {
+            if (repeatGroup.equals(cgView.getColumnRepeatGroup())){
+                list.add(cgView);
+            }
+        });
+
+        return list;
     }
 }

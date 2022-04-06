@@ -37,6 +37,7 @@
     <string name="datetime_selector_button_lbl">Select date</string>
     <string name="datetime_selector_not_selected_lbl">Date not selected</string>
 
+    <string name="repeat_group_instance_index_lbl">%1$s of %2$s</string>
 
     <string name="info_lbl">Info</string>
     <string name="error_lbl">Error</string>

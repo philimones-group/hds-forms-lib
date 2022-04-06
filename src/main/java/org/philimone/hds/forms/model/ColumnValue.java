@@ -36,6 +36,10 @@ public class ColumnValue implements Serializable {
     private boolean errors;
     private String errorMessage;
 
+    public ColumnValue() {
+
+    }
+
     public ColumnValue(int columnGroupId, int columnId, Column column) {
         this.columnGroupId = columnGroupId;
         this.columnId = columnId;
