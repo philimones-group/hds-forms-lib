@@ -7,9 +7,12 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.enums.ColumnType;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.math.BigDecimal;
 
 public class ColumnTextView extends ColumnView {
 
@@ -49,6 +52,31 @@ public class ColumnTextView extends ColumnView {
     @Override
     public String getValue() {
         return this.txtValue.getText().toString();
+    }
+
+    public Integer getValueAsInt(){
+        if (column.getType() == ColumnType.INTEGER) {
+            try {
+                return Integer.parseInt(getValue());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    public BigDecimal getValueDecimal(){
+        if (column.getType() == ColumnType.DECIMAL) {
+            try {
+                return new BigDecimal(getValue());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     @Override

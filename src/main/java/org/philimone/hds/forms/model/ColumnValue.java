@@ -57,14 +57,20 @@ public class ColumnValue implements Serializable {
     }
 
     private void retrieveValues(ColumnView columnView) {
-        if (columnView instanceof ColumnTextView || columnView instanceof ColumnSelectView || columnView.getType()==ColumnType.STRING) { //TEXTBOX.STRING
+        if (columnView instanceof ColumnTextView) {
             this.value = columnView.getValue();
+
+            ColumnTextView columntxt = (ColumnTextView) columnView;
+
+            if (columnView.getType()==ColumnType.DECIMAL) { this.decimalValue = columntxt.getValueDecimal(); }
+            if (columnView.getType()==ColumnType.INTEGER) { this.integerValue = columntxt.getValueAsInt(); }
         }
         if (columnView instanceof ColumnTextboxView) {
+            this.value = columnView.getValue();
+
             ColumnTextboxView columntxt = (ColumnTextboxView) columnView;
             if (columntxt.getType()==ColumnType.DECIMAL) { this.decimalValue = columntxt.getValueDecimal(); }
             if (columntxt.getType()==ColumnType.INTEGER) { this.integerValue = columntxt.getValueAsInt(); }
-            this.value = columnView.getValue();
         }
         if (columnView instanceof ColumnDateView) {
             this.dateValue = ((ColumnDateView) columnView).getValueAsDate();
@@ -72,6 +78,9 @@ public class ColumnValue implements Serializable {
         }
         if (columnView instanceof ColumnDateTimeView) {
             this.dateValue = ((ColumnDateTimeView) columnView).getValueAsDate();
+            this.value = columnView.getValue();
+        }
+        if (columnView instanceof ColumnSelectView) { //TEXTBOX.STRING
             this.value = columnView.getValue();
         }
         if (columnView instanceof ColumnMultiSelectView) {
