@@ -106,6 +106,12 @@ public class ExcelFormParser implements FormParser {
 
                     if (cellName == null || cellName.isEmpty()) continue;
 
+                    //CONVERT TRUE OR FALSE TO UPPERCASE
+                    cellCalculation = convertBooleanUppercase(cellCalculation);
+                    cellRequired = convertBooleanUppercase(cellRequired);
+                    cellReadonly = convertBooleanUppercase(cellReadonly);
+                    cellDisplay = convertBooleanUppercase(cellDisplay);
+
                     if (cellType.equals("start repeat")){
 
                         repeatGroup = new ColumnRepeatGroup(cellName, settings.getRepeatNodeName(cellName));
@@ -161,6 +167,15 @@ public class ExcelFormParser implements FormParser {
         }
 
         return null;
+    }
+
+    private String convertBooleanUppercase(String cellCalculation) {
+        if (cellCalculation == null) return cellCalculation;
+
+        cellCalculation = cellCalculation.replace("true", "TRUE");
+        cellCalculation = cellCalculation.replace("false", "TRUE");
+
+        return cellCalculation;
     }
 
     private boolean getBooleanValue(String booleanValue) {

@@ -13,6 +13,7 @@ import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
 import org.philimone.hds.forms.listeners.GestureListener;
 import org.philimone.hds.forms.listeners.OnSwipeListener;
+import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.utilities.StringTools;
 import org.philimone.hds.forms.widget.dialog.ToastX;
@@ -32,7 +33,7 @@ public class FormColumnSlider extends LinearLayout {
     private int minPages;
     private int maxPages;
     private OnNewPageSelectedEvents pageEvents = OnNewPageSelectedEvents.NO_ACTION;
-
+    private FormFragment formFragment;
 
     public enum SlideDirection { BACKWARDS, FORWARDS}
 
@@ -48,6 +49,14 @@ public class FormColumnSlider extends LinearLayout {
         super(context, attrs);
         this.mContext = context;
         init();
+    }
+
+    public FormFragment getFormFragment() {
+        return formFragment;
+    }
+
+    public void setFormFragment(FormFragment formFragment) {
+        this.formFragment = formFragment;
     }
 
     @Override
@@ -194,10 +203,7 @@ public class FormColumnSlider extends LinearLayout {
             ColumnValue columnValue = cview.getColumnValue();
 
             if (columnValue.isRequired() && StringTools.isBlank(columnValue.getValue())){
-                view.showToastMessage(R.string.column_required_lbl);
-                //focus the input
-                cview.setFocusable(true);
-                cview.requestFocus();
+                displayRequiredToastMessage(view, cview);
                 return true;
             }
         }
@@ -205,9 +211,22 @@ public class FormColumnSlider extends LinearLayout {
         return false;
     }
 
+    public void displayRequiredToastMessage(ColumnGroupView view, ColumnView cview){
+        //check if FormFragment is in resume mode - if it is close it
+        if (formFragment != null){
+            formFragment.closeResumeView();
+        }
+
+        view.showToastMessage(R.string.column_required_lbl);
+        //focus the input
+        cview.setFocusable(true);
+        cview.requestFocus();
+    }
+
     public boolean hasAnyRequiredEmptyField() {
 
         if (isCurrentRequiredEmptyField()){
+            Log.d("current required", "");
             return true;
         }
 

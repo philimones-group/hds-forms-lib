@@ -120,7 +120,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         initPermissions();
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, boolean bgMode, FormCollectionListener formListener) {
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
@@ -130,6 +130,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         formFragment.preloadedColumnValues = new PreloadMap();
         formFragment.instancesDirPath = instancesDirPath;
         formFragment.backgroundMode = bgMode;
+        formFragment.resumeMode = gotoResume;
 
         formFragment.form.setPostExecution(executeOnUpload);
 
@@ -168,15 +169,15 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, form, instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
+        return newInstance(fragmentManager, form, instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
     }
 
     public static FormFragment newInstance(FragmentManager fragmentManager, File hFormXlsFile, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
+        return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
     }
 
     public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, formListener);
+        return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
     }
 
     @Override
@@ -258,6 +259,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         });
 
         this.txtFormTitle.setText(form.getFormName());
+
+        formSlider.setFormFragment(this);
 
         initColumnViews();
     }
@@ -342,7 +345,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private void onResumeListItemClicked(int position) {
         ColumnViewDataAdapter adapter = (ColumnViewDataAdapter) this.lvResumeColumns.getAdapter();
-        Log.d("position", ""+position +", adapter="+adapter);
+        //Log.d("position", ""+position +", adapter="+adapter);
         if (adapter != null) {
             closeResumeView();
             ColumnView columnView = adapter.getItem(position);
@@ -350,10 +353,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         }
     }
 
-    private void closeResumeView(){
-        this.resumeMode = false;
-        this.formResumeLayout.setVisibility(View.GONE);
-        this.formContentLayout.setVisibility(View.VISIBLE);
+    public void closeResumeView(){
+        if (this.resumeMode){
+            this.resumeMode = false;
+            this.formResumeLayout.setVisibility(View.GONE);
+            this.formContentLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void openResumeView(){
@@ -410,6 +415,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                     if (repeatGroup.getRepeatCountType()== RepeatCountType.VARIABLE){
                         //special group view (hidden), used to create anothers - the first instance of a repeat group powered by variable number
+                        //******** TO BE DONE FOR PREGNANCY OUTCOME ***************
                         ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, repeatGroup.getColumnsGroups().get(0), 0, true, this);
                         groupViews.add(groupView);
                         this.columnGroupViewList.add(groupView);
