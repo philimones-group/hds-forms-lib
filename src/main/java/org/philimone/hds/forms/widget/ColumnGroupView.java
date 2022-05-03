@@ -166,6 +166,8 @@ public class ColumnGroupView extends LinearLayout {
             this.formRepeatGroupLayout.setVisibility(GONE);
         }
 
+        boolean oneIsHidden = false;
+
         for (Column column : this.columnGroup.getColumns() ) {
             ColumnView view = null;
 
@@ -226,6 +228,18 @@ public class ColumnGroupView extends LinearLayout {
                 columnViews.add(view);
             }
 
+            if (column.isHidden()){
+                oneIsHidden = true;
+            }
+
+        }
+
+        if (oneIsHidden) {
+            Log.d("one is hidden", toString()+", CSIZE="+columnViews.size());
+           if (columnViews.size()==1) {
+               this.setHidden(true); //set columngroup view hidden
+           }
+
         }
 
     }
@@ -256,7 +270,7 @@ public class ColumnGroupView extends LinearLayout {
     }
 
     public boolean isDisplayable() {
-        return displayable;
+        return !hidden && displayable;
     }
 
     public void setDisplayable(boolean displayable) {

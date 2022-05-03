@@ -81,6 +81,7 @@ public class ExcelFormParser implements FormParser {
             int readonly_index = mapHeaderIndex.get("readonly");
             int display_index = mapHeaderIndex.get("display_condition");
             int display_style_index = mapHeaderIndex.get("display_style");
+            int hidden_index = mapHeaderIndex.containsKey("hidden") ? mapHeaderIndex.get("hidden") : -1;
 
 
             HForm form = new HForm(settings.formId, settings.formName);
@@ -103,6 +104,7 @@ public class ExcelFormParser implements FormParser {
                     String cellReadonly = getCellValue(row.getCell(readonly_index));
                     String cellDisplay = getCellValue(row.getCell(display_index));
                     String cellDisplayStyle = getCellValue(row.getCell(display_style_index));
+                    String cellHidden =hidden_index==-1 ? null : getCellValue(row.getCell(hidden_index));
 
                     if (cellName == null || cellName.isEmpty()) continue;
 
@@ -111,6 +113,7 @@ public class ExcelFormParser implements FormParser {
                     cellRequired = convertBooleanUppercase(cellRequired);
                     cellReadonly = convertBooleanUppercase(cellReadonly);
                     cellDisplay = convertBooleanUppercase(cellDisplay);
+                    cellHidden = convertBooleanUppercase(cellHidden);
 
                     if (cellType.equals("start repeat")){
 
@@ -143,6 +146,13 @@ public class ExcelFormParser implements FormParser {
                     }
 
                     Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle);
+                    Log.d("hidden cell", ""+cellHidden);
+                    if (!StringTools.isBlank(cellHidden)){
+                        boolean hiddenValue = getBooleanValue(cellHidden);
+                        column.setHidden(hiddenValue);
+
+                    }
+
                     group.addColumn(column);
 
                     if (repeatGroup != null){ //is collecting repeat group inner columns

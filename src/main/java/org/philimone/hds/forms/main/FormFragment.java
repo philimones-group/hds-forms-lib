@@ -373,13 +373,13 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private void loadResumeListView() {
         List<ColumnView> list = new ArrayList<>();
 
-        columnGroupViewList.forEach( columnGroupView -> {
-            if (!columnGroupView.isHidden()){
-                columnGroupView.getColumnViews().forEach(columnView -> {
+        for (ColumnGroupView columnGroupView : columnGroupViewList) {
+            if (!columnGroupView.isHidden()) {
+                for (ColumnView columnView : columnGroupView.getColumnViews()) {
                     list.add(columnView);
-                });
+                }
             }
-        });
+        }
 
         ColumnViewDataAdapter adapter = new ColumnViewDataAdapter(this.getContext(), list);
         this.lvResumeColumns.setAdapter(adapter);
@@ -448,24 +448,22 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         final ColumnView[] previous = {null};
         final ColumnGroupView[] previousGroups = {null};
-        this.columnGroupViewList.forEach(columnGroupView -> {
-
+        for (ColumnGroupView columnGroupView : this.columnGroupViewList) {
             if (previousGroups[0] != null) {
                 previousGroups[0].setNextGroupView(columnGroupView);
                 columnGroupView.setParentGroupView(previousGroups[0]);
             }
             previousGroups[0] = columnGroupView;
 
-            columnGroupView.getColumnViews().forEach(columnView -> {
-
+            for (ColumnView columnView : columnGroupView.getColumnViews()) {
                 if (previous[0] != null) {
                     previous[0].setNextColumn(columnView);
                     columnView.setParentColumn(previous[0]);
                 }
                 previous[0] = columnView;
 
-            });
-        });
+            }
+        }
 
         // VIEWPAGER
         ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(this, groupViews);
@@ -486,7 +484,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         CollectedDataMap map = new CollectedDataMap();
         //List<ColumnValue> list = new ArrayList<>();
 
-        columnGroupViewList.forEach( columnGroupView -> {
+        for (ColumnGroupView columnGroupView : columnGroupViewList) {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
                 ColumnValue columnValue = new ColumnValue(columnGroupView, columnView);
 
@@ -498,12 +496,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                     columnValue.setValue(endTimestamp);
                 }
 
-                if (columnGroupView.belongsToRepeatGroup()){
+                if (columnGroupView.belongsToRepeatGroup()) {
                     ColumnRepeatGroup repeatGroup = columnGroupView.getColumnRepeatGroup();
 
                     //repeatGroup.name, columnValue.name, columnGroupView.repeatGroupIndex
                     RepeatColumnValue repeatColumnValue = map.getRepeatColumn(repeatGroup.getName());
-                    repeatColumnValue = repeatColumnValue==null ? new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName()) : repeatColumnValue;
+                    repeatColumnValue = repeatColumnValue == null ? new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName()) : repeatColumnValue;
                     repeatColumnValue.put(columnGroupView.getRepeatGroupIndex(), columnValue);
 
                     map.put(repeatColumnValue);
@@ -513,39 +511,39 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 map.put(columnValue.getColumnName(), columnValue);
                 //list.add(columnValue);
             }
-        });
+        }
 
         return map;
     }
 
     private void loadColumnValues(){
 
-        columnGroupViewList.forEach( columnGroupView -> {
+        for (ColumnGroupView columnGroupView : columnGroupViewList) {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
 
                 Column column = columnView.getColumn();
 
                 if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
-                    ((ColumnTextView) columnView).setValue(this.getDeviceId());
+                    columnView.setValue(this.getDeviceId());
                 }
 
                 if (columnView.getType() == ColumnType.TIMESTAMP && columnView instanceof ColumnTextView) {
-                    ((ColumnTextView) columnView).setValue(this.getTimestamp());
+                    columnView.setValue(this.getTimestamp());
                 }
 
-                if (column.getType()==ColumnType.INSTANCE_UUID && column.isValueBlank()) { //id column - set only once
-                    String uuid = UUID.randomUUID().toString().replaceAll("-","");
+                if (column.getType() == ColumnType.INSTANCE_UUID && column.isValueBlank()) { //id column - set only once
+                    String uuid = UUID.randomUUID().toString().replaceAll("-", "");
 
                     columnView.setValue(uuid);
 
                     //Log.d("uuid-tag", ""+columnView.getValue());
                 }
 
-                if (columnGroupView.belongsToRepeatGroup()){
+                if (columnGroupView.belongsToRepeatGroup()) {
                     ColumnRepeatGroup repeatGroup = columnGroupView.getColumnRepeatGroup();
                     Integer repeatIndex = columnGroupView.getRepeatGroupIndex();
 
-                    if (this.preloadedColumnValues.containsKey(repeatGroup.getName())){ //contains a RepeatObject?
+                    if (this.preloadedColumnValues.containsKey(repeatGroup.getName())) { //contains a RepeatObject?
                         RepeatObject repeatObject = this.preloadedColumnValues.getRepeatObject(repeatGroup.getName());
                         String value = repeatObject.get(repeatIndex, column.getName());
                         columnView.setValue(value);
@@ -554,19 +552,19 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 }
 
                 //overwrite values with pre-loaded data
-                if (this.preloadedColumnValues.containsKey(column.getName())){
+                if (this.preloadedColumnValues.containsKey(column.getName())) {
                     String value = this.preloadedColumnValues.getStringValue(column.getName());
                     columnView.setValue(value);
                 }
 
-                if (column.getType()==ColumnType.GPS) {
-                    Map<String,Double> gpsValues = getGpsPreloadedValues(column);
-                    ((ColumnGpsView)columnView).setValues(gpsValues);
+                if (column.getType() == ColumnType.GPS) {
+                    Map<String, Double> gpsValues = getGpsPreloadedValues(column);
+                    ((ColumnGpsView) columnView).setValues(gpsValues);
                 }
 
 
             }
-        });
+        }
 
         //update visibility of fragments
         if (formSlider.getAdapter() != null) {
@@ -731,12 +729,25 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         show(fragmentManager, "hform");
     }
 
-    public static void UpdateEndTimestamp(HForm form, String xmlSavedFormPath) {
+    public static void updateEndTimestamp(HForm form, String xmlSavedFormPath) {
         if (!StringTools.isBlank(xmlSavedFormPath)){
 
             Map<String,String> map = new LinkedHashMap<>();
             map.put(ColumnType.END_TIMESTAMP.getCode(), getTimestamp());
 
+
+            XmlDataUpdater updater = new XmlDataUpdater(form, xmlSavedFormPath);
+            updater.updateValues(map);
+        }
+    }
+
+    public static void updateColumnOnXML(HForm form, String xmlSavedFormPath, String columnName, String columnValue){
+        if (!StringTools.isBlank(xmlSavedFormPath) && !StringTools.isBlank(columnName)){
+
+            columnValue = StringTools.isBlank(columnValue) ? "" : columnValue;
+
+            Map<String,String> map = new LinkedHashMap<>();
+            map.put(columnName, columnValue);
 
             XmlDataUpdater updater = new XmlDataUpdater(form, xmlSavedFormPath);
             updater.updateValues(map);
