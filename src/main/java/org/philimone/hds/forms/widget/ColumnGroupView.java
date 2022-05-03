@@ -270,7 +270,7 @@ public class ColumnGroupView extends LinearLayout {
     }
 
     public boolean isDisplayable() {
-        return !hidden && displayable;
+        return displayable;
     }
 
     public void setDisplayable(boolean displayable) {

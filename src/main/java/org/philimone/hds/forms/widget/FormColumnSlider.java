@@ -127,7 +127,7 @@ public class FormColumnSlider extends LinearLayout {
 
             Log.d("prev-try", ""+previous+", "+prevGroupView.getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(","))+", displayable="+prevGroupView.isDisplayable()+", fragmentVisible="+prevGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
-            if (prevGroupView.isFragmentVisible()) {
+            if (prevGroupView.isFragmentVisible() && !prevGroupView.isHidden()) {
                 Log.d("show", ""+previous+", "+prevGroupView);
                 formViewPager.setCurrentItem(previous, true);
                 break;
@@ -158,7 +158,7 @@ public class FormColumnSlider extends LinearLayout {
             Log.d("next-try", ""+next+", "+nextGroupView+", displayable=("+displayableBefore+"->"+nextGroupView.isDisplayable()+"), fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
 
-            if (nextGroupView.isDisplayable()) {
+            if (nextGroupView.isDisplayable() && !nextGroupView.isHidden()) {
 
                 //if there is calculation execute it
 
