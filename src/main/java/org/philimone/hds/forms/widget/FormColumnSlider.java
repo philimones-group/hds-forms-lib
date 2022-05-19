@@ -125,10 +125,10 @@ public class FormColumnSlider extends LinearLayout {
 
         while (prevGroupView != null) {
 
-            Log.d("prev-try", ""+previous+", "+prevGroupView.getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(","))+", displayable="+prevGroupView.isDisplayable()+", fragmentVisible="+prevGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
+            //Log.d("prev-try", ""+previous+", "+prevGroupView.getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(","))+", displayable="+prevGroupView.isDisplayable()+", fragmentVisible="+prevGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
             if (prevGroupView.isFragmentVisible() && !prevGroupView.isHidden()) {
-                Log.d("show", ""+previous+", "+prevGroupView);
+                //Log.d("show", ""+previous+", "+prevGroupView);
                 formViewPager.setCurrentItem(previous, true);
                 break;
             } else {
@@ -155,7 +155,7 @@ public class FormColumnSlider extends LinearLayout {
             boolean displayableBefore = nextGroupView.isDisplayable();
             nextGroupView.evaluateDisplayCondition(); //execute the display condition script
 
-            Log.d("next-try", ""+next+", "+nextGroupView+", displayable=("+displayableBefore+"->"+nextGroupView.isDisplayable()+"), fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
+            //Log.d("next-try", ""+next+", "+nextGroupView+", displayable=("+displayableBefore+"->"+nextGroupView.isDisplayable()+"), fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
 
             if (nextGroupView.isDisplayable() && !nextGroupView.isHidden()) {
@@ -165,7 +165,7 @@ public class FormColumnSlider extends LinearLayout {
 
                 getAdapter().showPage(next, nextGroupView);
 
-                Log.d("show", ""+next+", nextg="+nextGroupView+", current="+ (getAdapter().getItemView(next)) +"/"+ formViewPager.getCurrentItem() +", RealNext="+(getAdapter().getItemView(next+1)));
+                //Log.d("show", ""+next+", nextg="+nextGroupView+", current="+ (getAdapter().getItemView(next)) +"/"+ formViewPager.getCurrentItem() +", RealNext="+(getAdapter().getItemView(next+1)));
                 formViewPager.setCurrentItem(next);
 
                 break;
@@ -226,7 +226,7 @@ public class FormColumnSlider extends LinearLayout {
     public boolean hasAnyRequiredEmptyField() {
 
         if (isCurrentRequiredEmptyField()){
-            Log.d("current required", "");
+            //Log.d("current required", "");
             return true;
         }
 

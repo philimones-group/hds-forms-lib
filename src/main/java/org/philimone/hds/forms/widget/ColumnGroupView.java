@@ -235,7 +235,7 @@ public class ColumnGroupView extends LinearLayout {
         }
 
         if (oneIsHidden) {
-            Log.d("one is hidden", toString()+", CSIZE="+columnViews.size());
+            //Log.d("one is hidden", toString()+", CSIZE="+columnViews.size());
            if (columnViews.size()==1) {
                this.setHidden(true); //set columngroup view hidden
            }

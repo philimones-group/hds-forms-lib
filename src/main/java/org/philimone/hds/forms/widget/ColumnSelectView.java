@@ -84,7 +84,7 @@ public class ColumnSelectView extends ColumnView {
 
             this.rdbOptions.add(new SelectOption(value, optionValue.label, button, optionValue.readonly));
         }
-        Log.d("readonly-"+column.getName(), ""+column.isReadOnly());
+        //Log.d("readonly-"+column.getName(), ""+column.isReadOnly());
         this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
     }
 

@@ -28,7 +28,7 @@ public class ColumnGroupViewAdapter extends FragmentStateAdapter {
         super(fragment);
 
         groups.forEach(columnGroupView -> {
-            Log.d("cgv "+columnGroupView.toString(), "hidden="+columnGroupView.isHidden());
+            //Log.d("cgv "+columnGroupView.toString(), "hidden="+columnGroupView.isHidden());
             if (!columnGroupView.isHidden()) {
 
                 defaultFragments.add(columnGroupView);

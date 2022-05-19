@@ -184,7 +184,7 @@ public abstract class ColumnView extends LinearLayout {
 
             displayCondition = translateExpression(displayCondition);
 
-            Log.d("displaycondition", ""+displayCondition);
+            //Log.d("displaycondition", ""+displayCondition);
             //evaluate expression on a script engine
             String result = getActivity().evaluateExpression(displayCondition).toString();
             boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
@@ -215,10 +215,10 @@ public abstract class ColumnView extends LinearLayout {
             }
         }
 
-        Log.d("expression", calculation);
+        //Log.d("expression", calculation);
         String calculationResult = getActivity().evaluateExpression(calculation).toString();
 
-        Log.d("expression-calc", "result: "+calculationResult);
+        //Log.d("expression-calc", "result: "+calculationResult);
 
         //set column value
         setValue(calculationResult); //Update the value according to the type
