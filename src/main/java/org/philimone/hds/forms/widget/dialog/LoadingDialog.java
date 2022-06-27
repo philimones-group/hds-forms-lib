@@ -9,6 +9,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatDialog;
 
 public class LoadingDialog extends AppCompatDialog {
@@ -42,6 +43,12 @@ public class LoadingDialog extends AppCompatDialog {
 
     public String getMessage(){
         return message;
+    }
+
+    public void setMessage(@StringRes int messageId) {
+        if (txtLoadingMessage != null) {
+            txtLoadingMessage.setText(messageId);
+        }
     }
 
     public void setMessage(String message){

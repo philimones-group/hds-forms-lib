@@ -629,7 +629,9 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         TelephonyManager mTelephonyManager = (TelephonyManager) getCurrentContext().getSystemService(Context.TELEPHONY_SERVICE);
 
         String deviceId = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            deviceId = Settings.Secure.getString(getCurrentContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             deviceId = mTelephonyManager.getImei();
         }
         String orDeviceId = "";
@@ -641,8 +643,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             } else {
                 orDeviceId = "imei:" + deviceId;
             }
-        }
-        if (deviceId == null) {
+        } else {
             // no SIM -- WiFi only
             // Retrieve WiFiManager
             WifiManager wifi = (WifiManager) getCurrentContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
