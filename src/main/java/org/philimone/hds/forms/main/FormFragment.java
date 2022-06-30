@@ -155,14 +155,14 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         formFragment.form.setPostExecution(executeOnUpload);
 
-        if (updatedPreloadedValues != null) {
-            formFragment.preloadedColumnValues.putAll(updatedPreloadedValues);
-        }
-
         if (!StringTools.isBlank(xmlSavedFormPath)){
 
             Map<String,String> map = XmlDataReader.getXmlMappedData(xmlSavedFormPath);
             formFragment.preloadedColumnValues.putAll(map);
+        }
+
+        if (updatedPreloadedValues != null) {
+            formFragment.preloadedColumnValues.putAll(updatedPreloadedValues);
         }
 
         return formFragment;
