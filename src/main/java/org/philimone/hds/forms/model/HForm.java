@@ -116,4 +116,13 @@ public class HForm {
             colPostExec.setValue(postExecution+"");
         }
     }
+
+    public boolean isRepeatColumnName(String columnName) {
+        for (ColumnGroup columnGroup : this.columns){
+            String cName = columnGroup.getName();
+
+            if (cName != null && columnName != null && columnGroup.getName().equals(columnName) && columnGroup instanceof ColumnRepeatGroup) return true;
+        }
+        return false;
+    }
 }

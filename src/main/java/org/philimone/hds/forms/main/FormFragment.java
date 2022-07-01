@@ -157,7 +157,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         if (!StringTools.isBlank(xmlSavedFormPath)){
 
-            Map<String,String> map = XmlDataReader.getXmlMappedData(xmlSavedFormPath);
+            Map<String,Object> map = XmlDataReader.getXmlMappedData(xmlSavedFormPath, form);
             formFragment.preloadedColumnValues.putAll(map);
         }
 

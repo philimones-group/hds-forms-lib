@@ -2,6 +2,12 @@ package org.philimone.hds.forms.parsers;
 
 import android.util.Log;
 
+import org.philimone.hds.forms.model.HForm;
+import org.philimone.hds.forms.model.RepeatObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -10,85 +16,89 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class XmlDataReader {
 
-    public static Map<String,String> getXmlMappedData(String xmlFileName) {
-        Map<String, String> map = new LinkedHashMap<>();
+    public static Map<String,Object> getXmlMappedData(String xmlFilename, HForm form) {
+        Map<String, Object> map = new LinkedHashMap<>();
 
         try {
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            XmlPullParser parser = factory.newPullParser();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new FileInputStream(xmlFilename));
 
-            FileInputStream fis = new FileInputStream(xmlFileName);
+            Node node = doc.getElementsByTagName(form.getFormId()).item(0);
 
-            parser.setInput(fis, null);
-
-            int eventType = parser.getEventType();
-
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                String name = null;
-
-                //Log.d("beforestart1", parser.getName()+", event="+eventType);
-
-                switch (eventType) {
-                    case XmlPullParser.START_DOCUMENT:
-                        eventType = parser.next();
-                        name = parser.getName(); //any form id tag
-
-                        parser.nextTag(); //jump to first tag after form id
-                        Map<String, String> tempMap = readNodes(name, parser);
-                        map.putAll(tempMap);
-                        break;
-                }
-
-                eventType = parser.next();
+            if (node == null) {
+                return map;
             }
 
-            fis.close();
+            readMainNodes(node, map, form);
 
-        }  catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.d("processXml", "finished!");
+
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
         }
 
         return map;
     }
 
-    private static Map<String,String> readNodes(String formId, XmlPullParser parser) throws XmlPullParserException, IOException {
-        Map<String, String> map = new LinkedHashMap<>();
+    private static void readMainNodes(Node node, Map<String,Object> map, HForm form) {
+        NodeList nodes = node.getChildNodes();
 
-        while (notEndOfXmlDoc(formId, parser)) {
+        //Log.d("executing-readmain",""+node.getNodeName());
 
-            //<first>value</first> or <first />
-            //is at: <first> or <first />
-            String name = parser.getName();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node n = nodes.item(i);
+            //Log.d("odk-xml-param", ""+n.getNodeName()+", "+n.getTextContent());
 
-            if (!isEmptyTag(name, parser)) { //not <first />
-                parser.next();               //goto: value
-                String value = parser.getText();
-                parser.nextTag();            //goto: </first>
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
 
-                map.put(name, value);
-            } else {
-                parser.nextTag();
+                if (n.hasChildNodes() && form.isRepeatColumnName(n.getNodeName())) {
+                    //process repeat groups
+                    String repeatNodeName = n.getNodeName();
+                    NodeList repeatChilds = n.getChildNodes();
+
+                    RepeatObject newRepObjList = new RepeatObject();
+                    for (int ri = 0; ri < repeatChilds.getLength(); ri++) {
+                        Node nodeRepObj = repeatChilds.item(ri);
+                        NodeList childElements = nodeRepObj.getChildNodes();
+
+                        //the repeat object doesnt care about the node name only its childs
+
+                        Map<String, String> obj = newRepObjList.createNewObject();
+                        for (int index=0; index < childElements.getLength(); index++) {
+                            Node elementNode = childElements.item(index);
+                            String elementName = elementNode.getNodeName();
+                            String elementValue = elementNode.getTextContent();
+
+                            obj.put(elementName, elementValue==null ? "" : elementValue);
+                        }
+                    }
+
+                    map.put(repeatNodeName, newRepObjList);
+
+                } else {
+                    String name = n.getNodeName();
+                    String value = n.getTextContent();
+
+                    map.put(name, value==null ? "" : value);
+                }
+
             }
-
-            parser.nextTag();
         }
-
-        return map;
+        //Log.d("finished", sbuilder.toString());
     }
 
-    private static boolean notEndOfXmlDoc(String element, XmlPullParser parser) throws XmlPullParserException {
-        return !(element.equals(parser.getName()) && parser.getEventType() == XmlPullParser.END_TAG);
-    }
-
-    private static boolean isEmptyTag(String element, XmlPullParser parser) throws XmlPullParserException {
-        return (element.equals(parser.getName()) && parser.isEmptyElementTag());
-    }
 }

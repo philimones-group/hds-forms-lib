@@ -52,6 +52,10 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     }
 
     private void onButtonSelectDateClicked() {
+        if (dateValue != null) {
+            this.datePicker.setDefaultDate(dateValue);
+        }
+
         this.datePicker.show();
     }
 

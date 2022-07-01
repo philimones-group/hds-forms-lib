@@ -1,6 +1,7 @@
 package org.philimone.hds.forms.widget.dialog;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -12,6 +13,7 @@ import android.widget.TimePicker;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.utilities.StringTools;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
@@ -31,6 +33,8 @@ public class DateTimeSelector extends AppCompatDialog {
     private String dialogTitle;
     private String dialogMessage;
     private boolean dateWithTime;
+
+    private Date defaultDateValue;
 
     public enum Buttons { OK, CANCEL };
 
@@ -96,6 +100,10 @@ public class DateTimeSelector extends AppCompatDialog {
         this.dtpColumnTimeValue.setVisibility(dateWithTime ? View.VISIBLE : View.GONE);
     }
 
+    public void setDefaultDate(Date date) {
+        this.defaultDateValue = date;
+    }
+
     private void onCancelCicked(){
         dismiss();
     }
@@ -129,6 +137,24 @@ public class DateTimeSelector extends AppCompatDialog {
     }
 
     public void setTexts(){
+
+        if (defaultDateValue != null) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(defaultDateValue);
+
+            dtpColumnDateValue.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+            if (dateWithTime) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    dtpColumnTimeValue.setHour(cal.get(Calendar.HOUR_OF_DAY));
+                    dtpColumnTimeValue.setMinute(cal.get(Calendar.MINUTE));
+                } else {
+                    dtpColumnTimeValue.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
+                    dtpColumnTimeValue.setCurrentMinute(cal.get(Calendar.MINUTE));
+                }
+
+            }
+        }
 
         //if (this.txtDialogTitle != null){
         //    this.txtDialogTitle.setText(this.dialogTitle);

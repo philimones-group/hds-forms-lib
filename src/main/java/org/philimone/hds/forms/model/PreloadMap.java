@@ -11,7 +11,7 @@ public class PreloadMap implements Serializable {
         this.map = new LinkedHashMap<>();
     }
 
-    public PreloadMap(Map<String, String> map){
+    public PreloadMap(Map<String, Object> map){
         this();
         putAll(map);
     }
@@ -28,7 +28,7 @@ public class PreloadMap implements Serializable {
         this.map.putAll(preloadMap.map);
     }
 
-    public void putAll(Map<String, String> mapValues){
+    public void putAll(Map<String, Object> mapValues){
         this.map.putAll(mapValues);
     }
 
