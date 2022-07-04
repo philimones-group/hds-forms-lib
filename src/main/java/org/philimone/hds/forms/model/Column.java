@@ -22,6 +22,8 @@ public class Column {
     private String displayCondition; /* [#variable|value][><=!=][#variable|value]*/
     private String displayStyle; /* selected_only*/
 
+    private boolean optionsConditionallyDisplayable;
+
     public static String DISPLAY_STYLE_SELECTED_ONLY = "selected_only";
 
     public Column() {
@@ -33,7 +35,11 @@ public class Column {
 
         this.name = name;
         this.type = type;
-        this.typeOptions = typeOptions;
+
+        if (typeOptions != null) {
+            this.typeOptions.putAll(typeOptions);
+        }
+
         this.repeatCount = repeatCount;
         this.value = value;
         this.label = label;
@@ -42,6 +48,8 @@ public class Column {
         this.calculation = calculation;
         this.displayCondition = displayCondition;
         this.displayStyle = displayStyle;
+
+        evaluateOptionsDisplayability();
     }
 
     public String getName() {
@@ -65,13 +73,35 @@ public class Column {
     }
 
     public void setTypeOptions(Map<String, FormOptions.OptionValue> typeOptions) {
-        if (typeOptions != null)
+        if (typeOptions != null) {
             this.typeOptions.putAll(typeOptions);
+            evaluateOptionsDisplayability();
+        }
     }
 
-    public void addTypeOptions(String optionValue, String optionLabel, boolean optionReadonly) {
-        if (optionValue != null && optionLabel != null)
-            this.typeOptions.put(optionValue, new FormOptions.OptionValue(optionLabel, optionReadonly));
+    public void addTypeOptions(String optionValue, String optionLabel, boolean optionReadonly, String optionDisplayCondition) {
+        if (optionValue != null && optionLabel != null) {
+            this.typeOptions.put(optionValue, new FormOptions.OptionValue(optionLabel, optionReadonly, optionDisplayCondition));
+            evaluateOptionsDisplayability();
+        }
+    }
+
+    private void evaluateOptionsDisplayability(){
+
+        if (typeOptions != null && typeOptions.size() > 0) {
+            for (FormOptions.OptionValue optionValue : typeOptions.values()) {
+                if (!StringTools.isBlank(optionValue.displayCondition)) {
+                    this.optionsConditionallyDisplayable = true;
+                    return;
+                }
+            }
+        }
+
+        this.optionsConditionallyDisplayable = false;
+    }
+
+    public boolean isOptionsConditionallyDisplayable() {
+        return this.optionsConditionallyDisplayable;
     }
 
     public String getValue() {

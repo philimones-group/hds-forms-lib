@@ -61,12 +61,20 @@ public class ColumnSelectView extends ColumnView {
         updateValues();
     }
 
+    public void refillOptions(){
+        for (SelectOption selectOption : this.rdbOptions) {
+            RadioButton button = selectOption.button;
+            button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
+        }
+    }
+
     private void fillOptions(){
         Map<String, FormOptions.OptionValue> options = this.column.getTypeOptions();
 
         for (String value : options.keySet()){
             FormOptions.OptionValue optionValue = options.get(value);
 
+            if (!optionValue.displayable) return;
 
             RadioButton button = new RadioButton(this.getContext());
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -79,10 +87,9 @@ public class ColumnSelectView extends ColumnView {
                 button.setClickable(false);
             }
 
-
             this.rdgColumnRadioGroup.addView(button);
 
-            this.rdbOptions.add(new SelectOption(value, optionValue.label, button, optionValue.readonly));
+            this.rdbOptions.add(new SelectOption(optionValue, value, optionValue.label, button, optionValue.readonly));
         }
         //Log.d("readonly-"+column.getName(), ""+column.isReadOnly());
         this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
@@ -112,18 +119,18 @@ public class ColumnSelectView extends ColumnView {
 
                 //like HOH selected, if a readonly value is checked the other options should be disabled
                 if (sop.readonly) {
-                    this.rdbOptions.forEach( selectOption -> {
+                    for (SelectOption selectOption : this.rdbOptions) {
                         selectOption.button.setClickable(false);
-                    });
+                    }
                 }
 
                 //hide all non selected if display_style = selected_only
                 if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_SELECTED_ONLY)){
-                    this.rdbOptions.forEach(selectOption -> {
+                    for (SelectOption selectOption : this.rdbOptions) {
                         if (!selectOption.value.equals(value)) {
                             selectOption.button.setVisibility(GONE);
                         }
-                    });
+                    }
                 }
 
                 sop.button.setEnabled(!sop.readonly);
@@ -157,8 +164,10 @@ public class ColumnSelectView extends ColumnView {
         public String label;
         public RadioButton button;
         public boolean readonly;
+        public FormOptions.OptionValue optionValue;
 
-        public SelectOption(String value, String label, RadioButton button, boolean readonly) {
+        public SelectOption(FormOptions.OptionValue optionValue, String value, String label, RadioButton button, boolean readonly) {
+            this.optionValue = optionValue;
             this.value = value;
             this.label = label;
             this.button = button;

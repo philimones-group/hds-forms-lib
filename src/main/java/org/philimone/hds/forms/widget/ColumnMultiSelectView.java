@@ -58,13 +58,25 @@ public class ColumnMultiSelectView extends ColumnView {
         updateValues();
     }
 
+    public void refillOptions(){
+        for (ColumnMultiSelectView.SelectOption selectOption : this.rdbOptions) {
+            CheckBox button = selectOption.button;
+            button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
+        }
+    }
+
     private void fillOptions(){
         Map<String, FormOptions.OptionValue> options = this.column.getTypeOptions();
+
+        this.rdgColumnRadioGroup.removeAllViews();
+        this.rdbOptions.clear();
 
         for (String value : options.keySet()){
 
             FormOptions.OptionValue optionValue = options.get(value);
             String label = optionValue.label;
+
+            if (!optionValue.displayable) return;
 
             CheckBox button = new CheckBox(this.getContext());
             button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -79,7 +91,7 @@ public class ColumnMultiSelectView extends ColumnView {
 
             this.rdgColumnRadioGroup.addView(button);
 
-            this.rdbOptions.add(new SelectOption(value, label, button, optionValue.readonly));
+            this.rdbOptions.add(new SelectOption(optionValue, value, label, button, optionValue.readonly));
         }
 
         this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
@@ -124,19 +136,19 @@ public class ColumnMultiSelectView extends ColumnView {
             }
 
             if (readonlyChecked) { //any readonly checked
-                this.rdbOptions.forEach( selectOption -> {
+                for (SelectOption selectOption : this.rdbOptions) {
                     selectOption.button.setClickable(false);
-                });
+                }
             }
 
             //hide all non selected if display_style = selected_only
             if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_SELECTED_ONLY)){
                 List<String> valuesList = Arrays.asList(values);
-                this.rdbOptions.forEach(selectOption -> {
+                for (SelectOption selectOption : this.rdbOptions) {
                     if (!valuesList.contains(selectOption.value)) {
                         selectOption.button.setVisibility(GONE);
                     }
-                });
+                }
             }
         }
     }
@@ -171,8 +183,10 @@ public class ColumnMultiSelectView extends ColumnView {
         public String label;
         public CheckBox button;
         public boolean readonly;
+        public FormOptions.OptionValue optionValue;
 
-        public SelectOption(String value, String label, CheckBox button, boolean readonly) {
+        public SelectOption(FormOptions.OptionValue optionValue, String value, String label, CheckBox button, boolean readonly) {
+            this.optionValue = optionValue;
             this.value = value;
             this.label = label;
             this.button = button;

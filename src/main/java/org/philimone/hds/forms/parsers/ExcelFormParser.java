@@ -217,6 +217,7 @@ public class ExcelFormParser implements FormParser {
         Integer defaultLabelIndex = mapHeaderIndex.get("label");
         Integer localizLabelIndex = mapLocaleCellIndex.get("label");
         Integer readonlyIndex = mapHeaderIndex.get("readonly");
+        Integer displaycIndex = mapHeaderIndex.get("display_condition");
         int labelIndex = (localizLabelIndex==null) ? defaultLabelIndex : localizLabelIndex;
 
         for (Row row : sheet1) {
@@ -227,14 +228,17 @@ public class ExcelFormParser implements FormParser {
             Cell cellValue = row.getCell(1);
             Cell cellLabel = row.getCell(labelIndex);
             Cell cellReadonly = readonlyIndex!=null ? row.getCell(readonlyIndex) : null;
+            Cell cellDisplayCondition = displaycIndex!=null ? row.getCell(displaycIndex) : null;
 
             String name = getCellValue(cellName);
             String value = getCellValue(cellValue); //use all as uppercase
             String label = getCellValue(cellLabel);
             String readonlyValue = getCellValue(cellReadonly);
             boolean readonly = (readonlyValue != null && !readonlyValue.isEmpty()) ? getBooleanValue(readonlyValue) : false;
+            String displayCondition = getCellValue(cellDisplayCondition);
 
-            formOptions.put(name, value==null ? value : value.toUpperCase(), label, readonly);
+            formOptions.put(name, value==null ? value : value.toUpperCase(), label, readonly, displayCondition);
+            //Log.d("display-"+name, ""+displayCondition);
         }
 
         return formOptions;

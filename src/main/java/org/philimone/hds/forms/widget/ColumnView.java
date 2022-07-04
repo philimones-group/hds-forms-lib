@@ -12,6 +12,7 @@ import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import org.philimone.hds.forms.utilities.StringTools;
 
 import java.util.ArrayList;
@@ -193,6 +194,28 @@ public abstract class ColumnView extends LinearLayout {
             setDisplayable(visible);
 
         }
+
+        //evaluate also select options display conditions
+        if (column.isOptionsConditionallyDisplayable() && (this instanceof ColumnSelectView || this instanceof ColumnMultiSelectView)) {
+
+            for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()){
+                if (StringTools.isBlank(optionValue.displayCondition)){
+                    optionValue.displayable = true;
+                } else {
+                    displayCondition = translateExpression(optionValue.displayCondition);
+                    String result = getActivity().evaluateExpression(displayCondition).toString();
+                    boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
+                    optionValue.displayable = visible;
+                }
+            }
+
+            if (this instanceof  ColumnSelectView) {
+                ((ColumnSelectView) this).refillOptions();
+            } else {
+                ((ColumnMultiSelectView) this).refillOptions();
+            }
+        }
+
     }
 
     public void evaluateCalculation(){
