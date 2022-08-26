@@ -33,14 +33,20 @@
 
     </LinearLayout>
 
-    <RadioGroup
-        android:id="@+id/rdgColumnRadioGroup"
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        android:textSize="@dimen/column_value_textsize"
-        android:textColor="@color/black">
+        android:layout_height="match_parent" >
 
-    </RadioGroup>
+        <RadioGroup
+            android:id="@+id/rdgColumnRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:textSize="@dimen/column_value_textsize"
+            android:textColor="@color/black">
+
+        </RadioGroup>
+    </HorizontalScrollView>
+
 
 </LinearLayout>

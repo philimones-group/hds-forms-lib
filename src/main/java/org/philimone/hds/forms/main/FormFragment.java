@@ -3,6 +3,7 @@ package org.philimone.hds.forms.main;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.apache.commons.jexl3.JexlBuilder;
@@ -393,13 +395,14 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         //add header layout content
         ColumnGroupView headerGroupView = null;
+        boolean isUsingHeaderLayout = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
 
         if (this.form.hasHeader()) {
             ColumnGroup columnGroup = this.form.getHeader();
             headerGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup, this);
             //this.columnGroupViewList.add(headerGroupView);
 
-            if (formHeaderLayout != null) {
+            if (formHeaderLayout != null && isUsingHeaderLayout) {
                 formHeaderLayout.addView(headerGroupView);
             }
         }
@@ -443,6 +446,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
             } else {
                 this.columnGroupViewList.add(headerGroupView);
+
+                if (isUsingHeaderLayout == false) { //not using header layout
+                    groupViews.add(headerGroupView);
+                }
             }
         }
 

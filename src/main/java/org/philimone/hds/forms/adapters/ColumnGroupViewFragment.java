@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.widget.ColumnGroupView;
@@ -17,6 +18,7 @@ public class ColumnGroupViewFragment extends Fragment {
     private static long ITEM_ID_COUNT;
     private long itemId;
     private ColumnGroupView groupView;
+    private ViewGroup rootView;
 
     public ColumnGroupViewFragment() {
         // Required empty public constructor
@@ -28,6 +30,13 @@ public class ColumnGroupViewFragment extends Fragment {
         fragment.groupView = groupView;
         return fragment;
     }
+
+    /*
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.getView().requestLayout();
+    }*/
 
     public long getItemId() {
         return groupView.getItemId();
@@ -46,12 +55,12 @@ public class ColumnGroupViewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        ViewGroup mainView = (ViewGroup) inflater.inflate(R.layout.column_group_layout, container, false);
-
+        rootView = (ViewGroup) inflater.inflate(R.layout.column_group_layout, container, false);
+        //rootView.requestDisallowInterceptTouchEvent(true);
         removeViews(this.groupView.getParent());
-        mainView.addView(this.groupView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+        rootView.addView(this.groupView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
-        return mainView;
+        return rootView;
     }
 
     public void removeViews(ViewParent viewParent) {

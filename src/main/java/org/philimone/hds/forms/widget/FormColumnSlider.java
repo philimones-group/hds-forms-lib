@@ -1,6 +1,7 @@
 package org.philimone.hds.forms.widget;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -75,6 +76,8 @@ public class FormColumnSlider extends LinearLayout {
 
         this.formViewPager = new ViewPager2(this.getContext());
         this.formViewPager.setUserInputEnabled(false);
+        //this.formViewPager.setBackgroundColor(Color.YELLOW);
+
         this.addView(this.formViewPager, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
         this.gestureDetector = new GestureDetector(mContext, new GestureListener(){

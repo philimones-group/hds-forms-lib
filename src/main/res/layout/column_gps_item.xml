@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/bt_gps_lbl"
-            android:textSize="@dimen/column_value_textsize"
+            android:textSize="@dimen/column_button_textsize"
             android:background="@drawable/nui_btnd_rone_dgbevel"
             android:textColor="@color/white"
             android:elevation="5dp"

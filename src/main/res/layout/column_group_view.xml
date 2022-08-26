@@ -91,16 +91,13 @@
                 android:orientation="vertical"
                 android:padding="@dimen/columngroup_view_padding"
                 android:paddingTop="@dimen/columngroup_view_padding_top"
-                android:paddingBottom="@dimen/columngroup_view_padding_bottom"
-                >
+                android:paddingBottom="@dimen/columngroup_view_padding_bottom">
 
                 <!-- form content -->
 
             </LinearLayout>
 
         </LinearLayout>
-
-
 
         <!-- Toast -->
         <RelativeLayout
@@ -148,9 +145,6 @@
         </RelativeLayout>
 
     </FrameLayout>
-
-
-
 
 
 </LinearLayout>
