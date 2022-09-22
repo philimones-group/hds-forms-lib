@@ -1,0 +1,44 @@
+<resources>
+    <!-- General buttons and Strings-->
+    <string name="bt_ok_lbl">Ok</string>
+    <string name="bt_yes_lbl">Oui</string>
+    <string name="bt_no_lbl">Non</string>
+    <string name="bt_cancel_lbl">Annuler</string>
+    <string name="bt_confirm_lbl">Confirmer</string>
+    <string name="bt_accept_lbl">Accepter</string>
+    <string name="bt_reject_lbl">Rejeter</string>
+    <string name="bt_delete_lbl">Supprimer</string>
+    <string name="bt_open_lbl">Ouvrir</string>
+    <string name="bt_close_lbl">Fermer</string>
+    <string name="bt_enable_lbl">Activer</string>
+    <string name="bt_disable_lbl">Désactiver</string>
+
+    <string name="bt_save_lbl">Sauvegarder</string>
+    <string name="bt_update_lbl">Mise à jour</string>
+    <string name="bt_gps_lbl">Obtenir la position GPS</string>
+
+    <string name="gps_lat_lbl">Latitude:</string>
+    <string name="gps_lon_lbl">Longitude:</string>
+    <string name="gps_alt_lbl">Altitude:</string>
+    <string name="gps_acc_lbl">Précision:</string>
+
+    <string name="gps_title_lbl">Emplacement GPS</string>
+    <string name="gps_permissions_error">Des autorisations de localisation sont nécessaires pour accéder au GPS</string>
+    <string name="gps_loading_lbl">En chargeant les coordonnées GPS</string>
+    <string name="gps_loading_error">Impossible de fournir une position GPS</string>
+    <string name="gps_no_provider_available_error">Le fournisseur de GPS est désactivé. Pour continuer, activez le réseau Wifi ou le fournisseur GPS.</string>
+
+    <string name="device_id_title_lbl">Obtenir l'identifiant du dispositif</string>
+    <string name="device_id_permissions_error">Il sera nécessaire d'accorder les permissions READ_PHONE_STATE pour pouvoir obtenir l'ID du dispositif qui sera utilisé dans le formulaire.</string>
+
+    <string name="column_required_lbl">Ce champ est obligatoire</string>
+
+    <string name="datetime_selector_title_lbl">Sélectionnez la date</string>
+    <string name="datetime_selector_button_lbl">Sélectionner la date</string>
+    <string name="datetime_selector_not_selected_lbl">La date n'est pas sélectionnée</string>
+
+    <string name="repeat_group_instance_index_lbl">%1$s de %2$s</string>
+
+    <string name="info_lbl">Info</string>
+    <string name="error_lbl">Erreur</string>
+</resources>

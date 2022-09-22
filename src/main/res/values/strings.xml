@@ -25,11 +25,11 @@
     <string name="gps_title_lbl">GPS Location</string>
     <string name="gps_permissions_error">You must grant Location permissions to be able to use the GPS feature</string>
     <string name="gps_loading_lbl">Loading GPS Location</string>
-    <string name="gps_loading_error">Couldnt provide GPS Location</string>
+    <string name="gps_loading_error">Couldn\'t provide GPS Location</string>
     <string name="gps_no_provider_available_error">Providers are disabled. To be able to continue, enable Network or Location provider</string>
 
-    <string name="device_id_title_lbl">Retrivieng Device Id</string>
-    <string name="device_id_permissions_error">You must grant READ_PHONE_STATE permissions to be able to retrieve device id value that will be used in the form.</string>
+    <string name="device_id_title_lbl">Getting Device Id</string>
+    <string name="device_id_permissions_error">You must grant READ_PHONE_STATE permissions to be able to read the device id value that will be used in the form.</string>
 
     <string name="column_required_lbl">This field is required</string>
 

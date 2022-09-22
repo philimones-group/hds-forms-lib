@@ -1,0 +1,44 @@
+<resources>
+    <!-- General buttons and Strings-->
+    <string name="bt_ok_lbl">Ok</string>
+    <string name="bt_yes_lbl">Sim</string>
+    <string name="bt_no_lbl">Não</string>
+    <string name="bt_cancel_lbl">Cancelar</string>
+    <string name="bt_confirm_lbl">Confirmar</string>
+    <string name="bt_accept_lbl">Aceitar</string>
+    <string name="bt_reject_lbl">Rejeitar</string>
+    <string name="bt_delete_lbl">Apagar</string>
+    <string name="bt_open_lbl">Abrir</string>
+    <string name="bt_close_lbl">Fechar</string>
+    <string name="bt_enable_lbl">Activar</string>
+    <string name="bt_disable_lbl">Desactivar</string>
+
+    <string name="bt_save_lbl">Guardar</string>
+    <string name="bt_update_lbl">Actualizar</string>
+    <string name="bt_gps_lbl">Obter Localização GPS</string>
+
+    <string name="gps_lat_lbl">Latitude:</string>
+    <string name="gps_lon_lbl">Longitude:</string>
+    <string name="gps_alt_lbl">Altitude:</string>
+    <string name="gps_acc_lbl">Precisão:</string>
+
+    <string name="gps_title_lbl">Localização GPS</string>
+    <string name="gps_permissions_error">É necessário ter permissões de Localização para aceder ao GPS</string>
+    <string name="gps_loading_lbl">A carregar Coordenadas GPS</string>
+    <string name="gps_loading_error">Não foi possível fornecer Localização GPS</string>
+    <string name="gps_no_provider_available_error">Provedor de GPS desactivado. Para poder continuar, active a Rede Wifi ou provedor de GPS</string>
+
+    <string name="device_id_title_lbl">A obter id de Dispositivo</string>
+    <string name="device_id_permissions_error">Será necessário conceder permissões READ_PHONE_STATE para ser capaz de obter o Id do dispositivo que será usado no formulário.</string>
+
+    <string name="column_required_lbl">Este campo é obrigatório</string>
+
+    <string name="datetime_selector_title_lbl">Seleccionar a data</string>
+    <string name="datetime_selector_button_lbl">Seleccionar data</string>
+    <string name="datetime_selector_not_selected_lbl">Data não seleccionada</string>
+
+    <string name="repeat_group_instance_index_lbl">%1$s de %2$s</string>
+
+    <string name="info_lbl">Info</string>
+    <string name="error_lbl">Erro</string>
+</resources>
