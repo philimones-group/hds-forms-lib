@@ -13,7 +13,6 @@ import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
 import org.philimone.hds.forms.listeners.GestureListener;
-import org.philimone.hds.forms.listeners.OnSwipeListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.utilities.StringTools;
@@ -76,7 +75,6 @@ public class FormColumnSlider extends LinearLayout {
 
         this.formViewPager = new ViewPager2(this.getContext());
         this.formViewPager.setUserInputEnabled(false);
-        //this.formViewPager.setBackgroundColor(Color.YELLOW);
 
         this.addView(this.formViewPager, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
@@ -119,7 +117,7 @@ public class FormColumnSlider extends LinearLayout {
         });
     }
 
-    private void onSlideBackwards() {
+    public void onSlideBackwards() {
 
         int current = formViewPager.getCurrentItem();
         ColumnGroupView currentGroupView = getAdapter().getItemView(current);
@@ -142,7 +140,7 @@ public class FormColumnSlider extends LinearLayout {
 
     }
 
-    private void onSlideForwards() {
+    public void onSlideForwards() {
         //handle required columns
         if (isCurrentRequiredEmptyField()){
             return;

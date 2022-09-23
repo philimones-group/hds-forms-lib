@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="@dimen/columngroup_view_margin_left"
     android:layout_marginRight="@dimen/columngroup_view_margin_right"
+    android:layout_marginTop="10dp"
     android:orientation="vertical">
 
     <TextView

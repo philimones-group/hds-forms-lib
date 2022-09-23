@@ -166,6 +166,8 @@ public class ColumnGroupView extends LinearLayout {
             this.formRepeatGroupLayout.setVisibility(GONE);
         }
 
+        this.txtColumnGroupName.setVisibility(txtColumnGroupName.getText().length()==0 ? GONE : VISIBLE);
+
         boolean oneIsHidden = false;
 
         for (Column column : this.columnGroup.getColumns() ) {

@@ -33,20 +33,27 @@
 
     </LinearLayout>
 
-    <HorizontalScrollView
+    <!--
+    <org.philimone.hds.forms.widget.utilities.NestedScrollableHost
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-
-        <RadioGroup
-            android:id="@+id/rdgColumnRadioGroup"
+        android:layout_height="match_parent">
+    -->
+        <org.philimone.hds.forms.widget.utilities.NestedScrollableHost
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
-            android:textSize="@dimen/column_value_textsize"
-            android:textColor="@color/black">
+            android:layout_height="match_parent" >
 
-        </RadioGroup>
-    </HorizontalScrollView>
+            <RadioGroup
+                android:id="@+id/rdgColumnRadioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:textSize="@dimen/column_value_textsize"
+                android:textColor="@color/black">
+
+            </RadioGroup>
+        </org.philimone.hds.forms.widget.utilities.NestedScrollableHost>
+
+    <!--</org.philimone.hds.forms.widget.utilities.NestedScrollableHost>-->
 
 
 </LinearLayout>
