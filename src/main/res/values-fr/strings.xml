@@ -28,14 +28,14 @@
     <string name="gps_loading_error">Impossible de fournir une position GPS</string>
     <string name="gps_no_provider_available_error">Le fournisseur de GPS est désactivé. Pour continuer, activez le réseau Wifi ou le fournisseur GPS.</string>
 
-    <string name="device_id_title_lbl">Obtenir l'identifiant du dispositif</string>
-    <string name="device_id_permissions_error">Il sera nécessaire d'accorder les permissions READ_PHONE_STATE pour pouvoir obtenir l'ID du dispositif qui sera utilisé dans le formulaire.</string>
+    <string name="device_id_title_lbl">Obtenir l\'identifiant du dispositif</string>
+    <string name="device_id_permissions_error">Il sera nécessaire d\'accorder les permissions READ_PHONE_STATE pour pouvoir obtenir l\'ID du dispositif qui sera utilisé dans le formulaire.</string>
 
     <string name="column_required_lbl">Ce champ est obligatoire</string>
 
     <string name="datetime_selector_title_lbl">Sélectionnez la date</string>
     <string name="datetime_selector_button_lbl">Sélectionner la date</string>
-    <string name="datetime_selector_not_selected_lbl">La date n'est pas sélectionnée</string>
+    <string name="datetime_selector_not_selected_lbl">La date n\'est pas sélectionnée</string>
 
     <string name="repeat_group_instance_index_lbl">%1$s de %2$s</string>
 
