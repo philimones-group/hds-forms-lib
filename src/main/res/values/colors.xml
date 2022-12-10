@@ -19,6 +19,8 @@
     <color name="hh_filter_region_hierarchy_name_color">#FFFFFF</color>
     <color name="hh_filter_region_hierarchy_value_color">#DBFF99</color>
 
+    <color name="nui_transparent">#00000000</color>
+
     <color name="nui_color_text_green">#11923C</color>
     <color name="nui_color_text_red">#1c9844</color>
     <color name="nui_color_text_darkgray">#3E3E3E</color>
