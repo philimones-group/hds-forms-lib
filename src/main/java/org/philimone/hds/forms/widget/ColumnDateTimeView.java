@@ -64,6 +64,8 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
         this.txtSelectedDate.setText(selectedDateText);
         this.dateValue = selectedDate;
         this.column.setValue(selectedDateText);
+
+        afterUserInput();
     }
 
     @Override

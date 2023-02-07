@@ -56,6 +56,13 @@ public class ColumnSelectView extends ColumnView {
 
         this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
 
+        this.rdgColumnRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                afterUserInput();
+            }
+        });
+
         fillOptions();
 
         updateValues();

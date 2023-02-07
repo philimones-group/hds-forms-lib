@@ -1,6 +1,8 @@
 package org.philimone.hds.forms.widget;
 
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -41,6 +43,23 @@ public class ColumnTextboxView extends ColumnView {
             case INTEGER: txtValue.setInputType(InputType.TYPE_CLASS_NUMBER); break;
             case DECIMAL:  txtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
         }
+
+        txtValue.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                afterUserInput();
+            }
+        });
 
         updateValues();
     }

@@ -261,6 +261,8 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         showResults();
 
         showLoadingDialog(null, false);
+
+        afterUserInput();
     }
 
     @Override

@@ -83,6 +83,19 @@ public abstract class ColumnView extends LinearLayout {
         inflater.inflate(resource, this);
     }
 
+    protected void afterUserInput() {
+        List<ColumnView> columnViews = columnGroupView.getColumnViews();
+
+        int i = columnViews.indexOf(this);
+
+        //calculate and evaluate display on the next column views of this groupview
+        for (int j = i+1; j < columnViews.size(); j++) {
+            ColumnView columnView = columnViews.get(j);
+            columnView.evaluateCalculation();
+            columnView.evaluateDisplayCondition();
+        }
+    }
+
     public ColumnValue getColumnValue(){
         ColumnValue columnValue = new ColumnValue(columnGroupView, this);
         return columnValue;
@@ -234,12 +247,17 @@ public abstract class ColumnView extends LinearLayout {
             String[] methodArgs = getMethodArgs(methodCall);
             if (methodCallListener != null) {
                 String result = methodCallListener.onCallMethod(methodCall, methodArgs);
-                calculation = calculation.replace("call:"+methodCall, result);
+                if (result != null) {
+                    calculation = calculation.replace("call:" + methodCall, result);
+                } else {
+                    calculation = calculation.replace("call:" + methodCall, "");;
+                }
             }
         }
 
         //Log.d("expression", calculation);
-        String calculationResult = getActivity().evaluateExpression(calculation).toString();
+        Object objResult = getActivity().evaluateExpression(calculation);
+        String calculationResult = objResult==null ? "" : objResult.toString();
 
         //Log.d("expression-calc", "result: "+calculationResult);
 
