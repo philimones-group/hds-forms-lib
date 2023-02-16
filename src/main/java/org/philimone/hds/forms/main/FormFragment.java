@@ -221,11 +221,18 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private void initPermissions() {
         this.requestPermission = registerForActivityResult(new RequestPermission(), granted -> {
             if (granted) {
-                String deviceId = readDeviceId();
+                this.deviceId = readDeviceId();
+
                 Log.d("deviceid", ""+deviceId);
+                updateColumnDeviceId();
             } else {
                 //Log.d("deviceid", "no permission to read it");
-                DialogFactory.createMessageInfo(getCurrentContext(), R.string.device_id_title_lbl, R.string.device_id_permissions_error).show();
+                DialogFactory.createMessageInfo(getCurrentContext(), R.string.device_id_title_lbl, R.string.device_id_permissions_error, new DialogFactory.OnClickListener() {
+                    @Override
+                    public void onClicked(DialogFactory.Buttons clickedButton) {
+                        FormFragment.this.dismiss();
+                    }
+                }).show();
             }
         });
     }
@@ -532,6 +539,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                 if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
                     columnView.setValue(this.getDeviceId());
+                    Log.d("device-id*", columnView.getValue());
                 }
 
                 if (columnView.getType() == ColumnType.TIMESTAMP && columnView instanceof ColumnTextView) {
@@ -576,6 +584,21 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         //update visibility of fragments
         if (formSlider.getAdapter() != null) {
             formSlider.getAdapter().reEvaluateDisplayConditions();
+        }
+    }
+
+    private void updateColumnDeviceId() {
+        for (ColumnGroupView columnGroupView : columnGroupViewList) {
+            for (ColumnView columnView : columnGroupView.getColumnViews()) {
+
+                Column column = columnView.getColumn();
+
+                if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
+                    columnView.setValue(this.getDeviceId());
+                    Log.d("device-id*2", columnView.getValue());
+                }
+
+            }
         }
     }
 
@@ -628,10 +651,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     public String readDeviceId(){
-
-        if (ActivityCompat.checkSelfPermission(getCurrentContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+        /*
+        if (grantedPermission || ActivityCompat.checkSelfPermission(getCurrentContext(), Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) {
             return "";
-        }
+        }*/
 
         TelephonyManager mTelephonyManager = (TelephonyManager) getCurrentContext().getSystemService(Context.TELEPHONY_SERVICE);
 
