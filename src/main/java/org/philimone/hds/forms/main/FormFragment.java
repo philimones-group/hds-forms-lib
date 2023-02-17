@@ -388,7 +388,9 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         for (ColumnGroupView columnGroupView : columnGroupViewList) {
             if (!columnGroupView.isHidden()) {
                 for (ColumnView columnView : columnGroupView.getColumnViews()) {
-                    list.add(columnView);
+                    if (!columnView.isHidden()) {
+                        list.add(columnView);
+                    }
                 }
             }
         }

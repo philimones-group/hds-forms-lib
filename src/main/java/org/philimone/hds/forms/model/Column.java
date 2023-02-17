@@ -30,7 +30,7 @@ public class Column {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, boolean required, boolean readOnly, String calculation, String displayCondition, String displayStyle) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, boolean required, boolean readOnly, String calculation, String displayCondition, String displayStyle, boolean hidden) {
         this();
 
         this.name = name;
@@ -48,6 +48,7 @@ public class Column {
         this.calculation = calculation;
         this.displayCondition = displayCondition;
         this.displayStyle = displayStyle;
+        this.hidden = hidden;
 
         evaluateOptionsDisplayability();
     }

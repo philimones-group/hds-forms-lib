@@ -237,7 +237,7 @@ public class FormColumnSlider extends LinearLayout {
             for (ColumnView cview : columnGroupView.getColumnViews()){
                 ColumnValue columnValue = cview.getColumnValue();
 
-                if (columnValue.isRequired() && StringTools.isBlank(columnValue.getValue())){
+                if (!cview.isHidden() && columnValue.isRequired() && StringTools.isBlank(columnValue.getValue())){
                     pageEvents = OnNewPageSelectedEvents.CHECK_REQUIRED;
                     formViewPager.setCurrentItem(position, false);
 

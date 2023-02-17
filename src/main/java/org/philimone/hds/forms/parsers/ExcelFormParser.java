@@ -145,13 +145,8 @@ public class ExcelFormParser implements FormParser {
                         }
                     }
 
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle);
                     //Log.d("hidden cell", ""+cellHidden);
-                    if (!StringTools.isBlank(cellHidden)){
-                        boolean hiddenValue = getBooleanValue(cellHidden);
-                        column.setHidden(hiddenValue);
-
-                    }
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
 
                     group.addColumn(column);
 

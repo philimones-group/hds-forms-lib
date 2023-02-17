@@ -168,7 +168,7 @@ public class ColumnGroupView extends LinearLayout {
 
         this.txtColumnGroupName.setVisibility(txtColumnGroupName.getText().length()==0 ? GONE : VISIBLE);
 
-        boolean oneIsHidden = false;
+        boolean allHidden = true;
 
         for (Column column : this.columnGroup.getColumns() ) {
             ColumnView view = null;
@@ -197,50 +197,51 @@ public class ColumnGroupView extends LinearLayout {
                 column.setValue(formPanel.getUsername());
 
                 view = new ColumnTextView(this, column, methodCallListener);
-                //this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.INSTANCE_UUID) {
                 view = new ColumnTextView(this, column, methodCallListener);
-                this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.DEVICE_ID) {
                 view = new ColumnTextView(this, column, methodCallListener);
-                this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
                 view = new ColumnTextView(this, column, methodCallListener);
-                this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.EXECUTION_STATUS) {
                 view = new ColumnTextView(this, column, methodCallListener);
-                this.setHidden(true);
             }
 
             if (column.getType() == ColumnType.TIMESTAMP) {
                 view = new ColumnTextView(this, column, methodCallListener);
-                //this.setHidden(true);
             }
 
             if (view != null) {
                 formColumnGroupLayout.addView(view);
                 columnViews.add(view);
+
+                if (column.isHidden()){
+
+                }
+
+                view.setVisibility(column.isHidden() ? GONE : VISIBLE);
             }
 
-            if (column.isHidden()){
-                oneIsHidden = true;
-            }
 
+
+            allHidden = allHidden && column.isHidden();
         }
 
-        if (oneIsHidden) {
+        if (allHidden) {
             //Log.d("one is hidden", toString()+", CSIZE="+columnViews.size());
-           if (columnViews.size()==1) {
-               this.setHidden(true); //set columngroup view hidden
-           }
+            this.setHidden(true);
+
+           //if (columnViews.size()==1) {
+           //    this.setHidden(true); //set columngroup view hidden
+           //}
 
         }
 

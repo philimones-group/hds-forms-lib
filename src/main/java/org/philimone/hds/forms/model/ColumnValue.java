@@ -195,5 +195,9 @@ public class ColumnValue implements Serializable {
         this.errorMessage = errorMessage;
         this.errors = errorMessage != null || errorMessage.isEmpty();
     }
+
+    public boolean isHidden(){
+        return this.column.isHidden();
+    }
 }
 

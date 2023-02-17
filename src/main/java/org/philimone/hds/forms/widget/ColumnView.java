@@ -265,6 +265,10 @@ public abstract class ColumnView extends LinearLayout {
         setValue(calculationResult); //Update the value according to the type
     }
 
+    public boolean isHidden() {
+        return column.isHidden();
+    }
+
     @Override
     public String toString() {
         return "ColumnView{"+ getName() +"}";
