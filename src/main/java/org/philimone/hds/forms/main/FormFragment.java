@@ -330,6 +330,9 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 Log.d("errors", "errors - result");
             } else {
 
+                //update HForm columnValueMap
+                formListener.onBeforeFormFinished(form, columnValueMap);
+
                 XmlFormResult xmlResults = new XmlFormResult(form, columnValueMap.values(), instancesDirPath);
                 //Log.d("result", ""+xmlResults.getXmlResult());
 
@@ -591,8 +594,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         for (ColumnGroupView columnGroupView : columnGroupViewList) {
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
 
-                Column column = columnView.getColumn();
-
                 if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
                     columnView.setValue(this.getDeviceId());
                     Log.d("device-id*2", columnView.getValue());
@@ -775,13 +776,20 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     public static void updateColumnOnXML(HForm form, String xmlSavedFormPath, String columnName, String columnValue){
         if (!StringTools.isBlank(xmlSavedFormPath) && !StringTools.isBlank(columnName)){
 
-            columnValue = StringTools.isBlank(columnValue) ? "" : columnValue;
+            //columnValue = StringTools.isBlank(columnValue) ? "" : columnValue;
 
             Map<String,String> map = new LinkedHashMap<>();
             map.put(columnName, columnValue);
 
             XmlDataUpdater updater = new XmlDataUpdater(form, xmlSavedFormPath);
             updater.updateValues(map);
+        }
+    }
+
+    public static void updateColumnOnXML(HForm form, String xmlSavedFormPath, Map<String, String> columnNameValueMap){
+        if (!StringTools.isBlank(xmlSavedFormPath)){
+            XmlDataUpdater updater = new XmlDataUpdater(form, xmlSavedFormPath);
+            updater.updateValues(columnNameValueMap);
         }
     }
 

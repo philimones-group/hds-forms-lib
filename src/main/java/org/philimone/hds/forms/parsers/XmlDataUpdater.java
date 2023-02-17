@@ -3,6 +3,7 @@ package org.philimone.hds.forms.parsers;
 import android.util.Log;
 
 import org.philimone.hds.forms.model.HForm;
+import org.philimone.hds.forms.utilities.StringTools;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,7 +53,11 @@ public class XmlDataUpdater {
 
                     Element elementNode = (Element) node;
 
-                    elementNode.setTextContent(contentMap.get(node.getNodeName()));
+                    String value = contentMap.get(node.getNodeName());
+
+                    value = StringTools.isBlank(value) ? "" : value;
+
+                    elementNode.setTextContent(value);
                 }
 
             }

@@ -15,6 +15,8 @@ public interface FormCollectionListener {
      */
     ValidationResult onFormValidate(HForm form, CollectedDataMap collectedValues);
 
+    void onBeforeFormFinished(HForm form, CollectedDataMap collectedValues);
+
     /*
      * will be called after validation
      */
