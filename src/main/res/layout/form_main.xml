@@ -147,9 +147,11 @@
 
         <Button
             android:id="@+id/btCancel"
-            android:layout_width="@dimen/form_main_dialog_button_size"
+            android:layout_width="0dp"
             android:layout_height="@dimen/form_main_dialog_bt_height"
-            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
             android:background="@drawable/nui_btnd_rone_gflat"
             android:text="@string/bt_cancel_lbl"
             android:textSize="@dimen/form_main_dialog_button_txtsize"
@@ -157,9 +159,11 @@
 
         <Button
             android:id="@+id/btSave"
-            android:layout_width="@dimen/form_main_dialog_button_size"
+            android:layout_width="0dp"
             android:layout_height="@dimen/form_main_dialog_bt_height"
-            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
             android:background="@drawable/nui_btnd_rone_dgbevel"
             android:text="@string/bt_save_lbl"
             android:textSize="@dimen/form_main_dialog_button_txtsize"
