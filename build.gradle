@@ -3,6 +3,8 @@ plugins {
 }
 
 android {
+    namespace "org.philimone.hds.forms"
+
     compileSdkVersion 33
     buildToolsVersion "30.0.3"
 

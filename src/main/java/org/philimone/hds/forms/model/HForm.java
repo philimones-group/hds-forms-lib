@@ -125,4 +125,14 @@ public class HForm {
         }
         return false;
     }
+
+    public Column getColumn(String columnName) {
+        for (ColumnGroup columnGroup : this.columns){
+            Column column = columnGroup.getColumn(columnName);
+
+            if (column != null) return column;
+        }
+
+        return null;
+    }
 }

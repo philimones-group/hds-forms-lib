@@ -154,6 +154,26 @@ public abstract class ColumnView extends LinearLayout {
         return expression;
     }
 
+    private String translateMethodCalls(String expression) {
+        //find method calls, call:methodName()
+        List<String> methodCalls = getExpressionCalls(expression);
+
+        for (String methodCall : methodCalls) {
+            //execute method calls -> listener call and return
+            String[] methodArgs = getMethodArgs(methodCall);
+            if (methodCallListener != null) {
+                String result = methodCallListener.onCallMethod(methodCall, methodArgs);
+                if (result != null) {
+                    expression = expression.replace("call:" + methodCall, result);
+                } else {
+                    expression = expression.replace("call:" + methodCall, "");;
+                }
+            }
+        }
+
+        return expression;
+    }
+
     private List<String> getExpressionCalls(String expression){
         ArrayList<String> list = new ArrayList<>();
 
@@ -197,6 +217,7 @@ public abstract class ColumnView extends LinearLayout {
             //get all column values (previous)
 
             displayCondition = translateExpression(displayCondition);
+            displayCondition = translateMethodCalls(displayCondition);
 
             //Log.d("displaycondition", ""+displayCondition);
             //evaluate expression on a script engine
@@ -215,8 +236,10 @@ public abstract class ColumnView extends LinearLayout {
                 if (StringTools.isBlank(optionValue.displayCondition)){
                     optionValue.displayable = true;
                 } else {
-                    displayCondition = translateExpression(optionValue.displayCondition);
-                    String result = getActivity().evaluateExpression(displayCondition).toString();
+                    String optionDisplayCondition = translateExpression(optionValue.displayCondition);
+                    optionDisplayCondition = translateMethodCalls(optionDisplayCondition);
+
+                    String result = getActivity().evaluateExpression(optionDisplayCondition).toString();
                     boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
                     optionValue.displayable = visible;
                 }
@@ -240,20 +263,7 @@ public abstract class ColumnView extends LinearLayout {
         calculation = translateExpression(calculation);
 
         //find method calls, call:methodName()
-        List<String> methodCalls = getExpressionCalls(calculation);
-
-        for (String methodCall : methodCalls) {
-            //execute method calls -> listener call and return
-            String[] methodArgs = getMethodArgs(methodCall);
-            if (methodCallListener != null) {
-                String result = methodCallListener.onCallMethod(methodCall, methodArgs);
-                if (result != null) {
-                    calculation = calculation.replace("call:" + methodCall, result);
-                } else {
-                    calculation = calculation.replace("call:" + methodCall, "");;
-                }
-            }
-        }
+        calculation = translateMethodCalls(calculation);
 
         //Log.d("expression", calculation);
         Object objResult = getActivity().evaluateExpression(calculation);

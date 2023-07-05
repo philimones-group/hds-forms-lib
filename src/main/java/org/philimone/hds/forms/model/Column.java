@@ -52,7 +52,6 @@ public class Column {
 
         evaluateOptionsDisplayability();
     }
-
     public String getName() {
         return name;
     }
@@ -189,5 +188,13 @@ public class Column {
                 this.displayCondition = "(" + xdisplayCondition + ") and (" + this.displayCondition + ")";
             }
         }
+    }
+
+    public void setOptions(Map<String, FormOptions.OptionValue> typeOptions){
+        if (typeOptions != null) {
+            this.typeOptions.putAll(typeOptions);
+        }
+
+        evaluateOptionsDisplayability();
     }
 }

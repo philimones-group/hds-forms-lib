@@ -52,6 +52,16 @@ public class ColumnGroup {
         return columns;
     }
 
+    public Column getColumn(String columnName) {
+        for (Column column : this.columns) {
+            if (columnName != null && column.getName().equals(columnName)) {
+                return column;
+            }
+        }
+
+        return null;
+    }
+
     public void setColumns(List<Column> columns) {
         if (columns != null)
             this.columns.addAll(columns);
