@@ -135,4 +135,12 @@ public class HForm {
 
         return null;
     }
+
+    public void setReadonly(boolean value) {
+        for (ColumnGroup columnGroup : this.columns){
+            for (Column column : columnGroup.getColumns()) {
+                column.setReadOnly(!column.isHidden() && value);
+            }
+        }
+    }
 }
