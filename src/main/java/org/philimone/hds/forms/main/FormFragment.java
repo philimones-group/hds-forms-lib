@@ -288,9 +288,16 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     public Object evaluateExpression(String expressionText) {
         JexlContext jexlContext = new MapContext();
-        JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
 
-        return jxelExpression.evaluate(jexlContext);
+        try {
+            JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
+            return jxelExpression.evaluate(jexlContext);
+        } catch (Exception ex) {
+            Log.d("Jexl Evaluation", "Error");
+            ex.printStackTrace();
+
+            return "false";
+        }
     }
 
     private void onCancelClicked(){
@@ -511,7 +518,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                     columnValue.setValue(startTimestamp);
                 }
 
-                if (columnValue.getColumnType() == ColumnType.END_TIMESTAMP) {
+                if (columnValue.getColumnType() == ColumnType.END_TIMESTAMP && backgroundMode==false) { //backgroung mode is not editing the form
                     columnValue.setValue(endTimestamp);
                 }
 
