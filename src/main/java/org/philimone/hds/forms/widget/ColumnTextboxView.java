@@ -78,6 +78,21 @@ public class ColumnTextboxView extends ColumnView {
     }
 
     @Override
+    public void refreshState() {
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+
+        if (column.isReadOnly()) {
+            txtValue.setInputType(InputType.TYPE_NULL);
+            txtValue.setTextIsSelectable(true);
+            txtValue.setFocusable(false);
+        } else {
+            txtValue.setInputType(InputType.TYPE_CLASS_TEXT);
+            txtValue.setTextIsSelectable(true);
+            txtValue.setFocusable(true);
+        }
+    }
+
+    @Override
     public String getValue() {
         return this.txtValue.getText().toString();
     }

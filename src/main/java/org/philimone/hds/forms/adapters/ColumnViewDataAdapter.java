@@ -51,7 +51,7 @@ public class ColumnViewDataAdapter extends ArrayAdapter<ColumnView> {
 
         if (cview != null) {
             txtLabel.setText(cview.getLabel());
-            txtValue.setText(cview.getValue());
+            txtValue.setText(cview.getColumnValue().getValueLabel());
         }
 
         return mainView;

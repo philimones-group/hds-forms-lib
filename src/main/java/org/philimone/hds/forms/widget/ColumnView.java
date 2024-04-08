@@ -33,7 +33,7 @@ public abstract class ColumnView extends LinearLayout {
     protected TextView txtColumnRequired;
     protected ColumnView parentColumn;
     protected ColumnView nextColumn;
-    protected boolean displayable;
+    protected boolean displayable = true;
     protected ExternalMethodCallListener methodCallListener;
 
     public ColumnView(ColumnGroupView view, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
@@ -74,6 +74,8 @@ public abstract class ColumnView extends LinearLayout {
 
     public abstract void updateValues();
 
+    public abstract void refreshState();
+
     public Column getColumn() {
         return this.column;
     }
@@ -93,6 +95,7 @@ public abstract class ColumnView extends LinearLayout {
             ColumnView columnView = columnViews.get(j);
             columnView.evaluateCalculation();
             columnView.evaluateDisplayCondition();
+            columnView.evaluateReadOnly();
         }
     }
 
@@ -128,14 +131,14 @@ public abstract class ColumnView extends LinearLayout {
     }
 
     private String translateExpression(String expression) {
-        Map<String, String> previousValues = new LinkedHashMap<>();
+        //Map<String, String> previousValues = new LinkedHashMap<>();
         ColumnView parent = parentColumn;
         while (parent != null) {
             //Log.d("parent-ev", ""+parent);
 
             String name = parent.getName();
-            String value = parent.getValue();
-            previousValues.put(parent.getName(), parent.getValue());
+            String value = parent.isDisplayable() ? parent.getValue() : "";
+            //previousValues.put(parent.getName(), value); //if not displayable will be empty
 
             //replace variables with values
 
@@ -147,8 +150,12 @@ public abstract class ColumnView extends LinearLayout {
         expression = expression.replace("and", "&&");
         expression = expression.replace("or", "||");
         expression = expression.replace("!=", "<>"); //to avoid !==
+        expression = expression.replace("!==", "<!>");
+        expression = expression.replace("===", ">!<");
         expression = expression.replace("=", "==");
         expression = expression.replace("<>", "!="); //return to normal after =
+        expression = expression.replace("<!>", "!=="); //return to normal after =
+        expression = expression.replace(">!<", "==="); //return to normal after =
         
         
         return expression;
@@ -215,11 +222,11 @@ public abstract class ColumnView extends LinearLayout {
             setDisplayable(true);
         } else {
             //get all column values (previous)
-
+            //Log.d("displaycondition", "o: "+displayCondition);
             displayCondition = translateExpression(displayCondition);
             displayCondition = translateMethodCalls(displayCondition);
 
-            //Log.d("displaycondition", ""+displayCondition);
+            //Log.d("displaycondition", "f: "+displayCondition);
             //evaluate expression on a script engine
             String result = getActivity().evaluateExpression(displayCondition).toString();
             boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
@@ -267,12 +274,31 @@ public abstract class ColumnView extends LinearLayout {
 
         //Log.d("expression", calculation);
         Object objResult = getActivity().evaluateExpression(calculation);
-        String calculationResult = objResult==null ? "" : objResult.toString();
+        String result = objResult==null ? "" : objResult.toString();
 
         //Log.d("expression-calc", "result: "+calculationResult);
 
         //set column value
-        setValue(calculationResult); //Update the value according to the type
+        setValue(result); //Update the value according to the type
+    }
+
+    public void evaluateReadOnly(){
+        String readOnlyCondition = column.getReadOnlyCondition();
+
+        if (StringTools.isBlank(readOnlyCondition)) return;
+        //Log.d("expression*o", readOnlyCondition);
+        //replace variables with values
+        readOnlyCondition = translateExpression(readOnlyCondition);
+        //find method calls, call:methodName()
+        readOnlyCondition = translateMethodCalls(readOnlyCondition);
+
+
+        Object objResult = getActivity().evaluateExpression(readOnlyCondition);
+        String result = objResult==null ? "" : objResult.toString();
+        //Log.d("r*expression", readOnlyCondition+" >>>> "+result);
+        this.column.setReadOnly(StringTools.getBooleanValue(result));
+
+        refreshState();
     }
 
     public boolean isHidden() {

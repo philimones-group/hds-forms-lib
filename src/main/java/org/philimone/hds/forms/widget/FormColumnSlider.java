@@ -1,13 +1,10 @@
 package org.philimone.hds.forms.widget;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
@@ -16,9 +13,6 @@ import org.philimone.hds.forms.listeners.GestureListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.utilities.StringTools;
-import org.philimone.hds.forms.widget.dialog.ToastX;
-
-import java.util.stream.Collectors;
 
 import androidx.annotation.Nullable;
 import androidx.viewpager2.widget.ViewPager2;
@@ -101,7 +95,7 @@ public class FormColumnSlider extends LinearLayout {
                 super.onPageSelected(position);
                 //Log.d("selected", ""+position+", "+pageEvents);
 
-                evaluateCalculation(position);
+                executeEvaluations(position);
 
                 switch (pageEvents) {
                     case CHECK_REQUIRED:
@@ -155,6 +149,8 @@ public class FormColumnSlider extends LinearLayout {
         while (nextGroupView != null) {
             boolean displayableBefore = nextGroupView.isDisplayable();
             nextGroupView.evaluateDisplayCondition(); //execute the display condition script
+            nextGroupView.evaluateCalculations();
+            nextGroupView.evaluateReadOnly();
 
             //Log.d("next-try", ""+next+", "+nextGroupView+", displayable=("+displayableBefore+"->"+nextGroupView.isDisplayable()+"), fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
 
@@ -270,10 +266,11 @@ public class FormColumnSlider extends LinearLayout {
         }
     }
 
-    public void evaluateCalculation(int position){
+    public void executeEvaluations(int position){
         ColumnGroupView currentGroupView = getAdapter().getItemView(position);
         if (currentGroupView != null){
             currentGroupView.evaluateCalculations();
+            currentGroupView.evaluateReadOnly();
         }
     }
 

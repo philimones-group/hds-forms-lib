@@ -42,11 +42,11 @@ public class HForm {
     private void initDefaultColumns() {
         //id, start, end, device_id
 
-        Column column1 = new Column(COLUMN_ID,        ColumnType.INSTANCE_UUID,   null, "", "", "", true, true, "", null, "", true);
-        Column column2 = new Column(COLUMN_START,     ColumnType.START_TIMESTAMP, null, "", "", "", true, true, "", null, "", true);
-        Column column3 = new Column(COLUMN_END,       ColumnType.END_TIMESTAMP,   null, "", "", "", true, true, "", null, "", true);
-        Column column4 = new Column(COLUMN_DEVICE_ID, ColumnType.DEVICE_ID,       null, "", "", "", true, true, "", null, "", true);
-        Column column5 = new Column(COLUMN_POST_EXECUTION, ColumnType.EXECUTION_STATUS,   null, "", "", postExecution+"", true, true, "", null, "", true);
+        Column column1 = new Column(COLUMN_ID,        ColumnType.INSTANCE_UUID,   null, "", "", "", true, "true", "", null, "", true);
+        Column column2 = new Column(COLUMN_START,     ColumnType.START_TIMESTAMP, null, "", "", "", true, "true", "", null, "", true);
+        Column column3 = new Column(COLUMN_END,       ColumnType.END_TIMESTAMP,   null, "", "", "", true, "true", "", null, "", true);
+        Column column4 = new Column(COLUMN_DEVICE_ID, ColumnType.DEVICE_ID,       null, "", "", "", true, "true", "", null, "", true);
+        Column column5 = new Column(COLUMN_POST_EXECUTION, ColumnType.EXECUTION_STATUS,   null, "", "", postExecution+"", true, "true", "", null, "", true);
 
         ColumnGroup initialGroup = new ColumnGroup();
         initialGroup.addColumn(column1);
@@ -139,7 +139,7 @@ public class HForm {
     public void setReadonly(boolean value) {
         for (ColumnGroup columnGroup : this.columns){
             for (Column column : columnGroup.getColumns()) {
-                column.setReadOnly(!column.isHidden() && value);
+                column.setReadOnly((!column.isHidden() && value));
             }
         }
     }

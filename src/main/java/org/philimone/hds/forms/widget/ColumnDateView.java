@@ -78,6 +78,13 @@ public class ColumnDateView extends ColumnView implements DateTimeSelector.OnSel
     }
 
     @Override
+    public void refreshState() {
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        btnSelectDate.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        btnSelectDate.setEnabled(!this.column.isReadOnly());
+    }
+
+    @Override
     public void setValue(String value) {
         this.column.setValue(value);
         this.dateValue = StringTools.toDate(value);

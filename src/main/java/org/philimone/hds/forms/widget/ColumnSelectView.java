@@ -72,7 +72,15 @@ public class ColumnSelectView extends ColumnView {
         for (SelectOption selectOption : this.rdbOptions) {
             RadioButton button = selectOption.button;
             button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
+
+            button.setEnabled(!selectOption.optionValue.readonly);
+
+            if (column.isReadOnly()) {
+                button.setClickable(false);
+            }
         }
+
+        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
     }
 
     private void fillOptions(){
@@ -103,12 +111,17 @@ public class ColumnSelectView extends ColumnView {
     }
 
     private String getSelectedValue(){
-
         int id = this.rdgColumnRadioGroup.getCheckedRadioButtonId();
 
         SelectOption sop = this.rdbOptions.stream().filter( op -> op.button.getId()==id).findFirst().orElse(null);
 
         return sop==null ? null : sop.value;
+    }
+
+    public String getSelectedValueLabel(){
+        int id = this.rdgColumnRadioGroup.getCheckedRadioButtonId();
+        SelectOption sop = this.rdbOptions.stream().filter( op -> op.button.getId()==id).findFirst().orElse(null);
+        return sop==null ? null : sop.label;
     }
 
     @Override
@@ -145,6 +158,11 @@ public class ColumnSelectView extends ColumnView {
 
         }
 
+    }
+
+    @Override
+    public void refreshState() {
+        refillOptions();
     }
 
     @Override

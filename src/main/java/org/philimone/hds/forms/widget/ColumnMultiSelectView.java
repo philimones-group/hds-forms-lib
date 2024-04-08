@@ -69,7 +69,15 @@ public class ColumnMultiSelectView extends ColumnView {
         for (ColumnMultiSelectView.SelectOption selectOption : this.rdbOptions) {
             CheckBox button = selectOption.button;
             button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
+
+            button.setEnabled(!selectOption.optionValue.readonly);
+
+            if (column.isReadOnly()) {
+                button.setClickable(false);
+            }
         }
+
+        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
     }
 
     private void fillOptions(){
@@ -105,13 +113,27 @@ public class ColumnMultiSelectView extends ColumnView {
     }
 
     public String getSelectedValue(){
-
         Set<SelectOption> sop = this.rdbOptions.stream().filter(op -> op.button.isChecked()).collect(toSet());
 
         if (sop.size()>0) {
             String result = "";
             for (SelectOption opt : sop){
                 result += ";" + opt.value;
+            }
+
+            return result.substring(1);
+        }
+
+        return null;
+    }
+
+    public String getSelectedValueLabel(){
+        Set<SelectOption> sop = this.rdbOptions.stream().filter(op -> op.button.isChecked()).collect(toSet());
+
+        if (sop.size()>0) {
+            String result = "";
+            for (SelectOption opt : sop){
+                result += ";" + opt.label;
             }
 
             return result.substring(1);
@@ -158,6 +180,11 @@ public class ColumnMultiSelectView extends ColumnView {
                 }
             }
         }
+    }
+
+    @Override
+    public void refreshState() {
+        refillOptions();
     }
 
     @Override

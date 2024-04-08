@@ -293,7 +293,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
             return jxelExpression.evaluate(jexlContext);
         } catch (Exception ex) {
-            Log.d("Jexl Evaluation", "Error");
+            Log.d("Jexl Evaluation", "Error: "+expressionText);
             ex.printStackTrace();
 
             return "false";
@@ -466,8 +466,13 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             } else {
                 this.columnGroupViewList.add(headerGroupView);
 
-                if (isUsingHeaderLayout == false) { //not using header layout
+                if (!isUsingHeaderLayout) { //not using header layout - in landscape mode the header is a entire page
                     groupViews.add(headerGroupView);
+                }else {
+                    //because the header is not part of the FormColumnSlider - we need to evaluate now
+                    headerGroupView.evaluateReadOnly();
+                    headerGroupView.evaluateCalculations();
+                    headerGroupView.evaluateDisplayCondition();
                 }
             }
         }

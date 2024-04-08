@@ -146,7 +146,7 @@ public class ExcelFormParser implements FormParser {
                     }
 
                     //Log.d("hidden cell", ""+cellHidden);
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), getBooleanValue(cellReadonly), cellCalculation, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), cellReadonly, cellCalculation, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
 
                     group.addColumn(column);
 
@@ -177,8 +177,8 @@ public class ExcelFormParser implements FormParser {
     private String convertBooleanUppercase(String cellCalculation) {
         if (cellCalculation == null) return cellCalculation;
 
-        cellCalculation = cellCalculation.replace("true", "TRUE");
-        cellCalculation = cellCalculation.replace("false", "TRUE");
+        cellCalculation = cellCalculation.replace("TRUE", "true");
+        cellCalculation = cellCalculation.replace("FALSE", "false");
 
         return cellCalculation;
     }
@@ -226,13 +226,13 @@ public class ExcelFormParser implements FormParser {
             Cell cellDisplayCondition = displaycIndex!=null ? row.getCell(displaycIndex) : null;
 
             String name = getCellValue(cellName);
-            String value = getCellValue(cellValue); //use all as uppercase
+            String value = getCellValue(cellValue);
             String label = getCellValue(cellLabel);
             String readonlyValue = getCellValue(cellReadonly);
             boolean readonly = (readonlyValue != null && !readonlyValue.isEmpty()) ? getBooleanValue(readonlyValue) : false;
             String displayCondition = getCellValue(cellDisplayCondition);
 
-            formOptions.put(name, value==null ? value : value.toUpperCase(), label, readonly, displayCondition);
+            formOptions.put(name, value==null ? value : value, label, readonly, displayCondition);
             //Log.d("display-"+name, ""+displayCondition);
         }
 

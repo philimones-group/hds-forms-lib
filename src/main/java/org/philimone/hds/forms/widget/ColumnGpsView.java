@@ -180,6 +180,13 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     }
 
     @Override
+    public void refreshState() {
+        this.getGpsLayout.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        this.txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+        this.btGetGps.setEnabled(!this.column.isReadOnly());
+    }
+
+    @Override
     public void setValue(String value) { //do nothing
         if (StringTools.isBlank(value)) return;
 

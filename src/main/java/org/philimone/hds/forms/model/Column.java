@@ -15,6 +15,7 @@ public class Column {
     private String label;
     private String value;
     private boolean required;
+    private String readOnlyCondition;
     private boolean readOnly;
     private boolean hidden;
     private String repeatCount;
@@ -30,7 +31,7 @@ public class Column {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, boolean required, boolean readOnly, String calculation, String displayCondition, String displayStyle, boolean hidden) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, boolean required, String readOnly, String calculation, String displayCondition, String displayStyle, boolean hidden) {
         this();
 
         this.name = name;
@@ -44,12 +45,13 @@ public class Column {
         this.value = value;
         this.label = label;
         this.required = required;
-        this.readOnly = readOnly;
+        this.readOnlyCondition = readOnly;
         this.calculation = calculation;
         this.displayCondition = displayCondition;
         this.displayStyle = displayStyle;
         this.hidden = hidden;
 
+        initialEvaluateReadOnly();
         evaluateOptionsDisplayability();
     }
     public String getName() {
@@ -86,6 +88,10 @@ public class Column {
         }
     }
 
+    public void clearTypeOptions(){
+        this.typeOptions.clear();
+    }
+
     private void evaluateOptionsDisplayability(){
 
         if (typeOptions != null && typeOptions.size() > 0) {
@@ -98,6 +104,12 @@ public class Column {
         }
 
         this.optionsConditionallyDisplayable = false;
+    }
+
+    private void initialEvaluateReadOnly(){
+        if (readOnlyCondition.equalsIgnoreCase("true") || readOnlyCondition.equalsIgnoreCase("yes")) {
+            this.setReadOnly(true);
+        }
     }
 
     public boolean isOptionsConditionallyDisplayable() {
@@ -130,6 +142,10 @@ public class Column {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public String getReadOnlyCondition() {
+        return readOnlyCondition;
     }
 
     public boolean isReadOnly() {
@@ -197,4 +213,5 @@ public class Column {
 
         evaluateOptionsDisplayability();
     }
+
 }

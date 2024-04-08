@@ -224,7 +224,7 @@ public class ColumnGroupView extends LinearLayout {
                 columnViews.add(view);
 
                 if (column.isHidden()){
-
+                    //view.setDisplayable(false);
                 }
 
                 view.setVisibility(column.isHidden() ? GONE : VISIBLE);
@@ -315,6 +315,12 @@ public class ColumnGroupView extends LinearLayout {
     public void evaluateCalculations(){
         for (ColumnView columnView : this.columnViews) {
             columnView.evaluateCalculation();
+        }
+    }
+
+    public void evaluateReadOnly(){
+        for (ColumnView columnView : this.columnViews) {
+            columnView.evaluateReadOnly();
         }
     }
 

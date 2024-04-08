@@ -44,6 +44,11 @@ public class ColumnTextView extends ColumnView {
     }
 
     @Override
+    public void refreshState() {
+        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+    }
+
+    @Override
     public void setValue(String value) {
         this.column.setValue(value);
         updateValues();

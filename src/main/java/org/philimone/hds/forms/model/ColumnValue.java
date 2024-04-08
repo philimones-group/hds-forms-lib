@@ -27,6 +27,7 @@ public class ColumnValue implements Serializable {
     private int columnId;
     private Column column;
     private String value; //value for STRING,SELECT,
+    private String valueLabel;
     private Integer integerValue; //value for INTEGER
     private BigDecimal decimalValue; //value for DECIMAL
     private Date dateValue; //value for DATE
@@ -51,7 +52,7 @@ public class ColumnValue implements Serializable {
         this.columnId = columnView.getId();
         this.column = columnView.getColumn();
 
-        if (columnGroupView.isDisplayable()) { //if it is not displayable just be null/empty
+        if (columnGroupView.isDisplayable() && columnView.isDisplayable()) { //if it is not displayable just be null/empty
             retrieveValues(columnView);
         }
     }
@@ -59,6 +60,7 @@ public class ColumnValue implements Serializable {
     private void retrieveValues(ColumnView columnView) {
         if (columnView instanceof ColumnTextView) {
             this.value = columnView.getValue();
+            this.valueLabel = this.value;
 
             ColumnTextView columntxt = (ColumnTextView) columnView;
 
@@ -67,6 +69,7 @@ public class ColumnValue implements Serializable {
         }
         if (columnView instanceof ColumnTextboxView) {
             this.value = columnView.getValue();
+            this.valueLabel = this.value;
 
             ColumnTextboxView columntxt = (ColumnTextboxView) columnView;
             if (columntxt.getType()==ColumnType.DECIMAL) { this.decimalValue = columntxt.getValueDecimal(); }
@@ -75,23 +78,29 @@ public class ColumnValue implements Serializable {
         if (columnView instanceof ColumnDateView) {
             this.dateValue = ((ColumnDateView) columnView).getValueAsDate();
             this.value = columnView.getValue();
+            this.valueLabel = this.value;
         }
         if (columnView instanceof ColumnDateTimeView) {
             this.dateValue = ((ColumnDateTimeView) columnView).getValueAsDate();
             this.value = columnView.getValue();
+            this.valueLabel = this.value;
         }
         if (columnView instanceof ColumnSelectView) { //TEXTBOX.STRING
+            ColumnSelectView column = (ColumnSelectView) columnView;
             this.value = columnView.getValue();
+            this.valueLabel = column.getSelectedValueLabel();
         }
         if (columnView instanceof ColumnMultiSelectView) {
             ColumnMultiSelectView column = ((ColumnMultiSelectView) columnView);
             this.multiSelectValues = column.getValues();
             this.value = column.getSelectedValue();
+            this.valueLabel = column.getSelectedValueLabel();
         }
         if (columnView instanceof ColumnGpsView) {
             ColumnGpsView gpsView = (ColumnGpsView) columnView;
             this.gpsValues = gpsView.getValues();
             this.value = gpsView.getValue();
+            this.valueLabel = this.value;
         }
     }
 
@@ -129,6 +138,10 @@ public class ColumnValue implements Serializable {
 
     public String getValue() {
         return value;
+    }
+
+    public String getValueLabel() {
+        return valueLabel;
     }
 
     public void setValue(String value) {

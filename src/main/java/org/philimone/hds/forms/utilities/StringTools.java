@@ -136,4 +136,8 @@ public class StringTools {
 
         return collectedDate;
     }
+
+    public static boolean getBooleanValue(String booleanValue) {
+        return booleanValue.equalsIgnoreCase("true") || booleanValue.equalsIgnoreCase("yes");
+    }
 }
