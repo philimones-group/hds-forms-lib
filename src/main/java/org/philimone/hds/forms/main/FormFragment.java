@@ -216,6 +216,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         } else if (resumeMode) {
             onOpenResumeClicked();
         }
+
+        this.formListener.onFormLoaded(null);
     }
 
     private void initPermissions() {
@@ -267,11 +269,21 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             onResumeListItemClicked(position);
         });
 
-        this.txtFormTitle.setText(form.getFormName());
+        initFormTitle();
 
         formSlider.setFormFragment(this);
 
         initColumnViews();
+    }
+
+    private void initFormTitle() {
+        this.txtFormTitle.setText(form.getFormName());
+
+        if (this.form.getCustomTitle() != null && form.getFormName() != null) {
+            String fname = this.form.getFormName();
+            String newTitle = fname.replaceAll("\\$\\{form_title\\}", this.form.getCustomTitle());
+            this.txtFormTitle.setText(newTitle);
+        }
     }
 
     private void initLoading(){

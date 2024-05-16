@@ -10,6 +10,8 @@ import java.util.Map;
 
 public interface FormCollectionListener {
 
+    void onFormLoaded(Object[] data);
+
     /*
      * Will be called after clicking save/finish
      */

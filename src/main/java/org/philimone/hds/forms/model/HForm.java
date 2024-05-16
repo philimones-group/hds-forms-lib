@@ -15,6 +15,7 @@ public class HForm {
 
     private String formId;
     private String formName;
+    private String customTitle;
     private List<ColumnGroup> columns;
     private boolean postExecution;
 
@@ -72,6 +73,14 @@ public class HForm {
 
     public void setFormName(String formName) {
         this.formName = formName;
+    }
+
+    public String getCustomTitle() {
+        return customTitle;
+    }
+
+    public void setCustomTitle(String customTitle) {
+        this.customTitle = customTitle;
     }
 
     public List<ColumnGroup> getColumns() {
