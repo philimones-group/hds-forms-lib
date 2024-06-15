@@ -482,6 +482,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                     groupViews.add(headerGroupView);
                 }else {
                     //because the header is not part of the FormColumnSlider - we need to evaluate now
+
+                    headerGroupView.evaluateRequired();
                     headerGroupView.evaluateReadOnly();
                     headerGroupView.evaluateCalculations();
                     headerGroupView.evaluateDisplayCondition();

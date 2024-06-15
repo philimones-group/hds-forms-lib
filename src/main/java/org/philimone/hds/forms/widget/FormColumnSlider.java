@@ -150,6 +150,7 @@ public class FormColumnSlider extends LinearLayout {
             boolean displayableBefore = nextGroupView.isDisplayable();
             nextGroupView.evaluateDisplayCondition(); //execute the display condition script
             nextGroupView.evaluateCalculations();
+            nextGroupView.evaluateRequired();
             nextGroupView.evaluateReadOnly();
 
             //Log.d("next-try", ""+next+", "+nextGroupView+", displayable=("+displayableBefore+"->"+nextGroupView.isDisplayable()+"), fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
@@ -270,6 +271,7 @@ public class FormColumnSlider extends LinearLayout {
         ColumnGroupView currentGroupView = getAdapter().getItemView(position);
         if (currentGroupView != null){
             currentGroupView.evaluateCalculations();
+            currentGroupView.evaluateRequired();
             currentGroupView.evaluateReadOnly();
         }
     }

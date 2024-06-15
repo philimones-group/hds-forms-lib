@@ -324,6 +324,12 @@ public class ColumnGroupView extends LinearLayout {
         }
     }
 
+    public void evaluateRequired(){
+        for (ColumnView columnView : this.columnViews) {
+            columnView.evaluateRequired();
+        }
+    }
+
     public boolean isFragmentVisible() {
         return fragmentVisible;
     }

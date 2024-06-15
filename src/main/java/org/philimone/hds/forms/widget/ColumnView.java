@@ -95,6 +95,7 @@ public abstract class ColumnView extends LinearLayout {
             ColumnView columnView = columnViews.get(j);
             columnView.evaluateCalculation();
             columnView.evaluateDisplayCondition();
+            columnView.evaluateRequired();
             columnView.evaluateReadOnly();
         }
     }
@@ -297,6 +298,25 @@ public abstract class ColumnView extends LinearLayout {
         String result = objResult==null ? "" : objResult.toString();
         //Log.d("r*expression", readOnlyCondition+" >>>> "+result);
         this.column.setReadOnly(StringTools.getBooleanValue(result));
+
+        refreshState();
+    }
+
+    public void evaluateRequired() {
+        String requiredCondition = column.getRequiredCondition();
+
+        if (StringTools.isBlank(requiredCondition)) return;
+        //Log.d("expression-required", requiredCondition);
+        //replace variables with values
+        requiredCondition = translateExpression(requiredCondition);
+        //find method calls, call:methodName()
+        requiredCondition = translateMethodCalls(requiredCondition);
+
+
+        Object objResult = getActivity().evaluateExpression(requiredCondition);
+        String result = objResult==null ? "" : objResult.toString();
+        //Log.d("req*expression", requiredCondition+" >>>> "+result);
+        this.column.setRequired(StringTools.getBooleanValue(result));
 
         refreshState();
     }

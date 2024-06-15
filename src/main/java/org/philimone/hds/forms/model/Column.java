@@ -15,8 +15,9 @@ public class Column {
     private String label;
     private String value;
     private boolean required;
-    private String readOnlyCondition;
+    private String requiredCondition;
     private boolean readOnly;
+    private String readOnlyCondition;
     private boolean hidden;
     private String repeatCount;
     private String calculation;
@@ -31,7 +32,7 @@ public class Column {
         this.typeOptions = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, boolean required, String readOnly, String calculation, String displayCondition, String displayStyle, boolean hidden) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, String required, String readOnly, String calculation, String displayCondition, String displayStyle, boolean hidden) {
         this();
 
         this.name = name;
@@ -44,13 +45,14 @@ public class Column {
         this.repeatCount = repeatCount;
         this.value = value;
         this.label = label;
-        this.required = required;
+        this.requiredCondition = required;
         this.readOnlyCondition = readOnly;
         this.calculation = calculation;
         this.displayCondition = displayCondition;
         this.displayStyle = displayStyle;
         this.hidden = hidden;
 
+        initialEvaluateRequired();
         initialEvaluateReadOnly();
         evaluateOptionsDisplayability();
     }
@@ -112,6 +114,12 @@ public class Column {
         }
     }
 
+    private void initialEvaluateRequired(){
+        if (requiredCondition.equalsIgnoreCase("true") || requiredCondition.equalsIgnoreCase("yes")) {
+            this.setRequired(true);
+        }
+    }
+
     public boolean isOptionsConditionallyDisplayable() {
         return this.optionsConditionallyDisplayable;
     }
@@ -142,6 +150,10 @@ public class Column {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public String getRequiredCondition() {
+        return requiredCondition;
     }
 
     public String getReadOnlyCondition() {

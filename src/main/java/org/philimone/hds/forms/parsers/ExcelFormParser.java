@@ -146,7 +146,7 @@ public class ExcelFormParser implements FormParser {
                     }
 
                     //Log.d("hidden cell", ""+cellHidden);
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, getBooleanValue(cellRequired), cellReadonly, cellCalculation, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, cellRequired, cellReadonly, cellCalculation, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
 
                     group.addColumn(column);
 
