@@ -7,6 +7,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.Button;
@@ -53,7 +55,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     public ColumnGpsView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
         super(view, R.layout.column_gps_item, attrs, column, callListener);
 
-        initialize();        ;
+        initialize();
     }
 
     public ColumnGpsView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
@@ -89,6 +91,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         this.txtGpsAccuracy = findViewById(R.id.txtGpsAccuracy);
 
         this.loadingDialog = new LoadingDialog(this.getContext());
+        this.loadingDialog.setListener(() -> onCancelGpsDetection());
 
         this.btGetGps.setOnClickListener(v -> onGetGpsClicked());
 
@@ -161,9 +164,25 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.gpsLocationResult = null;
 
-
         showLoadingDialog(R.string.gps_loading_lbl, true);
         locationManager.requestLocationUpdates(provider, 5, 0, this);
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(() -> {
+            showCancelGpsDetection();
+        }, 20000); //after 30 seconds
+    }
+
+    private void showCancelGpsDetection() {
+        this.loadingDialog.showCancelButton();
+    }
+
+    private void onCancelGpsDetection() {
+        try {
+            locationManager.removeUpdates(this);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
     }
 
@@ -270,6 +289,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         showLoadingDialog(null, false);
 
         afterUserInput();
+        onCancelGpsDetection();
     }
 
     @Override

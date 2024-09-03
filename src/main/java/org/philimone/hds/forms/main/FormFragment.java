@@ -341,12 +341,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                 for (ValidationResult.Error error : result.getColumnErrors()) {
 
-                    DialogFactory.createMessageInfo(getCurrentContext(), getString(R.string.info_lbl), error.errorMessage).show();
-
                     setFocus(error.columnValue);
+
+                    DialogFactory.createMessageInfo(getCurrentContext(), getString(R.string.info_lbl), error.errorMessage).show();
                 }
 
-                Log.d("errors", "errors - result");
+                Log.d("errors", "errors - result"+result.hasErrors());
             } else {
 
                 //update HForm columnValueMap
@@ -649,13 +649,15 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private void setFocus(ColumnValue columnValue) {
         ColumnGroupView groupView = columnGroupViewList.stream().filter(t -> t.getId()==columnValue.getColumnGroupId()).findFirst().orElse(null);
-        ColumnView columnView = groupView.findViewById(columnValue.getColumnId());
+        ColumnView columnView = columnValue.getColumnView();
 
         if (groupView != null && columnView != null) {
             groupView.setFocusable(true);
             columnView.setFocusable(true);
             groupView.requestFocus();
             columnView.requestFocus();
+
+            formSlider.gotoPage(columnView);
         }
     }
 

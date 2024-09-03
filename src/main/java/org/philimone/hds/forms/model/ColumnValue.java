@@ -25,6 +25,7 @@ public class ColumnValue implements Serializable {
 
     private int columnGroupId;
     private int columnId;
+    private ColumnView columnView;
     private Column column;
     private String value; //value for STRING,SELECT,
     private String valueLabel;
@@ -50,6 +51,7 @@ public class ColumnValue implements Serializable {
     public ColumnValue(ColumnGroupView columnGroupView, ColumnView columnView) {
         this.columnGroupId = columnGroupView.getId();
         this.columnId = columnView.getId();
+        this.columnView = columnView;
         this.column = columnView.getColumn();
 
         if (columnGroupView.isDisplayable() && columnView.isDisplayable()) { //if it is not displayable just be null/empty
@@ -126,6 +128,10 @@ public class ColumnValue implements Serializable {
 
     public void setColumn(Column column) {
         this.column = column;
+    }
+
+    public ColumnView getColumnView() {
+        return columnView;
     }
 
     public ColumnType getColumnType(){
