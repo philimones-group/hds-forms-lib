@@ -13,6 +13,8 @@ import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,11 +40,7 @@ public class ColumnTextboxView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.txtValue = findViewById(R.id.txtColumnValue);
 
-        switch (column.getType()){
-            case STRING:  txtValue.setInputType(InputType.TYPE_CLASS_TEXT); break;
-            case INTEGER: txtValue.setInputType(InputType.TYPE_CLASS_NUMBER); break;
-            case DECIMAL:  txtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
-        }
+        setInputType();
 
         txtValue.addTextChangedListener(new TextWatcher() {
             @Override
@@ -62,6 +60,21 @@ public class ColumnTextboxView extends ColumnView {
         });
 
         updateValues();
+    }
+
+    private void setInputType() {
+        switch (column.getType()){
+            case STRING:
+                //if display style is PHONE NUMBER change the input type
+                if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_PHONE_NUMBER)){
+                    txtValue.setInputType(InputType.TYPE_CLASS_PHONE);
+                } else {
+                    txtValue.setInputType(InputType.TYPE_CLASS_TEXT);
+                }
+                break;
+            case INTEGER: txtValue.setInputType(InputType.TYPE_CLASS_NUMBER); break;
+            case DECIMAL:  txtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
+        }
     }
 
     @Override
@@ -86,7 +99,7 @@ public class ColumnTextboxView extends ColumnView {
             txtValue.setTextIsSelectable(true);
             txtValue.setFocusable(false);
         } else {
-            txtValue.setInputType(InputType.TYPE_CLASS_TEXT);
+            setInputType();
             txtValue.setTextIsSelectable(true);
             txtValue.setFocusable(true);
         }

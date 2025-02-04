@@ -27,6 +27,7 @@ public class Column {
     private boolean optionsConditionallyDisplayable;
 
     public static String DISPLAY_STYLE_SELECTED_ONLY = "selected_only";
+    public static String DISPLAY_STYLE_PHONE_NUMBER = "phone_number";
 
     public Column() {
         this.typeOptions = new LinkedHashMap<>();
