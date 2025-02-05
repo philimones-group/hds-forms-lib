@@ -228,11 +228,11 @@ public class ExcelFormParser implements FormParser {
             String name = getCellValue(cellName);
             String value = getCellValue(cellValue);
             String label = getCellValue(cellLabel);
-            String readonlyValue = getCellValue(cellReadonly);
-            boolean readonly = (readonlyValue != null && !readonlyValue.isEmpty()) ? getBooleanValue(readonlyValue) : false;
+            String readonlyCondition = getCellValue(cellReadonly);
+            boolean readonly = (readonlyCondition != null && !readonlyCondition.isEmpty()) ? getBooleanValue(readonlyCondition) : false;
             String displayCondition = getCellValue(cellDisplayCondition);
 
-            formOptions.put(name, value==null ? value : value, label, readonly, displayCondition);
+            formOptions.put(name, value==null ? "" : value, label, readonlyCondition, displayCondition);
             //Log.d("display-"+name, ""+displayCondition);
         }
 

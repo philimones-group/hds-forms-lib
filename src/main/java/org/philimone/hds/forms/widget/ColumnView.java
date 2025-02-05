@@ -286,18 +286,53 @@ public abstract class ColumnView extends LinearLayout {
     public void evaluateReadOnly(){
         String readOnlyCondition = column.getReadOnlyCondition();
 
-        if (StringTools.isBlank(readOnlyCondition)) return;
-        //Log.d("expression*o", readOnlyCondition);
-        //replace variables with values
-        readOnlyCondition = translateExpression(readOnlyCondition);
-        //find method calls, call:methodName()
-        readOnlyCondition = translateMethodCalls(readOnlyCondition);
+        if (StringTools.isBlank(readOnlyCondition)) {
+            column.setReadOnly(false);
+        } else {
+            //Log.d("expression*o", readOnlyCondition);
+            //replace variables with values
+            readOnlyCondition = translateExpression(readOnlyCondition);
+            //find method calls, call:methodName()
+            readOnlyCondition = translateMethodCalls(readOnlyCondition);
 
 
-        Object objResult = getActivity().evaluateExpression(readOnlyCondition);
-        String result = objResult==null ? "" : objResult.toString();
-        //Log.d("r*expression", readOnlyCondition+" >>>> "+result);
-        this.column.setReadOnly(StringTools.getBooleanValue(result));
+            Object objResult = getActivity().evaluateExpression(readOnlyCondition);
+            String result = objResult == null ? "" : objResult.toString();
+            //Log.d("r*expression", readOnlyCondition+" >>>> "+result);
+            this.column.setReadOnly(StringTools.getBooleanValue(result));
+        }
+
+        //evaluate also the readonly condition of the options
+        if (column.isOptionsConditionallyReadOnly() && (this instanceof ColumnSelectView || this instanceof ColumnMultiSelectView)) {
+
+            for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()){
+                if (!StringTools.isBlank(optionValue.readonlyCondition)){
+                    //evaluate true or false first
+                    if ("true".equalsIgnoreCase(optionValue.readonlyCondition) || "yes".equalsIgnoreCase(optionValue.readonlyCondition)) {
+                        optionValue.readonly = true;
+                        continue;
+                    }
+                    if ("false".equalsIgnoreCase(optionValue.readonlyCondition) || "no".equalsIgnoreCase(optionValue.readonlyCondition)) {
+                        optionValue.readonly = false;
+                        continue;
+                    }
+
+                    String optionReadonlyCondition = translateExpression(optionValue.readonlyCondition);
+                    optionReadonlyCondition = translateMethodCalls(optionReadonlyCondition);
+
+                    String ronlyResult = getActivity().evaluateExpression(optionReadonlyCondition).toString();
+                    boolean optReadonly = StringTools.isBlank(ronlyResult) ? false : ronlyResult.equals("true");
+                    optionValue.readonly = optReadonly;
+
+                }
+            }
+
+            if (this instanceof  ColumnSelectView) {
+                ((ColumnSelectView) this).refillOptions();
+            } else {
+                ((ColumnMultiSelectView) this).refillOptions();
+            }
+        }
 
         refreshState();
     }

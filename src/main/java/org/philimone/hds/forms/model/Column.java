@@ -25,6 +25,7 @@ public class Column {
     private String displayStyle; /* selected_only*/
 
     private boolean optionsConditionallyDisplayable;
+    private boolean optionsConditionallyReadOnly;
 
     public static String DISPLAY_STYLE_SELECTED_ONLY = "selected_only";
     public static String DISPLAY_STYLE_PHONE_NUMBER = "phone_number";
@@ -56,6 +57,7 @@ public class Column {
         initialEvaluateRequired();
         initialEvaluateReadOnly();
         evaluateOptionsDisplayability();
+        inititalEvaluateOptionsReadOnly();
     }
     public String getName() {
         return name;
@@ -84,10 +86,11 @@ public class Column {
         }
     }
 
-    public void addTypeOptions(String optionValue, String optionLabel, boolean optionReadonly, String optionDisplayCondition) {
+    public void addTypeOptions(String optionValue, String optionLabel, String optionReadonlyCondition, String optionDisplayCondition) {
         if (optionValue != null && optionLabel != null) {
-            this.typeOptions.put(optionValue, new FormOptions.OptionValue(optionLabel, optionReadonly, optionDisplayCondition));
+            this.typeOptions.put(optionValue, new FormOptions.OptionValue(optionLabel, optionReadonlyCondition, optionDisplayCondition));
             evaluateOptionsDisplayability();
+            inititalEvaluateOptionsReadOnly();
         }
     }
 
@@ -121,8 +124,28 @@ public class Column {
         }
     }
 
+    private void inititalEvaluateOptionsReadOnly(){
+        this.optionsConditionallyReadOnly = false;
+
+        if (typeOptions != null && typeOptions.size() > 0) {
+            for (FormOptions.OptionValue optionValue : typeOptions.values()) {
+                if (!StringTools.isBlank(optionValue.readonlyCondition)) {
+                    this.optionsConditionallyReadOnly = true;
+
+                    if ("true".equalsIgnoreCase(optionValue.readonlyCondition) || "yes".equalsIgnoreCase(optionValue.readonlyCondition)) {
+                        optionValue.readonly = true;
+                    }
+                }
+            }
+        }
+    }
+
     public boolean isOptionsConditionallyDisplayable() {
         return this.optionsConditionallyDisplayable;
+    }
+
+    public boolean isOptionsConditionallyReadOnly() {
+        return optionsConditionallyReadOnly;
     }
 
     public String getValue() {

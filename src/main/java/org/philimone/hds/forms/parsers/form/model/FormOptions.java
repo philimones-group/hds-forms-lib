@@ -11,10 +11,10 @@ public class FormOptions {
         this.mapOptions = new HashMap<>();
     }
 
-    public void put(String optionName, String optionValue, String optionLabel, boolean optionReadonly, String optionDisplayCondition) {
+    public void put(String optionName, String optionValue, String optionLabel, String optionReadonlyCondition, String optionDisplayCondition) {
         LinkedHashMap<String, OptionValue> map = this.mapOptions.get(optionName) == null ? new LinkedHashMap<>() : this.mapOptions.get(optionName) ;
 
-        map.put(optionValue, new OptionValue(optionLabel, optionReadonly, optionDisplayCondition));
+        map.put(optionValue, new OptionValue(optionLabel, optionReadonlyCondition, optionDisplayCondition));
 
         this.mapOptions.put(optionName, map);
     }
@@ -25,13 +25,15 @@ public class FormOptions {
 
     public static class OptionValue {
         public String label;
-        public boolean readonly;
+
+        public String readonlyCondition;
+        public boolean readonly = false;
         public String displayCondition;
         public boolean displayable = true; //default
 
-        public OptionValue(String label, boolean readonly, String displayCondition) {
+        public OptionValue(String label, String readonlyCondition, String displayCondition) {
             this.label = label;
-            this.readonly = readonly;
+            this.readonlyCondition = readonlyCondition;
             this.displayCondition = displayCondition;
         }
     }
