@@ -101,7 +101,9 @@ public class ColumnRepeatGroup extends ColumnGroup {
         if (type == RepeatCountType.EXTERNAL_LOADER){
             try {
                 RepeatObject repeatObject = preloadedColumnValues.getRepeatObject(this.getName());
-                return repeatObject.count();
+                if (repeatObject != null) {
+                    return repeatObject.count();
+                }
             }catch (Exception ex){
                 ex.printStackTrace();
             }
