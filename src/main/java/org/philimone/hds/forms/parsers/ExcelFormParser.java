@@ -177,9 +177,11 @@ public class ExcelFormParser implements FormParser {
     private String convertBooleanUppercase(String cellCalculation) {
         if (cellCalculation == null) return cellCalculation;
 
-        cellCalculation = cellCalculation.replace("TRUE", "true");
-        cellCalculation = cellCalculation.replace("FALSE", "false");
-
+        //only convert single words
+        cellCalculation = cellCalculation.trim().equalsIgnoreCase("TRUE") ? "true" : cellCalculation; // cellCalculation.replace("TRUE", "true");
+        cellCalculation = cellCalculation.trim().equalsIgnoreCase("FALSE") ? "false" : cellCalculation; // cellCalculation.replace("FALSE", "false");
+        cellCalculation = cellCalculation.trim().equalsIgnoreCase("YES") ? "true" : cellCalculation; // cellCalculation.replace("YES", "true");
+        cellCalculation = cellCalculation.trim().equalsIgnoreCase("NO") ? "false" : cellCalculation; // cellCalculation.replace("NO", "false");
         return cellCalculation;
     }
 
@@ -233,7 +235,7 @@ public class ExcelFormParser implements FormParser {
             String displayCondition = getCellValue(cellDisplayCondition);
 
             formOptions.put(name, value==null ? "" : value, label, readonlyCondition, displayCondition);
-            //Log.d("display-"+name, ""+displayCondition);
+            //Log.d("display-"+name, ""+value+", readonly="+readonly);
         }
 
         return formOptions;
