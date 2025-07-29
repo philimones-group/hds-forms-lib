@@ -29,6 +29,7 @@ import static java.util.stream.Collectors.toSet;
 
 public class ColumnMultiSelectView extends ColumnView {
 
+    private static final String DELIMITER = ",";
     private TextView txtName;
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
@@ -96,8 +97,8 @@ public class ColumnMultiSelectView extends ColumnView {
             CheckBox button = new CheckBox(this.getContext());
             button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             button.setText(label);
-            button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
-            button.setTextColor(this.getContext().getResources().getColor(R.color.black, null));
+            //button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
+            button.setTextColor(this.getContext().getResources().getColor(R.color.black));
             button.setEnabled(!optionValue.readonly);
 
             if (column.isReadOnly()) {
@@ -118,7 +119,7 @@ public class ColumnMultiSelectView extends ColumnView {
         if (sop.size()>0) {
             String result = "";
             for (SelectOption opt : sop){
-                result += ";" + opt.value;
+                result += DELIMITER + opt.value;
             }
 
             return result.substring(1);
@@ -133,7 +134,7 @@ public class ColumnMultiSelectView extends ColumnView {
         if (sop.size()>0) {
             String result = "";
             for (SelectOption opt : sop){
-                result += ";" + opt.label;
+                result += DELIMITER + opt.label;
             }
 
             return result.substring(1);
@@ -150,7 +151,7 @@ public class ColumnMultiSelectView extends ColumnView {
         String value = column.getValue();
 
         if (value != null) {
-            String[] values = value.split(";");
+            String[] values = value.split(DELIMITER);
             boolean readonlyChecked = false;
 
             for (String optionValue : values) {
