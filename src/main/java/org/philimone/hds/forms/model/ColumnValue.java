@@ -1,7 +1,6 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.utilities.StringTools;
 import org.philimone.hds.forms.widget.ColumnDateTimeView;
 import org.philimone.hds.forms.widget.ColumnDateView;
 import org.philimone.hds.forms.widget.ColumnGpsView;
@@ -15,8 +14,6 @@ import org.philimone.hds.forms.widget.ColumnView;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

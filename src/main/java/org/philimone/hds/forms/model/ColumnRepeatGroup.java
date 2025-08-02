@@ -1,9 +1,6 @@
 package org.philimone.hds.forms.model;
 
-import android.util.Log;
-
 import org.philimone.hds.forms.model.enums.RepeatCountType;
-import org.philimone.hds.forms.utilities.StringTools;
 
 import java.util.ArrayList;
 import java.util.List;

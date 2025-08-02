@@ -1,7 +1,5 @@
 package org.philimone.hds.forms.parsers;
 
-import android.util.Log;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -15,12 +13,11 @@ import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import org.philimone.hds.forms.parsers.form.model.FormSettings;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -140,7 +137,7 @@ public class ExcelFormParser implements FormParser {
                         group.setName(cellGroup);
                         group.setLabel(cellGroupLabel);
 
-                        if (!StringTools.isBlank(group.getName())) {
+                        if (!StringUtil.isBlank(group.getName())) {
                             mapGroup.put(group.getName(), group);
                         }
                     }

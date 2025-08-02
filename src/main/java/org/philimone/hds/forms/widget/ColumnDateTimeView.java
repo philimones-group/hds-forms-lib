@@ -7,7 +7,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.dialog.DateTimeSelector;
 
 import java.util.Date;
@@ -84,7 +84,7 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     @Override
     public void setValue(String value) {
         this.column.setValue(value);
-        this.dateValue = StringTools.toDateTime(value);
+        this.dateValue = StringUtil.toDateTime(value);
         updateValues();
     }
 

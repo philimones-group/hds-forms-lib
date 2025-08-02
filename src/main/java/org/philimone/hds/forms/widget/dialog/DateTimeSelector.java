@@ -11,13 +11,12 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import org.philimone.hds.forms.R;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 
 import java.util.Calendar;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatDialog;
 
 public class DateTimeSelector extends AppCompatDialog {
@@ -61,6 +60,24 @@ public class DateTimeSelector extends AppCompatDialog {
         return dialog;
     }
 
+    public static DateTimeSelector createDateWidget(Context context, Date defaultDate, OnSelectedListener listener){
+        DateTimeSelector dialog = new DateTimeSelector(context);
+        dialog.listener = listener;
+        dialog.dateWithTime = false;
+        dialog.defaultDateValue = defaultDate;
+
+        return dialog;
+    }
+
+    public static DateTimeSelector createDateTimeWidget(Context context, Date defaultDate, OnSelectedListener listener){
+        DateTimeSelector dialog = new DateTimeSelector(context);
+        dialog.listener = listener;
+        dialog.dateWithTime = true;
+        dialog.defaultDateValue = defaultDate;
+
+        return dialog;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,15 +110,12 @@ public class DateTimeSelector extends AppCompatDialog {
         setCancelable(false);
 
         setTexts();
+        setDefaultDate(defaultDateValue);
 
         this.btDialogOk.setVisibility(View.VISIBLE);
         this.btDialogCancel.setVisibility(View.VISIBLE);
 
         this.dtpColumnTimeValue.setVisibility(dateWithTime ? View.VISIBLE : View.GONE);
-    }
-
-    public void setDefaultDate(Date date) {
-        this.defaultDateValue = date;
     }
 
     private void onCancelCicked(){
@@ -113,8 +127,8 @@ public class DateTimeSelector extends AppCompatDialog {
         int y = this.dtpColumnDateValue.getYear();
         int m = this.dtpColumnDateValue.getMonth()+1;
         int d = this.dtpColumnDateValue.getDayOfMonth();
-        int hh = dateWithTime ? this.dtpColumnTimeValue.getHour() : 0;
-        int mm = dateWithTime ? this.dtpColumnTimeValue.getMinute() : 0;
+        int hh = dateWithTime ? this.dtpColumnTimeValue.getCurrentHour() : 0;
+        int mm = dateWithTime ? this.dtpColumnTimeValue.getCurrentMinute() : 0;
 
         String strdate = y + "-" + String.format("%02d", m) + "-" + String.format("%02d", d);
         String format = "yyyy-MM-dd";
@@ -124,7 +138,7 @@ public class DateTimeSelector extends AppCompatDialog {
             format += " HH:mm:ss";
         }
 
-        Date date = StringTools.toDate(strdate, format);
+        Date date = StringUtil.toDate(strdate, format);
 
         if (listener != null) {
             listener.onDateSelected(date, strdate);
@@ -134,6 +148,20 @@ public class DateTimeSelector extends AppCompatDialog {
     private void onOkClicked() {
         dismiss();
         onDateSelected();
+    }
+
+    public void setDefaultDate(Date date) {
+        this.defaultDateValue = date;
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        dtpColumnDateValue.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+        if (dateWithTime) {
+            dtpColumnTimeValue.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
+            dtpColumnTimeValue.setCurrentMinute(cal.get(Calendar.MINUTE));
+        }
     }
 
     public void setTexts(){

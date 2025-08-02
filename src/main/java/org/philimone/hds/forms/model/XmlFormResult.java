@@ -1,9 +1,7 @@
 package org.philimone.hds.forms.model;
 
-import android.util.Log;
-
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -84,7 +82,7 @@ public class XmlFormResult {
 
     private String generateFilename(String basePath) {
         //form-id + form-uuid + date
-        return basePath + form.getFormId() + "-" + formUuid + "-" + StringTools.formatUnderscoreDate(collectedDate) + ".xml";
+        return basePath + form.getFormId() + "-" + formUuid + "-" + StringUtil.formatUnderscoreDate(collectedDate) + ".xml";
     }
 
     private Element createRepeatElement(Document doc, Element rootElement, RepeatColumnValue repeatColumnValue) {

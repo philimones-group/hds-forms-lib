@@ -2,7 +2,7 @@ package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -102,7 +102,7 @@ public class Column {
 
         if (typeOptions != null && typeOptions.size() > 0) {
             for (FormOptions.OptionValue optionValue : typeOptions.values()) {
-                if (!StringTools.isBlank(optionValue.displayCondition)) {
+                if (!StringUtil.isBlank(optionValue.displayCondition)) {
                     this.optionsConditionallyDisplayable = true;
                     return;
                 }
@@ -129,7 +129,7 @@ public class Column {
 
         if (typeOptions != null && typeOptions.size() > 0) {
             for (FormOptions.OptionValue optionValue : typeOptions.values()) {
-                if (!StringTools.isBlank(optionValue.readonlyCondition)) {
+                if (!StringUtil.isBlank(optionValue.readonlyCondition)) {
                     this.optionsConditionallyReadOnly = true;
 
                     if ("true".equalsIgnoreCase(optionValue.readonlyCondition) || "yes".equalsIgnoreCase(optionValue.readonlyCondition)) {
@@ -153,7 +153,7 @@ public class Column {
     }
 
     public boolean isValueBlank() {
-        return StringTools.isBlank(value);
+        return StringUtil.isBlank(value);
     }
 
     public void setValue(String value) {
@@ -233,8 +233,8 @@ public class Column {
     }
 
     public void addDisplayCondition(String xdisplayCondition) {
-        if (!StringTools.isBlank(xdisplayCondition)){
-            if (StringTools.isBlank(this.displayCondition)){
+        if (!StringUtil.isBlank(xdisplayCondition)){
+            if (StringUtil.isBlank(this.displayCondition)){
                 this.displayCondition = xdisplayCondition;
             } else {
                 this.displayCondition = "(" + xdisplayCondition + ") and (" + this.displayCondition + ")";

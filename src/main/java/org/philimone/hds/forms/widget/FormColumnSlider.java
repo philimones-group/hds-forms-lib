@@ -12,7 +12,7 @@ import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
 import org.philimone.hds.forms.listeners.GestureListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.ColumnValue;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 
 import androidx.annotation.Nullable;
 import androidx.viewpager2.widget.ViewPager2;
@@ -200,7 +200,7 @@ public class FormColumnSlider extends LinearLayout {
         for (ColumnView cview : view.getColumnViews()){
             ColumnValue columnValue = cview.getColumnValue();
 
-            if (columnValue.isRequired() && StringTools.isBlank(columnValue.getValue())){
+            if (columnValue.isRequired() && StringUtil.isBlank(columnValue.getValue())){
                 displayRequiredToastMessage(view, cview);
                 return true;
             }
@@ -234,7 +234,7 @@ public class FormColumnSlider extends LinearLayout {
             for (ColumnView cview : columnGroupView.getColumnViews()){
                 ColumnValue columnValue = cview.getColumnValue();
 
-                if (!cview.isHidden() && columnValue.isRequired() && StringTools.isBlank(columnValue.getValue())){
+                if (!cview.isHidden() && columnValue.isRequired() && StringUtil.isBlank(columnValue.getValue())){
                     pageEvents = OnNewPageSelectedEvents.CHECK_REQUIRED;
                     formViewPager.setCurrentItem(position, false);
 

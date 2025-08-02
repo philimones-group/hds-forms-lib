@@ -4,6 +4,8 @@ import android.location.Location;
 
 import androidx.annotation.NonNull;
 
+import mz.betainteractive.utilities.StringUtil;
+
 public class GpsFormatter {
 
     private Double latitude, longitude, altitude, accuracy;
@@ -28,7 +30,7 @@ public class GpsFormatter {
 
     public static Double[] getValuesFrom(String formattedGps) {
 
-        if (StringTools.isBlank(formattedGps)) return null;
+        if (StringUtil.isBlank(formattedGps)) return null;
 
         Double[] values = new Double[4];
         formattedGps = formattedGps.replaceAll("alt: ", "");

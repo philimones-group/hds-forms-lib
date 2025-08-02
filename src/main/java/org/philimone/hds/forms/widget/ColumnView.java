@@ -2,7 +2,6 @@ package org.philimone.hds.forms.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -13,12 +12,10 @@ import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -219,7 +216,7 @@ public abstract class ColumnView extends LinearLayout {
 
         //Log.d("evaluating", getName()+" -> "+displayCondition);
 
-        if (StringTools.isBlank(displayCondition)) {
+        if (StringUtil.isBlank(displayCondition)) {
             setDisplayable(true);
         } else {
             //get all column values (previous)
@@ -230,7 +227,7 @@ public abstract class ColumnView extends LinearLayout {
             //Log.d("displaycondition", "f: "+displayCondition);
             //evaluate expression on a script engine
             String result = getActivity().evaluateExpression(displayCondition).toString();
-            boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
+            boolean visible = StringUtil.isBlank(result) ? true : result.equals("true");
             //Log.d("evaluation", ""+result);
 
             setDisplayable(visible);
@@ -241,14 +238,14 @@ public abstract class ColumnView extends LinearLayout {
         if (column.isOptionsConditionallyDisplayable() && (this instanceof ColumnSelectView || this instanceof ColumnMultiSelectView)) {
 
             for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()){
-                if (StringTools.isBlank(optionValue.displayCondition)){
+                if (StringUtil.isBlank(optionValue.displayCondition)){
                     optionValue.displayable = true;
                 } else {
                     String optionDisplayCondition = translateExpression(optionValue.displayCondition);
                     optionDisplayCondition = translateMethodCalls(optionDisplayCondition);
 
                     String result = getActivity().evaluateExpression(optionDisplayCondition).toString();
-                    boolean visible = StringTools.isBlank(result) ? true : result.equals("true");
+                    boolean visible = StringUtil.isBlank(result) ? true : result.equals("true");
                     optionValue.displayable = visible;
                 }
             }
@@ -265,7 +262,7 @@ public abstract class ColumnView extends LinearLayout {
     public void evaluateCalculation(){
         String calculation = column.getCalculation();
 
-        if (StringTools.isBlank(calculation)) return;
+        if (StringUtil.isBlank(calculation)) return;
 
         //replace variables with values
         calculation = translateExpression(calculation);
@@ -286,7 +283,7 @@ public abstract class ColumnView extends LinearLayout {
     public void evaluateReadOnly(){
         String readOnlyCondition = column.getReadOnlyCondition();
 
-        if (StringTools.isBlank(readOnlyCondition)) {
+        if (StringUtil.isBlank(readOnlyCondition)) {
             column.setReadOnly(false);
         } else {
             //Log.d("expression*o", readOnlyCondition);
@@ -299,14 +296,14 @@ public abstract class ColumnView extends LinearLayout {
             Object objResult = getActivity().evaluateExpression(readOnlyCondition);
             String result = objResult == null ? "" : objResult.toString();
             //Log.d("r*expression", readOnlyCondition+" >>>> "+result);
-            this.column.setReadOnly(StringTools.getBooleanValue(result));
+            this.column.setReadOnly(StringUtil.getBooleanValue(result));
         }
 
         //evaluate also the readonly condition of the options
         if (column.isOptionsConditionallyReadOnly() && (this instanceof ColumnSelectView || this instanceof ColumnMultiSelectView)) {
 
             for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()){
-                if (!StringTools.isBlank(optionValue.readonlyCondition)){
+                if (!StringUtil.isBlank(optionValue.readonlyCondition)){
                     //evaluate true or false first
                     if ("true".equalsIgnoreCase(optionValue.readonlyCondition) || "yes".equalsIgnoreCase(optionValue.readonlyCondition)) {
                         optionValue.readonly = true;
@@ -321,7 +318,7 @@ public abstract class ColumnView extends LinearLayout {
                     optionReadonlyCondition = translateMethodCalls(optionReadonlyCondition);
 
                     String ronlyResult = getActivity().evaluateExpression(optionReadonlyCondition).toString();
-                    boolean optReadonly = StringTools.isBlank(ronlyResult) ? false : ronlyResult.equals("true");
+                    boolean optReadonly = StringUtil.isBlank(ronlyResult) ? false : ronlyResult.equals("true");
                     optionValue.readonly = optReadonly;
 
                 }
@@ -340,7 +337,7 @@ public abstract class ColumnView extends LinearLayout {
     public void evaluateRequired() {
         String requiredCondition = column.getRequiredCondition();
 
-        if (StringTools.isBlank(requiredCondition)) return;
+        if (StringUtil.isBlank(requiredCondition)) return;
         //Log.d("expression-required", requiredCondition);
         //replace variables with values
         requiredCondition = translateExpression(requiredCondition);
@@ -351,7 +348,7 @@ public abstract class ColumnView extends LinearLayout {
         Object objResult = getActivity().evaluateExpression(requiredCondition);
         String result = objResult==null ? "" : objResult.toString();
         //Log.d("req*expression", requiredCondition+" >>>> "+result);
-        this.column.setRequired(StringTools.getBooleanValue(result));
+        this.column.setRequired(StringUtil.getBooleanValue(result));
 
         refreshState();
     }

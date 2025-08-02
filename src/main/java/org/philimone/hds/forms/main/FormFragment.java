@@ -13,12 +13,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.apache.commons.jexl3.JexlBuilder;
@@ -47,7 +45,7 @@ import org.philimone.hds.forms.model.enums.RepeatCountType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.parsers.XmlDataReader;
 import org.philimone.hds.forms.parsers.XmlDataUpdater;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 import org.philimone.hds.forms.widget.ColumnTextView;
@@ -69,12 +67,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
@@ -157,7 +153,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         formFragment.form.setPostExecution(executeOnUpload);
 
-        if (!StringTools.isBlank(xmlSavedFormPath)){
+        if (!StringUtil.isBlank(xmlSavedFormPath)){
 
             Map<String,Object> map = XmlDataReader.getXmlMappedData(xmlSavedFormPath, form);
             formFragment.preloadedColumnValues.putAll(map);
@@ -533,7 +529,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             for (ColumnView columnView : columnGroupView.getColumnViews()) {
                 ColumnValue columnValue = new ColumnValue(columnGroupView, columnView);
 
-                if (columnValue.getColumnType() == ColumnType.START_TIMESTAMP && StringTools.isBlank(columnValue.getValue())) { //start must be blank - means the first time form is opened, otherwise is reopening a saved form
+                if (columnValue.getColumnType() == ColumnType.START_TIMESTAMP && StringUtil.isBlank(columnValue.getValue())) { //start must be blank - means the first time form is opened, otherwise is reopening a saved form
                     columnValue.setValue(startTimestamp);
                 }
 
@@ -792,7 +788,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     public static void updateEndTimestamp(HForm form, String xmlSavedFormPath) {
-        if (!StringTools.isBlank(xmlSavedFormPath)){
+        if (!StringUtil.isBlank(xmlSavedFormPath)){
 
             Map<String,String> map = new LinkedHashMap<>();
             map.put(ColumnType.END_TIMESTAMP.getCode(), getTimestamp());
@@ -804,7 +800,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     public static void updateColumnOnXML(HForm form, String xmlSavedFormPath, String columnName, String columnValue){
-        if (!StringTools.isBlank(xmlSavedFormPath) && !StringTools.isBlank(columnName)){
+        if (!StringUtil.isBlank(xmlSavedFormPath) && !StringUtil.isBlank(columnName)){
 
             //columnValue = StringTools.isBlank(columnValue) ? "" : columnValue;
 
@@ -817,7 +813,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     public static void updateColumnOnXML(HForm form, String xmlSavedFormPath, Map<String, String> columnNameValueMap){
-        if (!StringTools.isBlank(xmlSavedFormPath)){
+        if (!StringUtil.isBlank(xmlSavedFormPath)){
             XmlDataUpdater updater = new XmlDataUpdater(form, xmlSavedFormPath);
             updater.updateValues(columnNameValueMap);
         }

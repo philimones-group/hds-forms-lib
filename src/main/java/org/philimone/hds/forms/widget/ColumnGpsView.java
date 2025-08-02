@@ -17,10 +17,9 @@ import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.utilities.GpsFormatter;
-import org.philimone.hds.forms.utilities.StringTools;
+import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import org.philimone.hds.forms.widget.dialog.LoadingDialog;
 
@@ -207,7 +206,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
     @Override
     public void setValue(String value) { //do nothing
-        if (StringTools.isBlank(value)) return;
+        if (StringUtil.isBlank(value)) return;
 
         Double[] values = GpsFormatter.getValuesFrom(value);
         if (values != null) {
