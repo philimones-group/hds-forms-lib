@@ -1,5 +1,7 @@
 package org.philimone.hds.forms.model;
 
+import android.util.Log;
+
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.widget.ColumnDateTimeView;
 import org.philimone.hds.forms.widget.ColumnDateView;
@@ -67,6 +69,13 @@ public class ColumnValue implements Serializable {
 
             if (columnView.getType()==ColumnType.DECIMAL) { this.decimalValue = columntxt.getValueDecimal(); }
             if (columnView.getType()==ColumnType.INTEGER) { this.integerValue = columntxt.getValueAsInt(); }
+            if (columnView.getType() == ColumnType.TIMESTAMP) {
+                DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
+                if (this.value != null) {
+                    this.dateValue = DateUtil.toDatePrecise(this.value);
+                    this.valueLabel = this.dateValue != null ? dateUtil.formatPrecise(this.dateValue) : this.value;
+                }
+            }
         }
         if (columnView instanceof ColumnTextboxView) {
             this.value = columnView.getValue();

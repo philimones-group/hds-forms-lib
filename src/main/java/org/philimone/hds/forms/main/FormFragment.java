@@ -360,7 +360,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 //update HForm columnValueMap
                 formListener.onBeforeFormFinished(form, columnValueMap);
 
-                XmlFormResult xmlResults = new XmlFormResult(form, columnValueMap.values(), instancesDirPath);
+                XmlFormResult xmlResults = new XmlFormResult(form, supportedCalendar, columnValueMap.values(), instancesDirPath);
                 //Log.d("result", ""+xmlResults.getXmlResult());
 
                 //createXmlFile

@@ -2,6 +2,7 @@ package org.philimone.hds.forms.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
@@ -13,6 +14,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.math.BigDecimal;
+import java.util.Date;
+
+import mz.betainteractive.utilities.DateUtil;
 
 public class ColumnTextView extends ColumnView {
 
@@ -41,6 +45,16 @@ public class ColumnTextView extends ColumnView {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
         txtValue.setText(column.getValue()==null ? "" : column.getValue());
+
+        //If is a timestamp column display agnostic formatted datetime
+        if (column.getType() == ColumnType.TIMESTAMP) {
+
+            DateUtil dateUtil = new DateUtil(getSupportedCalendar());
+            if (column.getValue() != null) {
+                Date dateValue = DateUtil.toDatePrecise(column.getValue()); //get gregorian
+                txtValue.setText(dateValue != null ? dateUtil.formatPrecise(dateValue) : ""); ////transform to display
+            }
+        }
     }
 
     @Override
@@ -56,7 +70,7 @@ public class ColumnTextView extends ColumnView {
 
     @Override
     public String getValue() {
-        return this.txtValue.getText().toString();
+        return this.column.getValue(); //get value from the column [because this is readonly] //this.txtValue.getText().toString();
     }
 
     public Integer getValueAsInt(){

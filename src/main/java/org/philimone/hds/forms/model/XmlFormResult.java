@@ -1,6 +1,8 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+
+import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -8,6 +10,7 @@ import org.w3c.dom.Element;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +29,14 @@ public class XmlFormResult {
     private String formUuid;
     private String filename;
     private String collectedDate;
+    private DateUtil dateUtil;
 
-    public XmlFormResult(HForm form, Collection<ColumnValue> collectedValues, String instancesDirPath) {
+    public XmlFormResult(HForm form, DateUtil.SupportedCalendar supportedCalendar, Collection<ColumnValue> collectedValues, String instancesDirPath) {
         this.form = form;
+        this.dateUtil = new DateUtil(supportedCalendar);
         this.xmlResult = generateXml(collectedValues);
         this.filename = generateFilename(instancesDirPath);
+
     }
 
     private String generateXml(Collection<ColumnValue> collectedValues) {
@@ -82,7 +88,13 @@ public class XmlFormResult {
 
     private String generateFilename(String basePath) {
         //form-id + form-uuid + date
-        return basePath + form.getFormId() + "-" + formUuid + "-" + formatUnderscoreDate(collectedDate) + ".xml";
+        //collectedDate is a timestamp or precise date
+        String formattedDate = collectedDate;
+        if (collectedDate != null) {
+            Date date = DateUtil.toDatePrecise(collectedDate);
+            formattedDate = dateUtil.formatPrecise(date);
+        }
+        return basePath + form.getFormId() + "-" + formUuid + "-" + formatUnderscoreDate(formattedDate) + ".xml";
     }
 
     private String formatUnderscoreDate(String collectedDate) {
