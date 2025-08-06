@@ -35,7 +35,7 @@
     </LinearLayout>
 
     <EditText
-        android:id="@+id/txtColumnValue"
+        android:id="@+id/editTxtColumnValue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="FWPF1"

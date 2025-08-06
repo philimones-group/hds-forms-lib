@@ -148,7 +148,9 @@ public class HForm {
     public void setReadonly(boolean value) {
         for (ColumnGroup columnGroup : this.columns){
             for (Column column : columnGroup.getColumns()) {
-                column.setReadOnly((!column.isHidden() && value));
+                if (!column.isHidden()) {
+                    column.setReadOnly(value);
+                }
             }
         }
     }

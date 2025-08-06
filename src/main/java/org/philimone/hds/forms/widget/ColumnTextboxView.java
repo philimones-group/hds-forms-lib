@@ -13,8 +13,6 @@ import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +20,7 @@ import androidx.annotation.Nullable;
 public class ColumnTextboxView extends ColumnView {
 
     private TextView txtName;
-    private EditText txtValue;
+    private EditText editTxtValue;
 
     public ColumnTextboxView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
         super(view, R.layout.column_string_item, attrs, column, callListener);
@@ -38,11 +36,11 @@ public class ColumnTextboxView extends ColumnView {
 
         this.txtColumnRequired = findViewById(R.id.txtColumnRequired);
         this.txtName = findViewById(R.id.txtColumnName);
-        this.txtValue = findViewById(R.id.txtColumnValue);
+        this.editTxtValue = findViewById(R.id.editTxtColumnValue);
 
         setInputType();
 
-        txtValue.addTextChangedListener(new TextWatcher() {
+        editTxtValue.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -67,13 +65,13 @@ public class ColumnTextboxView extends ColumnView {
             case STRING:
                 //if display style is PHONE NUMBER change the input type
                 if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_PHONE_NUMBER)){
-                    txtValue.setInputType(InputType.TYPE_CLASS_PHONE);
+                    editTxtValue.setInputType(InputType.TYPE_CLASS_PHONE);
                 } else {
-                    txtValue.setInputType(InputType.TYPE_CLASS_TEXT);
+                    editTxtValue.setInputType(InputType.TYPE_CLASS_TEXT);
                 }
                 break;
-            case INTEGER: txtValue.setInputType(InputType.TYPE_CLASS_NUMBER); break;
-            case DECIMAL:  txtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
+            case INTEGER: editTxtValue.setInputType(InputType.TYPE_CLASS_NUMBER); break;
+            case DECIMAL:  editTxtValue.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);break;
         }
     }
 
@@ -87,7 +85,7 @@ public class ColumnTextboxView extends ColumnView {
     public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
         txtName.setText(column.getLabel());
-        txtValue.setText(column.getValue()==null ? "" : column.getValue());
+        editTxtValue.setText(column.getValue()==null ? "" : column.getValue());
     }
 
     @Override
@@ -95,19 +93,19 @@ public class ColumnTextboxView extends ColumnView {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
 
         if (column.isReadOnly()) {
-            txtValue.setInputType(InputType.TYPE_NULL);
-            txtValue.setTextIsSelectable(true);
-            txtValue.setFocusable(false);
+            editTxtValue.setInputType(InputType.TYPE_NULL);
+            editTxtValue.setTextIsSelectable(true);
+            editTxtValue.setFocusable(false);
         } else {
             setInputType();
-            txtValue.setTextIsSelectable(true);
-            txtValue.setFocusable(true);
+            editTxtValue.setTextIsSelectable(true);
+            editTxtValue.setFocusable(true);
         }
     }
 
     @Override
     public String getValue() {
-        return this.txtValue.getText().toString();
+        return this.editTxtValue.getText().toString();
     }
 
     public Integer getValueAsInt(){
