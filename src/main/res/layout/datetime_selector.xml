@@ -66,6 +66,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/dateTimeLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -81,6 +82,46 @@
                 android:datePickerMode="spinner"
                 android:textSize="@dimen/column_value_textsize"
                 android:textColor="@color/black"/>
+
+            <LinearLayout
+                android:id="@+id/ethiopianLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <org.philimone.hds.forms.widget.utilities.NumberPicker
+                    android:id="@+id/nbpDateDay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="9dp"
+                    android:layout_marginEnd="9dp"
+                    default_value="1"
+                    min_value="1"
+                    max_value="30"
+                    />
+
+                <org.philimone.hds.forms.widget.utilities.NumberPicker
+                    android:id="@+id/nbpDateMonth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="9dp"
+                    android:layout_marginEnd="9dp"
+                    default_value="1"
+                    min_value="0"
+                    max_value="12" />
+
+                <org.philimone.hds.forms.widget.utilities.NumberPicker
+                    android:id="@+id/nbpDateYear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="9dp"
+                    android:layout_marginEnd="9dp"
+                    default_value="2025"
+                    min_value="1900"
+                    max_value="2999" />
+
+            </LinearLayout>
 
             <TimePicker
                 android:id="@+id/dtpColumnTimeValue"
@@ -133,7 +174,6 @@
             android:elevation="5dp"/>
 
     </LinearLayout>
-
 
 
 </LinearLayout>

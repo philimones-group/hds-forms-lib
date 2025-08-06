@@ -7,6 +7,8 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
+
+import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.dialog.DateTimeSelector;
 
@@ -22,10 +24,11 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     private TextView txtSelectedDate;
     private DateTimeSelector datePicker;
     private Date dateValue;
+    private DateUtil dateUtil;
 
     public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
         super(view, R.layout.column_datetime_item, attrs, column, callListener);
-
+        this.dateUtil = new DateUtil(getSupportedCalendar());
         createView();
     }
 
@@ -40,7 +43,7 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
         this.btnSelectDate = findViewById(R.id.btnSelectDate);
         this.txtSelectedDate = findViewById(R.id.txtSelectedDate);
 
-        this.datePicker = DateTimeSelector.createDateTimeWidget(this.getContext(), this);
+        this.datePicker = DateTimeSelector.createDateTimeWidget(this.getContext(), getSupportedCalendar(), this);
 
         btnSelectDate.setOnClickListener(v -> {
             onButtonSelectDateClicked();
@@ -63,14 +66,26 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     public void onDateSelected(Date selectedDate, String selectedDateText) {
         this.txtSelectedDate.setText(selectedDateText);
         this.dateValue = selectedDate;
-        this.column.setValue(selectedDateText);
+        this.column.setValue(DateUtil.formatGregorianYMDHMS(this.dateValue)); //must save gregorian format
 
         afterUserInput();
     }
 
     @Override
     public void updateValues() {
-        txtSelectedDate.setText(this.column.getValue());
+
+        String formattedDate = "";
+
+        //Get the date that will be displayed on txtSelectedDate - this date must be formatted into the correct calendar
+        if (this.dateValue != null) {
+            formattedDate = dateUtil.formatYMD(this.dateValue);
+
+        } else if (!StringUtil.isBlank(this.column.getValue())) {
+            Date date = DateUtil.toDateYMDHMS(this.column.getValue()); //column.getValue is always a gregorian date
+            formattedDate = dateUtil.formatYMDHMS(date);
+        }
+
+        txtSelectedDate.setText(formattedDate);
         btnSelectDate.setEnabled(!this.column.isReadOnly());
     }
 
@@ -84,18 +99,19 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     @Override
     public void setValue(String value) {
         this.column.setValue(value);
-        this.dateValue = StringUtil.toDateTime(value);
+        this.dateValue = DateUtil.toDateYMDHMS(value);
         updateValues();
     }
 
     @Override
     public String getValue() {
-
         if (dateValue == null){
             return null;
+        } else {
+            return DateUtil.formatGregorianYMDHMS(dateValue); //return gregorian if date is set
         }
 
-        return txtSelectedDate.getText().toString();
+        //return txtSelectedDate.getText().toString();
     }
 
     public Date getValueAsDate() {

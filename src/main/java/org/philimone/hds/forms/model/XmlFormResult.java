@@ -82,7 +82,15 @@ public class XmlFormResult {
 
     private String generateFilename(String basePath) {
         //form-id + form-uuid + date
-        return basePath + form.getFormId() + "-" + formUuid + "-" + StringUtil.formatUnderscoreDate(collectedDate) + ".xml";
+        return basePath + form.getFormId() + "-" + formUuid + "-" + formatUnderscoreDate(collectedDate) + ".xml";
+    }
+
+    private String formatUnderscoreDate(String collectedDate) {
+        //yyyy-MM-dd_HH_mm_ss
+        collectedDate = collectedDate.replaceAll(" ", "_");
+        collectedDate = collectedDate.replaceAll(":", "_");
+
+        return collectedDate;
     }
 
     private Element createRepeatElement(Document doc, Element rootElement, RepeatColumnValue repeatColumnValue) {

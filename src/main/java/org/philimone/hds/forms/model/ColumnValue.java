@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import mz.betainteractive.utilities.DateUtil;
+
 public class ColumnValue implements Serializable {
 
     private int columnGroupId;
@@ -75,14 +77,16 @@ public class ColumnValue implements Serializable {
             if (columntxt.getType()==ColumnType.INTEGER) { this.integerValue = columntxt.getValueAsInt(); }
         }
         if (columnView instanceof ColumnDateView) {
+            DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
             this.dateValue = ((ColumnDateView) columnView).getValueAsDate();
             this.value = columnView.getValue();
-            this.valueLabel = this.value;
+            this.valueLabel = this.dateValue != null ? dateUtil.formatYMD(this.dateValue) : this.value;
         }
         if (columnView instanceof ColumnDateTimeView) {
+            DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
             this.dateValue = ((ColumnDateTimeView) columnView).getValueAsDate();
             this.value = columnView.getValue();
-            this.valueLabel = this.value;
+            this.valueLabel = this.dateValue != null ? dateUtil.formatYMDHMS(this.dateValue) : this.value;
         }
         if (columnView instanceof ColumnSelectView) { //TEXTBOX.STRING
             ColumnSelectView column = (ColumnSelectView) columnView;

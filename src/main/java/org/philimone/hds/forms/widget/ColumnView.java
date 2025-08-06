@@ -12,6 +12,8 @@ import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnValue;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
+
+import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
 
 import java.util.ArrayList;
@@ -355,6 +357,10 @@ public abstract class ColumnView extends LinearLayout {
 
     public boolean isHidden() {
         return column.isHidden();
+    }
+
+    public DateUtil.SupportedCalendar getSupportedCalendar() {
+        return (this.columnGroupView != null && this.columnGroupView.getFormPanel() != null) ? this.columnGroupView.getFormPanel().supportedCalendar : null;
     }
 
     @Override

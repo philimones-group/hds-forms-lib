@@ -45,6 +45,8 @@ import org.philimone.hds.forms.model.enums.RepeatCountType;
 import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.parsers.XmlDataReader;
 import org.philimone.hds.forms.parsers.XmlDataUpdater;
+
+import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
@@ -103,6 +105,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private JexlEngine expressionEngine;
 
+    public DateUtil.SupportedCalendar supportedCalendar;
+
     private ActivityResultLauncher<String> requestPermission;
 
     //Listeners
@@ -118,7 +122,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         initPermissions();
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
+    //Opening a new Form Instance
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, DateUtil.SupportedCalendar supportedCalendarType, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
@@ -136,10 +141,13 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             formFragment.preloadedColumnValues.putAll(preloadedValues);
         }
 
+        formFragment.supportedCalendar = supportedCalendarType;
+
         return formFragment;
     }
 
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, String xmlSavedFormPath, PreloadMap updatedPreloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
+    //Reopening saved Form
+    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, DateUtil.SupportedCalendar supportedCalendarType, String instancesDirPath, String username, String xmlSavedFormPath, PreloadMap updatedPreloadedValues, boolean executeOnUpload, boolean bgMode, boolean gotoResume, FormCollectionListener formListener) {
         FormFragment formFragment = new FormFragment();
         formFragment.fragmentManager = fragmentManager;
         formFragment.form = form;
@@ -163,9 +171,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             formFragment.preloadedColumnValues.putAll(updatedPreloadedValues);
         }
 
+        formFragment.supportedCalendar = supportedCalendarType;
+
         return formFragment;
     }
 
+    /* Not being Used
     public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         return newInstance(fragmentManager, form, instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
     }
@@ -177,6 +188,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
         return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
     }
+    */
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -734,14 +746,14 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         //long gmt = TimeUnit.HOURS.convert(tz.getRawOffset(), TimeUnit.MILLISECONDS);
 
-        Calendar cal = Calendar.getInstance();
+        Calendar cal = Calendar.getInstance(); //using gregorian calendar
         cal.setTime(new Date());
 
         sdf.setCalendar(cal);
 
 
         //Log.d("timezone", "GMT "+gmt);
-        //Log.d("realtime", StringUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"));
+        //Log.d("realtime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"));
         //Log.d("original-date", ""+sdf.format(cal.getTime()));
 
         //cal.add(Calendar.HOUR_OF_DAY, (int) (-1 * gmt)); //Fixing ODK Error on this variable (ODK is adding GMT Hours number to the datetime of "start" variable)
