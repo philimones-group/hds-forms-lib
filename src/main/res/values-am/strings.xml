@@ -1,0 +1,76 @@
+<resources>
+    <!-- General buttons and Strings-->
+    <string name="bt_ok_lbl">እሺ</string>
+    <string name="bt_yes_lbl">አዎን</string>
+    <string name="bt_no_lbl">አይደለም</string>
+    <string name="bt_cancel_lbl">አቋርጥ</string>
+    <string name="bt_confirm_lbl">አረጋግጥ</string>
+    <string name="bt_accept_lbl">ተቀበል</string>
+    <string name="bt_reject_lbl">አልተቀበለም</string>
+    <string name="bt_delete_lbl">አሰረዝ</string>
+    <string name="bt_open_lbl">ክፈት</string>
+    <string name="bt_close_lbl">ዝጋ</string>
+    <string name="bt_enable_lbl">አንቃ</string>
+    <string name="bt_disable_lbl">አሰናክል</string>
+
+    <string name="bt_save_lbl">አስቀምጥ</string>
+    <string name="bt_update_lbl">አዘምን</string>
+    <string name="bt_gps_lbl">የ GPS አቅጣጫ ያውሱ</string>
+
+    <string name="gps_lat_lbl">ኬፕቲትዩድ (Latitude):</string>
+    <string name="gps_lon_lbl">ሎንጂቱድ (Longitude):</string>
+    <string name="gps_alt_lbl">ከፍታ (Altitude):</string>
+    <string name="gps_acc_lbl">ትክክለኛነት (Accuracy):</string>
+
+    <string name="gps_title_lbl">የ GPS አቅጣጫ</string>
+    <string name="gps_permissions_error">የ GPS ባለትናን ባለንብብ መተግበሪያ ለማግኘት የአካባቢ ፈቃድ መስጠት አለብዎት</string>
+    <string name="gps_loading_lbl">የ GPS አቅጣጫ በመጫን ላይ</string>
+    <string name="gps_loading_error">የ GPS አቅጣጫን ማቅረብ አልተቻለም</string>
+    <string name="gps_no_provider_available_error">አቅራቢዎች ተሰናክለዋል። በመቀጠል የኔትወርክ ወይም የ GPS አቅራቢን አንቃ</string>
+
+    <string name="device_id_title_lbl">የመሣሪያ መለያን በመጫን ላይ</string>
+    <string name="device_id_permissions_error">በቅጽ ውስጥ የሚጠቀምበትን የመሣሪያ መለያ ለማንበብ የ READ_PHONE_STATE ፍቃድ መስጠት አለብዎት።</string>
+
+    <string name="column_required_lbl">ይህ መስክ አስፈላጊ ነው</string>
+
+    <string name="datetime_selector_title_lbl">ቀን ይምረጡ</string>
+    <string name="datetime_selector_button_lbl">ቀን ይምረጡ</string>
+    <string name="datetime_selector_not_selected_lbl">ቀን አልተመረጠም</string>
+
+    <string name="repeat_group_instance_index_lbl">%1$s ከ %2$s</string>
+
+    <string name="info_lbl">መረጃ</string>
+    <string name="error_lbl">ስህተት</string>
+
+    <!-- calendar -->
+    <string name="ethiopian_month_1_meskerem">መስከረም</string>
+    <string name="ethiopian_month_2_tikimt">ጥቅምት</string>
+    <string name="ethiopian_month_3_hidar">ህዳር</string>
+    <string name="ethiopian_month_4_tahsas">ታኅሣሥ</string>
+    <string name="ethiopian_month_5_tir">ጥር</string>
+    <string name="ethiopian_month_6_yekatit">የካቲት</string>
+    <string name="ethiopian_month_7_megabit">መጋቢት</string>
+    <string name="ethiopian_month_8_miyazya">ሚያዝያ</string>
+    <string name="ethiopian_month_9_ginbot">ግንቦት</string>
+    <string name="ethiopian_month_10_sene">ሰኔ</string>
+    <string name="ethiopian_month_11_hamle">ሐምሌ</string>
+    <string name="ethiopian_month_12_nehase">ነሐሴ</string>
+    <string name="ethiopian_month_13_pagume">ጳጉሜ</string>
+
+    <string-array name="ethiopian_months_array">
+        <item>@string/ethiopian_month_1_meskerem</item>
+        <item>@string/ethiopian_month_2_tikimt</item>
+        <item>@string/ethiopian_month_3_hidar</item>
+        <item>@string/ethiopian_month_4_tahsas</item>
+        <item>@string/ethiopian_month_5_tir</item>
+        <item>@string/ethiopian_month_6_yekatit</item>
+        <item>@string/ethiopian_month_7_megabit</item>
+        <item>@string/ethiopian_month_8_miyazya</item>
+        <item>@string/ethiopian_month_9_ginbot</item>
+        <item>@string/ethiopian_month_10_sene</item>
+        <item>@string/ethiopian_month_11_hamle</item>
+        <item>@string/ethiopian_month_12_nehase</item>
+        <item>@string/ethiopian_month_13_pagume</item>
+    </string-array>
+
+</resources>

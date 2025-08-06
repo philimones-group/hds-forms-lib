@@ -41,4 +41,36 @@
 
     <string name="info_lbl">Info</string>
     <string name="error_lbl">Erro</string>
+
+    <!-- calendar -->
+    <string name="ethiopian_month_1_meskerem">Meskerem</string>
+    <string name="ethiopian_month_2_tikimt">Tikimt</string>
+    <string name="ethiopian_month_3_hidar">Hidar</string>
+    <string name="ethiopian_month_4_tahsas">Tahsas</string>
+    <string name="ethiopian_month_5_tir">Tir</string>
+    <string name="ethiopian_month_6_yekatit">Yekatit</string>
+    <string name="ethiopian_month_7_megabit">Megabit</string>
+    <string name="ethiopian_month_8_miyazya">Miyazya</string>
+    <string name="ethiopian_month_9_ginbot">Ginbot</string>
+    <string name="ethiopian_month_10_sene">Sene</string>
+    <string name="ethiopian_month_11_hamle">Hamle</string>
+    <string name="ethiopian_month_12_nehase">Nehase</string>
+    <string name="ethiopian_month_13_pagume">Pagume</string>
+
+    <string-array name="ethiopian_months_array">
+        <item>@string/ethiopian_month_1_meskerem</item>
+        <item>@string/ethiopian_month_2_tikimt</item>
+        <item>@string/ethiopian_month_3_hidar</item>
+        <item>@string/ethiopian_month_4_tahsas</item>
+        <item>@string/ethiopian_month_5_tir</item>
+        <item>@string/ethiopian_month_6_yekatit</item>
+        <item>@string/ethiopian_month_7_megabit</item>
+        <item>@string/ethiopian_month_8_miyazya</item>
+        <item>@string/ethiopian_month_9_ginbot</item>
+        <item>@string/ethiopian_month_10_sene</item>
+        <item>@string/ethiopian_month_11_hamle</item>
+        <item>@string/ethiopian_month_12_nehase</item>
+        <item>@string/ethiopian_month_13_pagume</item>
+    </string-array>
+
 </resources>
