@@ -96,6 +96,8 @@ public class DateUtil {
     }
 
     public static Date toDateYMDHMS(String date){
+        if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             return formatter.parse(date);
@@ -106,118 +108,181 @@ public class DateUtil {
 
     public static String formatGregorian(Date date, String format) {
         if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat(format);
-        return formatter.format(date);
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatGregorianYMD(Date date){
         if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd");
-        return formatter.format(date);
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatGregorianYMDHMS(Date date){
         if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return formatter.format(date);
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatGregorianYMDHMS(Date date, boolean underscored){
         if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat(underscored ? "yyyy-MM-dd_HH_mm_ss" : "yyyy-MM-dd HH:mm:ss");
-        return formatter.format(date);
+
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatGregorianPrecise(Date date){
         if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        return formatter.format(date);
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatGregorianSpecialCode(Date date){
         if (date==null) return null;
+
         java.text.DateFormat formatter = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss.SSS");
-        return formatter.format(date);
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatEthiopianYMD(java.util.Date date) {
+        if (date==null) return null;
 
-        EthiopicCalendar ethiopic = toEthiopianCalendar(date);
+        try {
+            EthiopicCalendar ethiopic = toEthiopianCalendar(date);
 
-        Integer year = ethiopic.get(EthiopicCalendar.YEAR);
-        Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
-        Integer day = ethiopic.get(EthiopicCalendar.DATE);
+            Integer year = ethiopic.get(EthiopicCalendar.YEAR);
+            Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
+            Integer day = ethiopic.get(EthiopicCalendar.DATE);
 
-        return String.format("%04d-%02d-%02d EC", year, month, day);
+            return String.format("%04d-%02d-%02d EC", year, month, day);
+        } catch (Exception ex) {
+            return null;
+        }
+
     }
 
     public static String formatEthiopianYMDHMS(java.util.Date date) {
+        if (date==null) return null;
 
-        EthiopicCalendar ethiopic = toEthiopianCalendar(date);
+        try {
+            EthiopicCalendar ethiopic = toEthiopianCalendar(date);
 
-        Integer year = ethiopic.get(EthiopicCalendar.YEAR);
-        Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
-        Integer day = ethiopic.get(EthiopicCalendar.DATE);
-        Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
-        Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
-        Integer second = ethiopic.get(EthiopicCalendar.SECOND);
+            Integer year = ethiopic.get(EthiopicCalendar.YEAR);
+            Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
+            Integer day = ethiopic.get(EthiopicCalendar.DATE);
+            Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
+            Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
+            Integer second = ethiopic.get(EthiopicCalendar.SECOND);
 
-        return String.format("%04d-%02d-%02d %02d:%02d:%02d EC", year, month, day, hour, minute, second);
+            return String.format("%04d-%02d-%02d %02d:%02d:%02d EC", year, month, day, hour, minute, second);
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 
     public static String formatEthiopianYMDHMS(java.util.Date date, boolean underscored) {
+        if (date == null) return null;
 
-        EthiopicCalendar ethiopic = toEthiopianCalendar(date);
+        try {
+            EthiopicCalendar ethiopic = toEthiopianCalendar(date);
 
-        Integer year = ethiopic.get(EthiopicCalendar.YEAR);
-        Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
-        Integer day = ethiopic.get(EthiopicCalendar.DATE);
-        Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
-        Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
-        Integer second = ethiopic.get(EthiopicCalendar.SECOND);
+            Integer year = ethiopic.get(EthiopicCalendar.YEAR);
+            Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
+            Integer day = ethiopic.get(EthiopicCalendar.DATE);
+            Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
+            Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
+            Integer second = ethiopic.get(EthiopicCalendar.SECOND);
 
-        if (underscored) {
-            return String.format("%04d-%02d-%02d_%02d_%02d_%02d_EC", year, month, day, hour, minute, second);
-        } else {
-            return String.format("%04d-%02d-%02d %02d:%02d:%02d EC", year, month, day, hour, minute, second);
+            if (underscored) {
+                return String.format("%04d-%02d-%02d_%02d_%02d_%02d_EC", year, month, day, hour, minute, second);
+            } else {
+                return String.format("%04d-%02d-%02d %02d:%02d:%02d EC", year, month, day, hour, minute, second);
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 
     public static String formatEthiopianPrecise(java.util.Date date) {
+        if (date==null) return null;
 
-        EthiopicCalendar ethiopic = toEthiopianCalendar(date);
+        try {
+            EthiopicCalendar ethiopic = toEthiopianCalendar(date);
 
-        Integer year = ethiopic.get(EthiopicCalendar.YEAR);
-        Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
-        Integer day = ethiopic.get(EthiopicCalendar.DATE);
-        Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
-        Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
-        Integer second = ethiopic.get(EthiopicCalendar.SECOND);
-        Integer millisec = ethiopic.get(EthiopicCalendar.MILLISECONDS_IN_DAY);
+            Integer year = ethiopic.get(EthiopicCalendar.YEAR);
+            Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
+            Integer day = ethiopic.get(EthiopicCalendar.DATE);
+            Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
+            Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
+            Integer second = ethiopic.get(EthiopicCalendar.SECOND);
+            Integer millisec = ethiopic.get(EthiopicCalendar.MILLISECONDS_IN_DAY);
 
-        return String.format("%04d-%02d-%02d %02d:%02d:%02d.%04d EC", year, month, day, hour, minute, second, millisec);
+            return String.format("%04d-%02d-%02d %02d:%02d:%02d.%04d EC", year, month, day, hour, minute, second, millisec);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String formatEthiopianSpecialCode(java.util.Date date) {
+        if (date==null) return null;
 
-        EthiopicCalendar ethiopic = toEthiopianCalendar(date);
+        try {
+            EthiopicCalendar ethiopic = toEthiopianCalendar(date);
 
-        Integer year = ethiopic.get(EthiopicCalendar.YEAR);
-        Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
-        Integer day = ethiopic.get(EthiopicCalendar.DATE);
-        Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
-        Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
-        Integer second = ethiopic.get(EthiopicCalendar.SECOND);
-        Integer millisec = ethiopic.get(EthiopicCalendar.MILLISECONDS_IN_DAY);
+            Integer year = ethiopic.get(EthiopicCalendar.YEAR);
+            Integer month = ethiopic.get(EthiopicCalendar.MONTH) + 1; // 0-indexed
+            Integer day = ethiopic.get(EthiopicCalendar.DATE);
+            Integer hour = ethiopic.get(EthiopicCalendar.HOUR_OF_DAY);
+            Integer minute = ethiopic.get(EthiopicCalendar.MINUTE);
+            Integer second = ethiopic.get(EthiopicCalendar.SECOND);
+            Integer millisec = ethiopic.get(EthiopicCalendar.MILLISECONDS_IN_DAY);
 
-        //yyyyMMdd-HHmmss.SSS
-        return String.format("%04d%02d%02d-%02d%02d%02d.%04d_EC", year, month, day, hour, minute, second, millisec);
+            //yyyyMMdd-HHmmss.SSS
+            return String.format("%04d%02d%02d-%02d%02d%02d.%04d_EC", year, month, day, hour, minute, second, millisec);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static EthiopicCalendar toEthiopianCalendar(java.util.Date date) {
-        EthiopicCalendar ethiopic = new EthiopicCalendar();
-        ethiopic.setTime(date);
-        return ethiopic;
+        if (date==null) return null;
+        try {
+            EthiopicCalendar ethiopic = new EthiopicCalendar();
+            ethiopic.setTime(date);
+            return ethiopic;
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     /**
@@ -231,9 +296,13 @@ public class DateUtil {
      * @return
      */
     public static EthiopicCalendar toEthiopianCalendar(int year, int month, int day, int hh, int mm, int ss) {
-        EthiopicCalendar ethiopic = new EthiopicCalendar();
-        ethiopic.set(year, month, day, hh, mm, ss);
-        return ethiopic;
+        try {
+            EthiopicCalendar ethiopic = new EthiopicCalendar();
+            ethiopic.set(year, month, day, hh, mm, ss);
+            return ethiopic;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }
