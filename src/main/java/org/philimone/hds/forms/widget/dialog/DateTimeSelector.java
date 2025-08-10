@@ -317,7 +317,7 @@ public class DateTimeSelector extends AppCompatDialog {
 
     private SelectedDate getGregorianDate() {
         int y = this.dtpColumnDateValue.getYear();
-        int m = this.dtpColumnDateValue.getMonth()+1;
+        int m = this.dtpColumnDateValue.getMonth();
         int d = this.dtpColumnDateValue.getDayOfMonth();
         int hh = dateWithTime ? this.dtpColumnTimeValue.getCurrentHour() : 0;
         int mm = dateWithTime ? this.dtpColumnTimeValue.getCurrentMinute() : 0;
@@ -367,20 +367,23 @@ public class DateTimeSelector extends AppCompatDialog {
     private void setDefaultDateGregorianCalendar(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        dtpColumnDateValue.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-
-        setDefaultTime(cal);
+        if (dtpColumnDateValue != null) {
+            dtpColumnDateValue.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+            setDefaultTime(cal);
+        }
     }
 
     private void setDefaultDateEthiopianCalendar(Date date) {
         //DateUtil dateUtil = new DateUtil(DateUtil.SupportedCalendar.ETHIOPIAN);
         EthiopicCalendar cal = DateUtil.toEthiopianCalendar(date);
 
-        nbpDateYear.setValue(cal.get(Calendar.YEAR));
-        nbpDateMonth.setValue(cal.get(Calendar.MONTH));
-        nbpDateDay.setValue(cal.get(Calendar.DAY_OF_MONTH));
+        if (nbpDateYear != null && nbpDateMonth != null && nbpDateDay != null) {
+            nbpDateYear.setValue(cal.get(Calendar.YEAR));
+            nbpDateMonth.setValue(cal.get(Calendar.MONTH));
+            nbpDateDay.setValue(cal.get(Calendar.DAY_OF_MONTH));
 
-        setDefaultTime(cal);
+            setDefaultTime(cal);
+        }
     }
 
     private void setDefaultTime(Calendar cal) {
