@@ -7,7 +7,7 @@ import mz.betainteractive.utilities.StringUtil;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Column {
+public class Column implements Cloneable {
 
     private String name;
     private ColumnType type;
@@ -250,4 +250,31 @@ public class Column {
         evaluateOptionsDisplayability();
     }
 
+    @Override
+    public Column clone() {
+        try {
+            Column copy = (Column) super.clone();
+
+            // Deep copy the options map (fresh OptionValue instances)
+            Map<String, FormOptions.OptionValue> newOptions = new LinkedHashMap<>(this.typeOptions.size());
+            for (Map.Entry<String, FormOptions.OptionValue> e : this.typeOptions.entrySet()) {
+                FormOptions.OptionValue ov = e.getValue();
+                if (ov == null) {
+                    newOptions.put(e.getKey(), null);
+                } else {
+                    // Assuming these fields exist & are accessible (they are used directly in your code)
+                    FormOptions.OptionValue ovCopy = new FormOptions.OptionValue(ov.label, ov.readonlyCondition, ov.displayCondition);
+                    ovCopy.readonly = ov.readonly; // preserve evaluated readonly
+                    newOptions.put(e.getKey(), ovCopy);
+                }
+            }
+            copy.typeOptions = newOptions;
+
+            // Strings, enums, booleans are fine via Object.clone() (shallow) since they’re immutable or primitives
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            throw new AssertionError(e);
+        }
+    }
 }

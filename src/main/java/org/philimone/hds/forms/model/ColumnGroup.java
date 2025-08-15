@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ColumnGroup {
+public class ColumnGroup implements Cloneable {
 
     private String name;
     private String label;
@@ -88,5 +88,21 @@ public class ColumnGroup {
     @Override
     public String toString() {
         return "ColumnGroup{" +  getColumns().stream().map(t -> t.getName()+":"+t.getType()).collect(Collectors.joining(",")) + "}";
+    }
+
+    @Override
+    public ColumnGroup clone() {
+        try {
+            ColumnGroup copy = (ColumnGroup) super.clone();
+            copy.translatedLabel = new LinkedHashMap<>(this.translatedLabel);
+            copy.columns = new ArrayList<>();
+            for (Column c : this.columns) {
+                copy.columns.add(c.clone()); // requires Column to implement Cloneable
+            }
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            throw new AssertionError();
+        }
     }
 }

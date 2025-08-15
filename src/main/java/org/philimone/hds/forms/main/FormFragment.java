@@ -457,7 +457,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                     if (repeatGroup.getRepeatCountType()== RepeatCountType.VARIABLE){
                         //special group view (hidden), used to create anothers - the first instance of a repeat group powered by variable number
-                        //******** TO BE DONE FOR PREGNANCY OUTCOME ***************
+                        //******** TO BE DONE FOR PREGNANCY OUTCOME *************** - NOT USED YET
                         ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, repeatGroup.getColumnsGroups().get(0), 0, true, this);
                         groupViews.add(groupView);
                         this.columnGroupViewList.add(groupView);
@@ -470,7 +470,9 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                     for (int repeatIndex = 0; repeatIndex < repeatGroupSize; repeatIndex++) {
                         for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
-                            ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, innerGroup, repeatIndex, repeatGroupSize, this);
+                            //innerGroup must be a clone and all its columns
+                            ColumnGroup newInnerGroup = innerGroup.clone();
+                            ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, newInnerGroup, repeatIndex, repeatGroupSize, this);
                             groupViews.add(groupView);
                             this.columnGroupViewList.add(groupView);
                         }
