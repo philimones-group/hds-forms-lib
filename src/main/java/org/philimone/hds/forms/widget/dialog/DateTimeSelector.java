@@ -323,7 +323,8 @@ public class DateTimeSelector extends AppCompatDialog {
         int mm = dateWithTime ? this.dtpColumnTimeValue.getCurrentMinute() : 0;
 
         Calendar cal = Calendar.getInstance();
-        cal.set(y, m, d, hh, mm);
+        cal.set(y, m, d, hh, mm, 0);
+        cal.set(Calendar.MILLISECOND, 0); //important - our date picker is not collecting second and millisecond
         Date date = cal.getTime();
 
         String formatted = dateWithTime ? DateUtil.formatGregorianYMDHMS(date) : DateUtil.formatGregorianYMD(date);
@@ -339,6 +340,7 @@ public class DateTimeSelector extends AppCompatDialog {
         int mm = dateWithTime ? this.dtpColumnTimeValue.getCurrentMinute() : 0;
 
         EthiopicCalendar calendar = DateUtil.toEthiopianCalendar(y, m, d, hh, mm, 0);
+        calendar.set(EthiopicCalendar.MILLISECOND, 0); //important - our date picker is not collecting second and millisecond
         Date date = calendar.getTime();
 
         String formatted = dateWithTime ? DateUtil.formatEthiopianYMDHMS(date) : DateUtil.formatEthiopianYMD(date);
