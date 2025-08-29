@@ -5,12 +5,12 @@ plugins {
 android {
     namespace "org.philimone.hds.forms"
 
-    compileSdk 34
+    compileSdk 35
     //buildToolsVersion "30.0.3"
 
     defaultConfig {
         minSdk 21
-        targetSdk 34
+        targetSdk 35
         versionCode 1
         versionName "1.2"
 

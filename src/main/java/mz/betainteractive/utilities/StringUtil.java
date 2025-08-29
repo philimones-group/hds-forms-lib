@@ -343,6 +343,27 @@ public class StringUtil {
         }
     }
 
+    public static Long toLong(String value){
+        if (value == null) return null;
+
+        try{
+            return Long.parseLong(value);
+        } catch (Exception ex){
+            return null;
+        }
+    }
+
+    public static boolean isLong(String value){
+        if (value == null) return false;
+
+        try{
+            Long.parseLong(value);
+            return true;
+        } catch (Exception ex){
+            return false;
+        }
+    }
+
     public static Boolean toBoolean(String value){
         if (value == null) return null;
 
