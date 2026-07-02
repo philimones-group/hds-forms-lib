@@ -50,7 +50,7 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
         });
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
+        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
         btnSelectDate.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
     }
 

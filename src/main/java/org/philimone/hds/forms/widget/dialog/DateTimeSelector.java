@@ -319,8 +319,17 @@ public class DateTimeSelector extends AppCompatDialog {
         int y = this.dtpColumnDateValue.getYear();
         int m = this.dtpColumnDateValue.getMonth();
         int d = this.dtpColumnDateValue.getDayOfMonth();
-        int hh = dateWithTime ? this.dtpColumnTimeValue.getCurrentHour() : 0;
-        int mm = dateWithTime ? this.dtpColumnTimeValue.getCurrentMinute() : 0;
+        int hh = 0;
+        int mm = 0;
+        if (dateWithTime) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                hh = this.dtpColumnTimeValue.getHour();
+                mm = this.dtpColumnTimeValue.getMinute();
+            } else {
+                hh = this.dtpColumnTimeValue.getCurrentHour();
+                mm = this.dtpColumnTimeValue.getCurrentMinute();
+            }
+        }
 
         Calendar cal = Calendar.getInstance();
         cal.set(y, m, d, hh, mm, 0);
@@ -336,8 +345,17 @@ public class DateTimeSelector extends AppCompatDialog {
         int y = this.nbpDateYear.getValue();
         int m = this.nbpDateMonth.getValue();
         int d = this.nbpDateDay.getValue();
-        int hh = dateWithTime ? this.dtpColumnTimeValue.getCurrentHour() : 0;
-        int mm = dateWithTime ? this.dtpColumnTimeValue.getCurrentMinute() : 0;
+        int hh = 0;
+        int mm = 0;
+        if (dateWithTime) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                hh = this.dtpColumnTimeValue.getHour();
+                mm = this.dtpColumnTimeValue.getMinute();
+            } else {
+                hh = this.dtpColumnTimeValue.getCurrentHour();
+                mm = this.dtpColumnTimeValue.getCurrentMinute();
+            }
+        }
 
         EthiopicCalendar calendar = DateUtil.toEthiopianCalendar(y, m, d, hh, mm, 0);
         calendar.set(EthiopicCalendar.MILLISECOND, 0); //important - our date picker is not collecting second and millisecond

@@ -3,7 +3,10 @@ package org.philimone.hds.forms.widget;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -153,13 +156,14 @@ public class ColumnGroupView extends LinearLayout {
         this.formToastLayout = findViewById(R.id.formToastLayout);
         this.formToastMessage = findViewById(R.id.formToastMessage);
 
-        this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
+        setTextHtml(this.txtColumnGroupName, columnGroup.getLabel() != null ? columnGroup.getLabel(): ""); //this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
 
         this.formToastMessage.setText("");
 
         if (this.belongsToRepeatGroup()){
             this.formRepeatGroupLayout.setVisibility(VISIBLE);
-            this.txtRepeatGroupName.setText(this.columnRepeatGroup.getLabel());
+            setTextHtml(this.txtRepeatGroupName, this.columnRepeatGroup.getLabel()); //this.txtRepeatGroupName.setText(this.columnRepeatGroup.getLabel());
+
             this.txtRepeatGroupIndex.setText(this.mContext.getString(R.string.repeat_group_instance_index_lbl, (repeatGroupIndex+1)+"", repeatGroupSize.toString()));
             this.txtColumnGroupName.setText("");
         } else {
@@ -248,7 +252,7 @@ public class ColumnGroupView extends LinearLayout {
     }
 
     public void showToastMessage(@StringRes int messageResId){
-        this.formToastMessage.setText(mContext.getString(messageResId));
+        setTextHtml(this.formToastMessage, mContext.getString(messageResId)); //this.formToastMessage.setText(mContext.getString(messageResId));
 
         this.formToastLayout.setAlpha(1f);
         this.formToastLayout.setVisibility(VISIBLE);
@@ -266,6 +270,22 @@ public class ColumnGroupView extends LinearLayout {
             }
         }, 1500);
 
+    }
+
+    protected void setTextHtml(TextView textView, String labelText) {
+        // Ex: "O participante tem <b>febre</b>?"
+        if (labelText != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                //API 24+
+                textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
+            } else {
+                //older versions
+                textView.setText(Html.fromHtml(labelText));
+            }
+
+            //allow clickable links
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
+        }
     }
 
     public List<ColumnView> getColumnViews(){

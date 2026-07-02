@@ -84,7 +84,7 @@ public class ColumnTextboxView extends ColumnView {
     @Override
     public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
+        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
         editTxtValue.setText(column.getValue()==null ? "" : column.getValue());
     }
 

@@ -1,6 +1,9 @@
 package org.philimone.hds.forms.widget;
 
 import android.content.Context;
+import android.os.Build;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -361,6 +364,22 @@ public abstract class ColumnView extends LinearLayout {
 
     public DateUtil.SupportedCalendar getSupportedCalendar() {
         return (this.columnGroupView != null && this.columnGroupView.getFormPanel() != null) ? this.columnGroupView.getFormPanel().supportedCalendar : null;
+    }
+
+    protected void setTextHtml(TextView textView, String labelText) {
+        // Ex: "O participante tem <b>febre</b>?"
+        if (labelText != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                //API 24+
+                textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
+            } else {
+                //older versions
+                textView.setText(Html.fromHtml(labelText));
+            }
+
+            //allow clickable links
+            textView.setMovementMethod(LinkMovementMethod.getInstance());
+        }
     }
 
     @Override

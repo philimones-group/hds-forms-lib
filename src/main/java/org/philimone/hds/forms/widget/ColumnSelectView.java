@@ -52,7 +52,7 @@ public class ColumnSelectView extends ColumnView {
         this.rdgColumnRadioGroup = findViewById(R.id.rdgColumnRadioGroup);
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
+        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
 
         this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
 
@@ -93,7 +93,7 @@ public class ColumnSelectView extends ColumnView {
 
             RadioButton button = new RadioButton(this.getContext());
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            button.setText(optionValue.label);
+            setTextHtml(button, optionValue.label); //button.setText(optionValue.label);
             //button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
             button.setTextColor(this.getContext().getResources().getColor(R.color.black));
             button.setEnabled(!optionValue.readonly);
@@ -127,7 +127,7 @@ public class ColumnSelectView extends ColumnView {
     @Override
     public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
+        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
 
         String value = column.getValue();
 

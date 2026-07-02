@@ -43,7 +43,7 @@ public class ColumnTextView extends ColumnView {
 
     public void updateValues(){
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
+        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
         txtValue.setText(column.getValue()==null ? "" : column.getValue());
 
         //If is a timestamp column display agnostic formatted datetime

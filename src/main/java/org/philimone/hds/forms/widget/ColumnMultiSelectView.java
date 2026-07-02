@@ -95,7 +95,7 @@ public class ColumnMultiSelectView extends ColumnView {
 
             CheckBox button = new CheckBox(this.getContext());
             button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            button.setText(label);
+            setTextHtml(button, label); //button.setText(label);
             //button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
             button.setTextColor(this.getContext().getResources().getColor(R.color.black));
             button.setEnabled(!optionValue.readonly);
@@ -145,7 +145,7 @@ public class ColumnMultiSelectView extends ColumnView {
     @Override
     public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        txtName.setText(column.getLabel());
+        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
 
         String value = column.getValue();
 
