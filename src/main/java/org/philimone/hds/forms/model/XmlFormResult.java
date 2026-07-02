@@ -31,11 +31,11 @@ public class XmlFormResult {
     private String collectedDate;
     private DateUtil dateUtil;
 
-    public XmlFormResult(HForm form, DateUtil.SupportedCalendar supportedCalendar, Collection<ColumnValue> collectedValues, String instancesDirPath) {
+    public XmlFormResult(HForm form, DateUtil.SupportedCalendar supportedCalendar, Collection<ColumnValue> collectedValues, String instancesDirPath, String instanceFileName) {
         this.form = form;
         this.dateUtil = new DateUtil(supportedCalendar);
         this.xmlResult = generateXml(collectedValues);
-        this.filename = generateFilename(instancesDirPath);
+        this.filename = generateFilename(instancesDirPath, instanceFileName);
 
     }
 
@@ -61,7 +61,7 @@ public class XmlFormResult {
                         this.formUuid = columnValue.getValue();
                     }
 
-                    if (columnValue.getColumnType()==ColumnType.TIMESTAMP && columnValue.getColumnName().equals("collectedDate")) {
+                    if (columnValue.getColumnType()==ColumnType.START_TIMESTAMP) { //TIMESTAMP && columnValue.getColumnName().equals("collectedDate")) {
                         this.collectedDate = columnValue.getValue();
                     }
                 }
@@ -86,7 +86,7 @@ public class XmlFormResult {
 
     }
 
-    private String generateFilename(String basePath) {
+    private String generateFilename(String basePath, String instanceFileName) {
         //form-id + form-uuid + date
         //collectedDate is a timestamp or precise date
         String formattedDate = collectedDate;
@@ -94,7 +94,9 @@ public class XmlFormResult {
             Date date = DateUtil.toDatePrecise(collectedDate);
             formattedDate = dateUtil.formatPrecise(date);
         }
-        return basePath + form.getFormId() + "-" + formUuid + "-" + formatUnderscoreDate(formattedDate) + ".xml";
+        //return basePath + form.getFormId() + "-" + formUuid + "-" + formatUnderscoreDate(formattedDate) + ".xml";
+
+        return basePath + instanceFileName + ".xml";
     }
 
     private String formatUnderscoreDate(String collectedDate) {

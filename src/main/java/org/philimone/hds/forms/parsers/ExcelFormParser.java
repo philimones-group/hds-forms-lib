@@ -250,7 +250,7 @@ public class ExcelFormParser implements FormParser {
         Integer formNameIndex = (localizableFormNameIndex==null) ? defaultFormNameIndex : localizableFormNameIndex;
         Integer formVersionIndex = mapHeaderIndex.get("form_version");
         Integer formRepeatsIndex = mapHeaderIndex.get("repeat_name");
-        Integer formNodeNameIndex = mapHeaderIndex.get("xml_node_name");
+        Integer formNodeNameIndex = mapHeaderIndex.get("repeat_xml_node");
 
         if (formNameIndex == null) {
             throw new Exception("There is no default 'form_name'");

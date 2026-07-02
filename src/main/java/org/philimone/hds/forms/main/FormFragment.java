@@ -42,7 +42,6 @@ import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.model.enums.RepeatCountType;
-import org.philimone.hds.forms.parsers.ExcelFormParser;
 import org.philimone.hds.forms.parsers.XmlDataReader;
 import org.philimone.hds.forms.parsers.XmlDataUpdater;
 
@@ -58,7 +57,6 @@ import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -94,11 +92,13 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private List<ColumnGroupView> columnGroupViewList;
     private String username;
     private String deviceId;
+    private String instanceUUID;
     private String startTimestamp;
     private String endTimestamp;
     private boolean executeOnUpload;
     private PreloadMap preloadedColumnValues;
     private String instancesDirPath;
+    private String formInstanceFileName;
 
     private boolean backgroundMode;
     private boolean resumeMode;
@@ -300,6 +300,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         checkPermissionAndGetDeviceId();
         loadColumnValues();
+        createFormInstanceFileName();
     }
 
     private void initExpEngine() {
@@ -360,7 +361,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 //update HForm columnValueMap
                 formListener.onBeforeFormFinished(form, columnValueMap);
 
-                XmlFormResult xmlResults = new XmlFormResult(form, supportedCalendar, columnValueMap.values(), instancesDirPath);
+                XmlFormResult xmlResults = new XmlFormResult(form, supportedCalendar, columnValueMap.values(), instancesDirPath, getFormInstanceFileName());
                 //Log.d("result", ""+xmlResults.getXmlResult());
 
                 //createXmlFile
@@ -430,7 +431,11 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         return this.getContext();
     }
 
+    /**
+     * Create ColumnGroupView and ColumnViews based on the blueprint provided by ColumnGroups
+     */
     private void initColumnViews(){
+        //We need to upgrade this way of generating ColumnGroupView and ColumnViews, on large forms could hit performance
 
         //add header layout content
         ColumnGroupView headerGroupView = null;
@@ -455,16 +460,21 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 if (group instanceof ColumnRepeatGroup){
                     ColumnRepeatGroup repeatGroup = (ColumnRepeatGroup) group;
 
-                    if (repeatGroup.getRepeatCountType()== RepeatCountType.VARIABLE){
-                        //special group view (hidden), used to create anothers - the first instance of a repeat group powered by variable number
-                        //******** TO BE DONE FOR PREGNANCY OUTCOME *************** - NOT USED YET
-                        ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, repeatGroup.getColumnsGroups().get(0), 0, true, this);
-                        groupViews.add(groupView);
-                        this.columnGroupViewList.add(groupView);
+                    RepeatCountType repeatCountType = repeatGroup.getRepeatCountType(this.preloadedColumnValues);
+
+                    if (repeatCountType == RepeatCountType.EMPTY) {
+                        //NOT IMPLEMENTED YET - it should ask if you want to add a group
+                        continue;
+                    }
+
+                    if (repeatGroup.getRepeatCountType(preloadedColumnValues) == RepeatCountType.VARIABLE){
+                        //NOT IMPLEMENTED YET - it should calculate the expression to get a value, but this cannot be done here
                         continue;
                     }
 
                     //EXTERNAL LOADER OR CONSTANT VALUE
+                    //EXTERNAL LOADER - the inner objects are already loaded in the preloadedColumnValues (outside hds-forms-lib)
+                    //CONSTANT VALUE - its a number of times that group will be repeated
 
                     Integer repeatGroupSize = repeatGroup.getRepeatSize(this.preloadedColumnValues);
 
@@ -580,7 +590,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
                 if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
                     columnView.setValue(this.getDeviceId());
-                    Log.d("device-id*", columnView.getValue());
+                    Log.d("device-id*", columnView.getValue()+"");
                 }
 
                 if (columnView.getType() == ColumnType.TIMESTAMP && columnView instanceof ColumnTextView) {
@@ -588,9 +598,9 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 }
 
                 if (column.getType() == ColumnType.INSTANCE_UUID && column.isValueBlank()) { //id column - set only once
-                    String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+                    this.instanceUUID = UUID.randomUUID().toString().replaceAll("-", "");
 
-                    columnView.setValue(uuid);
+                    columnView.setValue(instanceUUID);
 
                     //Log.d("uuid-tag", ""+columnView.getValue());
                 }
@@ -655,6 +665,36 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         }
 
         return gpsValues.size()==0 ? null : gpsValues;
+    }
+
+    public String getInstancesDirPath() {
+        return this.instancesDirPath;
+    }
+
+    public String getFormInstanceFileName() {
+        return this.formInstanceFileName;
+    }
+
+    private String createFormInstanceFileName() {
+        //form-id + form-uuid + date
+        //collectedDate is a timestamp or precise date
+        String formattedDate = startTimestamp;
+        if (startTimestamp != null) {
+            Date date = DateUtil.toDatePrecise(startTimestamp);
+            formattedDate = new DateUtil(supportedCalendar).formatPrecise(date);
+        }
+
+        this.formInstanceFileName = form.getFormId() + "-" + instanceUUID + "-" + formatUnderscoreDate(formattedDate);
+
+        return this.formInstanceFileName;
+    }
+
+    private String formatUnderscoreDate(String collectedDate) {
+        //yyyy-MM-dd_HH_mm_ss
+        collectedDate = collectedDate.replaceAll(" ", "_");
+        collectedDate = collectedDate.replaceAll(":", "_");
+
+        return collectedDate;
     }
 
     private void setFocus(ColumnValue columnValue) {

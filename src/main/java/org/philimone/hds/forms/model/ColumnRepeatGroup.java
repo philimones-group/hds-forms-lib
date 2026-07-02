@@ -5,6 +5,8 @@ import org.philimone.hds.forms.model.enums.RepeatCountType;
 import java.util.ArrayList;
 import java.util.List;
 
+import mz.betainteractive.utilities.StringUtil;
+
 public class ColumnRepeatGroup extends ColumnGroup {
     private List<ColumnGroup> columnsGroups;
     private String repeatCount;
@@ -63,27 +65,31 @@ public class ColumnRepeatGroup extends ColumnGroup {
         }
     }
 
-    public RepeatCountType getRepeatCountType(){
-        String rexVar = "^\\$\\{\\w+\\}";
-        String rexExtVar = "^\\$\\w+";
+    public RepeatCountType getRepeatCountType(PreloadMap preloadedColumnValues){
         String rexCons = "[0-9]+";
 
-        if (repeatCount.matches(rexExtVar)){
-            return RepeatCountType.EXTERNAL_LOADER;
-        }
-
-        if (repeatCount.matches(rexCons)){
+        if (repeatCount.matches(rexCons)){ //its a number
             return RepeatCountType.CONSTANT_VALUE;
         }
-
-
-        return RepeatCountType.VARIABLE; //NEEDS EXPRESSION CALCULATION
+        if (preloadedColumnValues.getRepeatObject(groupName) != null) { //this repeat group was loaded externally
+            return RepeatCountType.EXTERNAL_LOADER;
+        }
+        if (StringUtil.isBlank(repeatCount)) {
+            return RepeatCountType.EMPTY;
+        }
+        return RepeatCountType.VARIABLE; //If not empty, constant or externally loaded, its a calculatable expression
     }
 
     public Integer getRepeatSize(PreloadMap preloadedColumnValues) {
-        RepeatCountType type = getRepeatCountType();
+        RepeatCountType type = getRepeatCountType(preloadedColumnValues);
+
+        if (type == RepeatCountType.EMPTY) {
+            //NOT IMPLEMENTED YET
+            return 0;
+        }
 
         if (type == RepeatCountType.VARIABLE){
+            //evaluate expression
             return null;
         }
 
