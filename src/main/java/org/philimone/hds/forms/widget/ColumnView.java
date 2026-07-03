@@ -5,7 +5,9 @@ import android.os.Build;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -52,6 +54,15 @@ public abstract class ColumnView extends LinearLayout {
         this(view, resource,null, column, callListener);
     }
 
+    @Override
+    protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+
+        if (visibility == View.VISIBLE) {
+            updateLabelTexts();
+        }
+    }
+
     public FormFragment getActivity() {
         return this.columnGroupView.getFormPanel();
     }
@@ -77,6 +88,8 @@ public abstract class ColumnView extends LinearLayout {
     public abstract void updateValues();
 
     public abstract void refreshState();
+
+    public abstract void updateLabelTexts();
 
     public Column getColumn() {
         return this.column;
@@ -133,6 +146,24 @@ public abstract class ColumnView extends LinearLayout {
         this.parentColumn = parentColumn;
     }
 
+    private String translateVariables(String text) {
+        //Log.d("testing", "name=" + getName() + " parent="+parentColumn + ", trying text: \n"+text);
+        if (StringUtil.isBlank(text) || !text.contains("${")) return text;
+
+        ColumnView parent = parentColumn;
+        while (parent != null) {
+            String name = parent.getName();
+            String value = parent.isDisplayable() ? parent.getValue() : "";
+            if (value == null) value = "";
+
+            text = text.replaceAll("\\$\\{" + name + "\\}", value);
+
+            parent = parent.parentColumn;
+        }
+
+        return text;
+    }
+
     private String translateExpression(String expression) {
         //Map<String, String> previousValues = new LinkedHashMap<>();
         ColumnView parent = parentColumn;
@@ -149,17 +180,16 @@ public abstract class ColumnView extends LinearLayout {
             
             parent = parent.parentColumn;
         }
-        
-        expression = expression.replace("and", "&&");
-        expression = expression.replace("or", "||");
-        expression = expression.replace("!=", "<>"); //to avoid !==
-        expression = expression.replace("!==", "<!>");
-        expression = expression.replace("===", ">!<");
-        expression = expression.replace("=", "==");
-        expression = expression.replace("<>", "!="); //return to normal after =
-        expression = expression.replace("<!>", "!=="); //return to normal after =
-        expression = expression.replace(">!<", "==="); //return to normal after =
-        
+
+        //Replace 'and' and 'or' for the equivalent javascript operator it handles isolated words and case-insensitive
+        expression = expression.replaceAll("(?i)\\band\\b", "&&");
+        expression = expression.replaceAll("(?i)\\bor\\b", "||");
+
+        //Replace '=' to comparison '==' to avoid breaking with '==', '===', '!=', '>=', '<='
+        expression = expression.replaceAll("(?<![<>=!])=(?![=])", "==");
+
+        //Replace '<>' (not equal) into standard JavaScript '!='
+        expression = expression.replaceAll("<>", "!=");
         
         return expression;
     }
@@ -369,6 +399,8 @@ public abstract class ColumnView extends LinearLayout {
     protected void setTextHtml(TextView textView, String labelText) {
         // Ex: "O participante tem <b>febre</b>?"
         if (labelText != null) {
+            labelText = translateVariables(labelText);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 //API 24+
                 textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
