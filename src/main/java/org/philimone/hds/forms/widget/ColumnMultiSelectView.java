@@ -65,6 +65,11 @@ public class ColumnMultiSelectView extends ColumnView {
         updateValues();
     }
 
+    @Override
+    public void updateLabelTexts() {
+        setTextHtml(txtName, column.getLabel());
+    }
+
     public void refillOptions(){
         for (ColumnMultiSelectView.SelectOption selectOption : this.rdbOptions) {
             CheckBox button = selectOption.button;
@@ -145,7 +150,7 @@ public class ColumnMultiSelectView extends ColumnView {
     @Override
     public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+        updateLabelTexts();
 
         String value = column.getValue();
 

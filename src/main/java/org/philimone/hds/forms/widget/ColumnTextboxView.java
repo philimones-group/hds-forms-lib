@@ -60,6 +60,11 @@ public class ColumnTextboxView extends ColumnView {
         updateValues();
     }
 
+    @Override
+    public void updateLabelTexts() {
+        setTextHtml(txtName, column.getLabel());
+    }
+
     private void setInputType() {
         switch (column.getType()){
             case STRING:
@@ -84,7 +89,7 @@ public class ColumnTextboxView extends ColumnView {
     @Override
     public void updateValues() {
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+        updateLabelTexts();
         editTxtValue.setText(column.getValue()==null ? "" : column.getValue());
     }
 

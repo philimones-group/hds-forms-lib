@@ -99,6 +99,11 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         updateValues();
     }
 
+    @Override
+    public void updateLabelTexts() {
+        setTextHtml(txtName, column.getLabel());
+    }
+
     private void clearGpsResultTexts() {
         this.txtGpsLatitude.setText("");
         this.txtGpsLongitude.setText("");
@@ -190,7 +195,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         clearGpsResultTexts();
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+        updateLabelTexts();
 
         btGetGps.setEnabled(!this.column.isReadOnly());
 

@@ -41,9 +41,14 @@ public class ColumnTextView extends ColumnView {
         updateValues();
     }
 
+    @Override
+    public void updateLabelTexts() {
+        setTextHtml(txtName, column.getLabel());
+    }
+
     public void updateValues(){
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+        updateLabelTexts();
         txtValue.setText(column.getValue()==null ? "" : column.getValue());
 
         //If is a timestamp column display agnostic formatted datetime

@@ -52,7 +52,7 @@ public class ColumnSelectView extends ColumnView {
         this.rdgColumnRadioGroup = findViewById(R.id.rdgColumnRadioGroup);
 
         txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+        updateLabelTexts();
 
         this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
 
@@ -66,6 +66,11 @@ public class ColumnSelectView extends ColumnView {
         fillOptions();
 
         updateValues();
+    }
+
+    @Override
+    public void updateLabelTexts() {
+        setTextHtml(txtName, column.getLabel());
     }
 
     public void refillOptions(){
