@@ -3,14 +3,20 @@ package org.philimone.hds.forms.model;
 import android.util.Log;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.widget.ColumnAudioView;
+import org.philimone.hds.forms.widget.ColumnBarcodeView;
 import org.philimone.hds.forms.widget.ColumnDateTimeView;
 import org.philimone.hds.forms.widget.ColumnDateView;
 import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
+import org.philimone.hds.forms.widget.ColumnImageView;
+import org.philimone.hds.forms.widget.ColumnVideoView;
 import org.philimone.hds.forms.widget.ColumnMultiSelectView;
+import org.philimone.hds.forms.widget.ColumnNoteView;
 import org.philimone.hds.forms.widget.ColumnSelectView;
 import org.philimone.hds.forms.widget.ColumnTextView;
 import org.philimone.hds.forms.widget.ColumnTextboxView;
+import org.philimone.hds.forms.widget.ColumnTimeView;
 import org.philimone.hds.forms.widget.ColumnView;
 
 import java.io.Serializable;
@@ -112,6 +118,17 @@ public class ColumnValue implements Serializable {
             ColumnGpsView gpsView = (ColumnGpsView) columnView;
             this.gpsValues = gpsView.getValues();
             this.value = gpsView.getValue();
+            this.valueLabel = this.value;
+        }
+        if (columnView instanceof ColumnAudioView || columnView instanceof ColumnImageView || columnView instanceof ColumnVideoView) {
+            this.value = columnView.getValue();
+            if (this.value != null && this.value.startsWith("file:")) {
+                this.value = android.net.Uri.parse(this.value).getLastPathSegment();
+            }
+            this.valueLabel = this.value;
+        }
+        if (columnView instanceof ColumnBarcodeView || columnView instanceof ColumnTimeView || columnView instanceof ColumnNoteView) {
+            this.value = columnView.getValue();
             this.valueLabel = this.value;
         }
     }

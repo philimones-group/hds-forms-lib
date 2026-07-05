@@ -1,6 +1,8 @@
 package org.philimone.hds.forms.widget;
 
 import android.content.Context;
+import android.net.Uri;
+import androidx.core.content.FileProvider;
 import android.os.Build;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -21,6 +23,7 @@ import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -93,6 +96,37 @@ public abstract class ColumnView extends LinearLayout {
 
     public Column getColumn() {
         return this.column;
+    }
+
+    protected Uri resolveUri(String value) {
+        if (StringUtil.isBlank(value)) return null;
+
+        Uri uri = Uri.parse(value);
+        if (uri.getScheme() == null || "file".equals(uri.getScheme())) {
+            String filePath = uri.getScheme() == null ? value : uri.getPath();
+            if (filePath == null) return uri;
+
+            File file = new File(filePath);
+            if (!file.exists()) {
+                FormFragment activity = getActivity();
+                if (activity != null) {
+                    String instancesDirPath = activity.getInstancesDirPath();
+                    if (instancesDirPath != null) {
+                        file = new File(instancesDirPath, filePath);
+                    }
+                }
+            }
+
+            if (file.exists()) {
+                try {
+                    String authority = getContext().getPackageName() + ".fileprovider";
+                    uri = FileProvider.getUriForFile(getContext(), authority, file);
+                } catch (Exception e) {
+                    uri = Uri.fromFile(file);
+                }
+            }
+        }
+        return uri;
     }
 
     private void buildViews(@LayoutRes int resource) {

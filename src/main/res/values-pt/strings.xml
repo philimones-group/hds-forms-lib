@@ -16,6 +16,7 @@
     <string name="bt_save_lbl">Guardar</string>
     <string name="bt_update_lbl">Actualizar</string>
     <string name="bt_gps_lbl">Obter Localização GPS</string>
+    <string name="bt_barcode_lbl">Digitalizar Código de Barras</string>
 
     <string name="gps_lat_lbl">Latitude:</string>
     <string name="gps_lon_lbl">Longitude:</string>
@@ -37,10 +38,46 @@
     <string name="datetime_selector_button_lbl">Seleccionar data</string>
     <string name="datetime_selector_not_selected_lbl">Data não seleccionada</string>
 
+    <string name="time_selector_title_lbl">Seleccionar a hora</string>
+    <string name="time_selector_button_lbl">Seleccionar hora</string>
+    <string name="time_selector_not_selected_lbl">Hora não seleccionada</string>
+
     <string name="repeat_group_instance_index_lbl">%1$s de %2$s</string>
 
     <string name="info_lbl">Info</string>
     <string name="error_lbl">Erro</string>
+
+    <string name="column_audio_view_record_lbl">Gravar Áudio</string>
+    <string name="column_audio_view_no_recorded_lbl">Nenhum áudio gravado</string>
+    <string name="column_audio_view_record_cancelled_lbl">Captura de áudio cancelada</string>
+    <string name="column_audio_view_no_app_lbl">Nenhuma aplicação de gravação instalada</string>
+    <string name="column_audio_view_playback_error_lbl">Erro de reprodução</string>
+    <string name="column_audio_view_save_error_lbl">Erro ao gravar o ficheiro de áudio</string>
+    <string name="column_audio_view_dir_not_found_lbl">Erro: directório de instâncias não encontrado</string>
+    <string name="column_audio_view_record_instruction_lbl">Pressione Iniciar para começar a gravar.</string>
+    <string name="column_audio_view_start_record_lbl">Iniciar Gravação</string>
+    <string name="column_audio_view_stop_record_lbl">Parar Gravação</string>
+    <string name="column_audio_view_cancel_lbl">Cancelar</string>
+    <string name="column_audio_view_error_recording">Erro ao gravar áudio.</string>
+
+    <string name="column_image_view_take_picture_lbl">Tirar Fotografia</string>
+    <string name="column_image_view_no_image_lbl">Nenhuma imagem capturada</string>
+    <string name="column_image_view_capture_cancelled_lbl">Captura de imagem cancelada</string>
+    <string name="column_image_view_no_app_lbl">Nenhuma aplicação de câmara instalada</string>
+    <string name="column_image_view_save_error_lbl">Erro ao gravar o ficheiro de imagem</string>
+
+    <string name="column_video_view_record_lbl">Gravar Vídeo</string>
+    <string name="column_video_view_play_lbl">Reproduzir Vídeo</string>
+    <string name="column_video_view_no_video_lbl">Nenhum vídeo gravado</string>
+    <string name="column_video_view_capture_cancelled_lbl">Captura de vídeo cancelada</string>
+    <string name="column_video_view_no_app_lbl">Nenhuma aplicação de vídeo instalada</string>
+    <string name="column_video_view_save_error_lbl">Erro ao gravar o ficheiro de vídeo</string>
+    <string name="column_video_view_playback_error_lbl">Erro de reprodução</string>
+    <string name="camera_capture_image_title">Tirar Foto</string>
+    <string name="camera_capture_video_title">Gravar Vídeo</string>
+    <string name="camera_capture_image_button">Capturar</string>
+    <string name="camera_capture_video_start_button">Gravar</string>
+    <string name="camera_capture_video_stop_button">Parar</string>
 
     <!-- calendar -->
     <string name="ethiopian_month_1_meskerem">Meskerem</string>

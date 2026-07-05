@@ -285,6 +285,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     private void initFormTitle() {
+        if (form == null) return;
+
         this.txtFormTitle.setText(form.getFormName());
 
         if (this.form.getCustomTitle() != null && form.getFormName() != null) {

@@ -16,6 +16,7 @@
     <string name="bt_save_lbl">አስቀምጥ</string>
     <string name="bt_update_lbl">አዘምን</string>
     <string name="bt_gps_lbl">የ GPS አቅጣጫ ያውሱ</string>
+    <string name="bt_barcode_lbl">ባርኮድ ይቃኙ</string>
 
     <string name="gps_lat_lbl">ኬፕቲትዩድ (Latitude):</string>
     <string name="gps_lon_lbl">ሎንጂቱድ (Longitude):</string>
@@ -37,10 +38,46 @@
     <string name="datetime_selector_button_lbl">ቀን ይምረጡ</string>
     <string name="datetime_selector_not_selected_lbl">ቀን አልተመረጠም</string>
 
+    <string name="time_selector_title_lbl">ሰዓት ይምረጡ</string>
+    <string name="time_selector_button_lbl">ሰዓት ይምረጡ</string>
+    <string name="time_selector_not_selected_lbl">ሰዓት አልተመረጠም</string>
+
     <string name="repeat_group_instance_index_lbl">%1$s ከ %2$s</string>
 
     <string name="info_lbl">መረጃ</string>
     <string name="error_lbl">ስህተት</string>
+
+    <string name="column_audio_view_record_lbl">ድምፅ ይቅረጹ</string>
+    <string name="column_audio_view_no_recorded_lbl">የተቀረጸ ድምፅ የለም</string>
+    <string name="column_audio_view_record_cancelled_lbl">የድምፅ ቅጂ ተሰርዟል</string>
+    <string name="column_audio_view_no_app_lbl">ምንም የድምፅ መቅጃ መተግበሪያ አልተጫነም</string>
+    <string name="column_audio_view_playback_error_lbl">መልሶ ማጫወት ስህተት ተከስቷል</string>
+    <string name="column_audio_view_save_error_lbl">የድምፅ ፋይሉን ሲያስቀምጥ ስህተት ተከስቷል</string>
+    <string name="column_audio_view_dir_not_found_lbl">ስህተት: የውሂብ ማስቀመጫ አቃፊ አልተገኘም</string>
+    <string name="column_audio_view_record_instruction_lbl">ቀረጻ ለመጀመር \"ጀምር\" የሚለውን ይጫኑ።</string>
+    <string name="column_audio_view_start_record_lbl">ቀረጻ ጀምር</string>
+    <string name="column_audio_view_stop_record_lbl">ቀረጻ አቁም</string>
+    <string name="column_audio_view_cancel_lbl">አቋርጥ</string>
+    <string name="column_audio_view_error_recording">ድምፅ ሲቀዳ ስህተት ተከስቷል።</string>
+
+    <string name="column_image_view_take_picture_lbl">ፎቶ አንሳ</string>
+    <string name="column_image_view_no_image_lbl">ምንም ምስል አልተነሳም</string>
+    <string name="column_image_view_capture_cancelled_lbl">የምስል ማንሳት ተሰርዟል</string>
+    <string name="column_image_view_no_app_lbl">ምንም የካሜራ መተግበሪያ አልተጫነም</string>
+    <string name="column_image_view_save_error_lbl">የምስል ፋይሉን ሲያስቀምጥ ስህተት ተከስቷል</string>
+
+    <string name="column_video_view_record_lbl">ቪዲዮ ይቅረጹ</string>
+    <string name="column_video_view_play_lbl">ቪዲዮውን ያጫውቱ</string>
+    <string name="column_video_view_no_video_lbl">ምንም ቪዲዮ አልተቀረጸም</string>
+    <string name="column_video_view_capture_cancelled_lbl">የቪዲዮ ማንሳት ተሰርዟል</string>
+    <string name="column_video_view_no_app_lbl">ምንም የቪዲዮ መተግበሪያ አልተጫነም</string>
+    <string name="column_video_view_save_error_lbl">የቪዲዮ ፋይሉን ሲያስቀምጥ ስህተት ተከስቷል</string>
+    <string name="column_video_view_playback_error_lbl">መልሶ ማጫወት ስህተት ተከስቷል</string>
+    <string name="camera_capture_image_title">ፎቶ አንሳ</string>
+    <string name="camera_capture_video_title">ቪዲዮ ይቅረጹ</string>
+    <string name="camera_capture_image_button">አንሳ</string>
+    <string name="camera_capture_video_start_button">ቅረጽ</string>
+    <string name="camera_capture_video_stop_button">አቁም</string>
 
     <!-- calendar -->
     <string name="ethiopian_month_1_meskerem">መስከረም</string>

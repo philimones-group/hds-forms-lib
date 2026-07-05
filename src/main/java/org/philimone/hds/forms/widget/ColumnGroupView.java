@@ -10,6 +10,7 @@ import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
@@ -110,6 +112,15 @@ public class ColumnGroupView extends LinearLayout {
         this(formPanel, context, null, columnGroup, callListener);
     }
 
+    @Override
+    protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+
+        if (visibility == View.VISIBLE) {
+            refreshLabelTexts();
+        }
+    }
+
     public FormFragment getFormPanel() {
         return formPanel;
     }
@@ -156,7 +167,7 @@ public class ColumnGroupView extends LinearLayout {
         this.formToastLayout = findViewById(R.id.formToastLayout);
         this.formToastMessage = findViewById(R.id.formToastMessage);
 
-        setTextHtml(this.txtColumnGroupName, columnGroup.getLabel() != null ? columnGroup.getLabel(): ""); //this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
+        this.updateLabelText();
 
         this.formToastMessage.setText("");
 
@@ -195,6 +206,24 @@ public class ColumnGroupView extends LinearLayout {
             if (column.getType() == ColumnType.GPS) {
                 ColumnGpsView gpsView = new ColumnGpsView(this, column, methodCallListener);
                 view = gpsView;
+            }
+            if (column.getType() == ColumnType.NOTE) {
+                view = new ColumnNoteView(this, column, methodCallListener);
+            }
+            if (column.getType() == ColumnType.TIME) {
+                view = new ColumnTimeView(this, column, methodCallListener);
+            }
+            if (column.getType() == ColumnType.BARCODE) {
+                view = new ColumnBarcodeView(this, column, methodCallListener);
+            }
+            if (column.getType() == ColumnType.IMAGE) {
+                view = new ColumnImageView(this, column, methodCallListener);
+            }
+            if (column.getType() == ColumnType.VIDEO) {
+                view = new ColumnVideoView(this, column, methodCallListener);
+            }
+            if (column.getType() == ColumnType.AUDIO) {
+                view = new ColumnAudioView(this, column, methodCallListener);
             }
 
             if (column.getType() == ColumnType.COLLECTED_BY) {
@@ -249,6 +278,14 @@ public class ColumnGroupView extends LinearLayout {
 
         }
 
+    }
+
+    private void refreshLabelTexts() {
+        updateLabelText();
+    }
+
+    private void updateLabelText() {
+        setTextHtml(this.txtColumnGroupName, columnGroup.getLabel() != null ? columnGroup.getLabel(): ""); //this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
     }
 
     public void showToastMessage(@StringRes int messageResId){

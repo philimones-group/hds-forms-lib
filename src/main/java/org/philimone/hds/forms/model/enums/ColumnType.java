@@ -8,13 +8,20 @@ public enum ColumnType {
     INTEGER ("integer"),
     DECIMAL ("decimal"),
     STRING ("string"),
+    NOTE ("note"),
     DATE ("date"),
     DATETIME ("datetime"),
+    TIME ("time"),
     GPS ("gps"),
     SELECT ("select"),
     MULTI_SELECT ("multi_select"),
     TIMESTAMP ("timestamp"),
     COLLECTED_BY ("username"), /* Not visible*/
+
+    IMAGE ("image"), /* byte array */
+    AUDIO ("audio"), /* byte array */
+    VIDEO ("video"), /* byte array */
+    BARCODE ("barcode"), /* Its a Text */
 
     /*Internal Types*/
     INSTANCE_UUID ("uuid"),

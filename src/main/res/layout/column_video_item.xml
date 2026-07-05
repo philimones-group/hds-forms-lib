@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/column_margin_top"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txtColumnRequired"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:text="*"
+            android:textStyle="bold"
+            android:textColor="@color/nui_color_text_red"
+            android:textSize="@dimen/column_name_textsize" />
+
+        <TextView
+            android:id="@+id/txtColumnName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|left"
+            android:gravity="left|center_horizontal"
+            android:text="Dialog Title"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="@dimen/column_name_textsize" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btRecordVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/column_video_view_record_lbl"
+            android:textSize="@dimen/column_button_textsize"
+            android:background="@drawable/nui_btnd_rone_dgbevel"
+            android:textColor="@color/white"
+            android:elevation="5dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutVideoFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="15dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/nui_list_rborder_panel"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/imgVideoThumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerInside"
+            android:visibility="gone"
+            android:src="@android:drawable/ic_menu_slideshow" />
+
+        <Button
+            style="?android:attr/borderlessButtonStyle"
+            android:id="@+id/btPlayVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:background="@drawable/nui_btnd_rone_dgbevel"
+            android:text="@string/column_video_view_play_lbl"
+            android:textColor="@color/white"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/txtVideoFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="@string/column_video_view_no_video_lbl"
+            android:gravity="center"
+            android:fontFamily="sans-serif-light"
+            android:textSize="@dimen/column_value_textsize"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

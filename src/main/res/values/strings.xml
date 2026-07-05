@@ -17,6 +17,7 @@
     <string name="bt_save_lbl">Save</string>
     <string name="bt_update_lbl">Update</string>
     <string name="bt_gps_lbl">Get GPS Location</string>
+    <string name="bt_barcode_lbl">Scan Barcode</string>
 
     <string name="gps_lat_lbl">Latitude:</string>
     <string name="gps_lon_lbl">Longitude:</string>
@@ -37,6 +38,42 @@
     <string name="datetime_selector_title_lbl">Select the date</string>
     <string name="datetime_selector_button_lbl">Select date</string>
     <string name="datetime_selector_not_selected_lbl">Date not selected</string>
+
+    <string name="time_selector_title_lbl">Select the time</string>
+    <string name="time_selector_button_lbl">Select time</string>
+    <string name="time_selector_not_selected_lbl">Time not selected</string>
+
+    <string name="column_audio_view_record_lbl">Record Audio</string>
+    <string name="column_audio_view_no_recorded_lbl">No audio recorded</string>
+    <string name="column_audio_view_record_cancelled_lbl">Audio capture cancelled</string>
+    <string name="column_audio_view_no_app_lbl">No recording app installed</string>
+    <string name="column_audio_view_playback_error_lbl">Playback Error</string>
+    <string name="column_audio_view_save_error_lbl">Error saving audio file</string>
+    <string name="column_audio_view_dir_not_found_lbl">Error: instances directory not found</string>
+    <string name="column_audio_view_record_instruction_lbl">Press Start to begin recording.</string>
+    <string name="column_audio_view_start_record_lbl">Start Recording</string>
+    <string name="column_audio_view_stop_record_lbl">Stop Recording</string>
+    <string name="column_audio_view_cancel_lbl">Cancel</string>
+    <string name="column_audio_view_error_recording">Error while recording audio.</string>
+
+    <string name="column_image_view_take_picture_lbl">Take Picture</string>
+    <string name="column_image_view_no_image_lbl">No image captured</string>
+    <string name="column_image_view_capture_cancelled_lbl">Image capture cancelled</string>
+    <string name="column_image_view_no_app_lbl">No camera app installed</string>
+    <string name="column_image_view_save_error_lbl">Error saving image file</string>
+
+    <string name="column_video_view_record_lbl">Record Video</string>
+    <string name="column_video_view_play_lbl">Play Video</string>
+    <string name="column_video_view_no_video_lbl">No video recorded</string>
+    <string name="column_video_view_capture_cancelled_lbl">Video capture cancelled</string>
+    <string name="column_video_view_no_app_lbl">No video app installed</string>
+    <string name="column_video_view_save_error_lbl">Error saving video file</string>
+    <string name="column_video_view_playback_error_lbl">Playback Error</string>
+    <string name="camera_capture_image_title">Take Photo</string>
+    <string name="camera_capture_video_title">Record Video</string>
+    <string name="camera_capture_image_button">Capture</string>
+    <string name="camera_capture_video_start_button">Record</string>
+    <string name="camera_capture_video_stop_button">Stop</string>
 
     <string name="repeat_group_instance_index_lbl">%1$s of %2$s</string>
 

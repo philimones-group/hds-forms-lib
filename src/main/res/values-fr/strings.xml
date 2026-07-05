@@ -16,6 +16,7 @@
     <string name="bt_save_lbl">Sauvegarder</string>
     <string name="bt_update_lbl">Mise à jour</string>
     <string name="bt_gps_lbl">Obtenir la position GPS</string>
+    <string name="bt_barcode_lbl">Scanner le code-barres</string>
 
     <string name="gps_lat_lbl">Latitude:</string>
     <string name="gps_lon_lbl">Longitude:</string>
@@ -37,10 +38,46 @@
     <string name="datetime_selector_button_lbl">Sélectionner la date</string>
     <string name="datetime_selector_not_selected_lbl">La date n\'est pas sélectionnée</string>
 
+    <string name="time_selector_title_lbl">Sélectionnez l\'heure</string>
+    <string name="time_selector_button_lbl">Sélectionner l\'heure</string>
+    <string name="time_selector_not_selected_lbl">L\'heure n\'est pas sélectionnée</string>
+
     <string name="repeat_group_instance_index_lbl">%1$s de %2$s</string>
 
     <string name="info_lbl">Info</string>
     <string name="error_lbl">Erreur</string>
+
+    <string name="column_audio_view_record_lbl">Enregistrer l\'audio</string>
+    <string name="column_audio_view_no_recorded_lbl">Aucun audio enregistré</string>
+    <string name="column_audio_view_record_cancelled_lbl">Capture audio annulée</string>
+    <string name="column_audio_view_no_app_lbl">Aucune application d\'enregistrement installée</string>
+    <string name="column_audio_view_playback_error_lbl">Erreur de lecture</string>
+    <string name="column_audio_view_save_error_lbl">Erreur lors de l\'enregistrement du fichier audio</string>
+    <string name="column_audio_view_dir_not_found_lbl">Erreur : répertoire d\'instances non trouvé</string>
+    <string name="column_audio_view_record_instruction_lbl">Appuyez sur Démarrer pour commencer l\'enregistrement.</string>
+    <string name="column_audio_view_start_record_lbl">Démarrer l\'enregistrement</string>
+    <string name="column_audio_view_stop_record_lbl">Arrêter l\'enregistrement</string>
+    <string name="column_audio_view_cancel_lbl">Annuler</string>
+    <string name="column_audio_view_error_recording">Erreur lors de l\'enregistrement audio.</string>
+
+    <string name="column_image_view_take_picture_lbl">Prendre une photo</string>
+    <string name="column_image_view_no_image_lbl">Aucune image capturée</string>
+    <string name="column_image_view_capture_cancelled_lbl">Capture d\'image annulée</string>
+    <string name="column_image_view_no_app_lbl">Aucune application d\'appareil photo installée</string>
+    <string name="column_image_view_save_error_lbl">Erreur lors de l\'enregistrement du fichier image</string>
+
+    <string name="column_video_view_record_lbl">Enregistrer une vidéo</string>
+    <string name="column_video_view_play_lbl">Lire la vidéo</string>
+    <string name="column_video_view_no_video_lbl">Aucune vidéo enregistrée</string>
+    <string name="column_video_view_capture_cancelled_lbl">Capture vidéo annulée</string>
+    <string name="column_video_view_no_app_lbl">Aucune application vidéo installée</string>
+    <string name="column_video_view_save_error_lbl">Erreur lors de l\'enregistrement du fichier vidéo</string>
+    <string name="column_video_view_playback_error_lbl">Erreur de lecture</string>
+    <string name="camera_capture_image_title">Prendre une photo</string>
+    <string name="camera_capture_video_title">Enregistrer une vidéo</string>
+    <string name="camera_capture_image_button">Capturer</string>
+    <string name="camera_capture_video_start_button">Enregistrer</string>
+    <string name="camera_capture_video_stop_button">Arrêter</string>
 
     <!-- calendar -->
     <string name="ethiopian_month_1_meskerem">Mäskäräm</string>
