@@ -226,7 +226,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         }
 
 
-        //this.column.setValue(value);
+        this.column.setValue(value);
         //updateValues();
     }
 
@@ -245,18 +245,14 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         if (alt != null) this.gpsLocationResult.setAltitude(alt);
         if (acc != null) this.gpsLocationResult.setAccuracy((float) (acc*1F));
 
+        this.setValue(GpsFormatter.format(this.gpsLocationResult));
+
         updateValues();
     }
 
     @Override
     public String getValue() {
-        Location gps = this.gpsLocationResult;
-        if (gps != null){
-
-            return GpsFormatter.format(gps.getLatitude(), gps.getLongitude(), gps.getAltitude(), gps.getAccuracy()*1D);
-        }
-
-        return null;
+        return this.column.getValue();
     }
 
     public Map<String, Double> getValues(){
@@ -287,6 +283,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         showLoadingDialog(null, false);
 
         this.gpsLocationResult = location;
+        this.setValue(GpsFormatter.format(location));
 
         showResults();
 

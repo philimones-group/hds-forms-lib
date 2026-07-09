@@ -85,6 +85,8 @@ public class ExcelFormParser implements FormParser {
 
             Map<String, ColumnGroup> mapGroup = new LinkedHashMap<>();
             ColumnRepeatGroup repeatGroup = null;
+            ColumnGroup lastColumnGroup = null;
+            Column lastColumn = null;
 
             for (Row row : sheet_columns) {
                 if (row.getRowNum() != 0) {

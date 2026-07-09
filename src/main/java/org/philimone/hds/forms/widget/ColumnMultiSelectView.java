@@ -56,13 +56,18 @@ public class ColumnMultiSelectView extends ColumnView {
         this.rdgColumnRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                afterUserInput();
+                onSelectedItem(group, checkedId);
             }
         });
 
         fillOptions();
 
         updateValues();
+    }
+
+    private void onSelectedItem(RadioGroup group, int checkedId) {
+        this.setValue(getSelectedValue());
+        afterUserInput();
     }
 
     @Override
@@ -200,11 +205,14 @@ public class ColumnMultiSelectView extends ColumnView {
 
     @Override
     public String getValue() {
-        return getSelectedValue();
+        return this.column.getValue();
     }
 
     public List<String> getValues(){
-        List<String> list = this.rdbOptions.stream().filter(op -> op.button.isChecked()).map(SelectOption::getValue).collect(toList());
+        //List<String> list = this.rdbOptions.stream().filter(op -> op.button.isChecked()).map(SelectOption::getValue).collect(toList());
+
+        //call this.column.getValue() and split by DELIMITER and store into a list
+        List<String> list = List.of(this.column.getValue().split(DELIMITER));
 
         return list;
     }

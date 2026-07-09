@@ -21,6 +21,10 @@ public class GpsFormatter {
         return new GpsFormatter(latitude, longitude, altitude, accuracy).format();
     }
 
+    public static String format(Location location){
+        return new GpsFormatter(location.getLatitude(), location.getLongitude(), location.getAltitude(), location.getAccuracy()*1D).format();
+    }
+
     public String format(){
         String lat = getLatitudeAsDMS(latitude,2);
         String lon = getLongitudeAsDMS(longitude, 2);

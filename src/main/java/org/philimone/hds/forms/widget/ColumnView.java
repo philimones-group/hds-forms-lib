@@ -135,6 +135,9 @@ public abstract class ColumnView extends LinearLayout {
     }
 
     protected void afterUserInput() {
+
+        //THIS SHOULDNT BE DONE HERE
+
         List<ColumnView> columnViews = columnGroupView.getColumnViews();
 
         int i = columnViews.indexOf(this);

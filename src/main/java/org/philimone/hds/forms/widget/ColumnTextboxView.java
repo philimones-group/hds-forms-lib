@@ -53,11 +53,16 @@ public class ColumnTextboxView extends ColumnView {
 
             @Override
             public void afterTextChanged(Editable s) {
-                afterUserInput();
+                onInputTextChanged(s.toString());
             }
         });
 
         updateValues();
+    }
+
+    private void onInputTextChanged(String text) {
+        this.setValue(text);
+        afterUserInput();
     }
 
     @Override
@@ -110,7 +115,7 @@ public class ColumnTextboxView extends ColumnView {
 
     @Override
     public String getValue() {
-        return this.editTxtValue.getText().toString();
+        return this.column.getValue(); //editTxtValue.getText().toString();
     }
 
     public Integer getValueAsInt(){

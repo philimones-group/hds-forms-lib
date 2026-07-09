@@ -59,13 +59,18 @@ public class ColumnSelectView extends ColumnView {
         this.rdgColumnRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                afterUserInput();
+                onSelectedItem(group, checkedId);
             }
         });
 
         fillOptions();
 
         updateValues();
+    }
+
+    private void onSelectedItem(RadioGroup group, int checkedId) {
+        this.setValue(getSelectedValue());
+        afterUserInput();
     }
 
     @Override
@@ -178,7 +183,7 @@ public class ColumnSelectView extends ColumnView {
 
     @Override
     public String getValue() {
-        return getSelectedValue();
+        return this.column.getValue();
     }
 
     @Override
