@@ -1,17 +1,16 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
+import android.util.Log;
 import android.widget.CheckBox;
-import android.widget.RadioButton;
+import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 
 import java.util.ArrayList;
@@ -23,26 +22,26 @@ import java.util.Set;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 public class ColumnMultiSelectView extends ColumnView {
 
-    private static final String DELIMITER = ",";
+    public static final String DELIMITER = ",";
     private TextView txtName;
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
+    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener = (buttonView, isChecked) -> onSelectedItem();
 
-    public ColumnMultiSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_select_item, attrs, column, callListener);
+    public ColumnMultiSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_select_item, attrs, columnModel, callListener);
 
         this.rdbOptions = new ArrayList<>();
 
         createView();
     }
 
-    public ColumnMultiSelectView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnMultiSelectView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -51,43 +50,41 @@ public class ColumnMultiSelectView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.rdgColumnRadioGroup = findViewById(R.id.rdgColumnRadioGroup);
 
-        this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
-
-        this.rdgColumnRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                onSelectedItem(group, checkedId);
-            }
-        });
+        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
 
         fillOptions();
 
-        updateValues();
+        refreshModelToUI();
     }
 
-    private void onSelectedItem(RadioGroup group, int checkedId) {
+    private void onSelectedItem() {
+        Log.d("multi select", "selection changed");
         this.setValue(getSelectedValue());
         afterUserInput();
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
+
+        for (SelectOption selectOption : this.rdbOptions) {
+            setTextHtml(selectOption.button, selectOption.optionValue.label);
+        }
     }
 
     public void refillOptions(){
-        for (ColumnMultiSelectView.SelectOption selectOption : this.rdbOptions) {
+        for (SelectOption selectOption : this.rdbOptions) {
             CheckBox button = selectOption.button;
             button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
 
             button.setEnabled(!selectOption.optionValue.readonly);
 
-            if (column.isReadOnly()) {
+            if (columnModel.isReadOnly()) {
                 button.setClickable(false);
             }
         }
 
-        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
+        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
     }
 
     private void fillOptions(){
@@ -101,16 +98,16 @@ public class ColumnMultiSelectView extends ColumnView {
             FormOptions.OptionValue optionValue = options.get(value);
             String label = optionValue.label;
 
-            if (!optionValue.displayable) return;
+            if (!optionValue.displayable) continue;
 
             CheckBox button = new CheckBox(this.getContext());
-            button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            setTextHtml(button, label); //button.setText(label);
-            //button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
+            button.setLayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT));
+            setTextHtml(button, label);
             button.setTextColor(this.getContext().getResources().getColor(R.color.black));
+            button.setOnCheckedChangeListener(onCheckedChangeListener);
             button.setEnabled(!optionValue.readonly);
 
-            if (column.isReadOnly()) {
+            if (columnModel.isReadOnly()) {
                 button.setClickable(false);
             }
 
@@ -119,16 +116,16 @@ public class ColumnMultiSelectView extends ColumnView {
             this.rdbOptions.add(new SelectOption(optionValue, value, label, button, optionValue.readonly));
         }
 
-        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
+        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
     }
 
     public String getSelectedValue(){
         Set<SelectOption> sop = this.rdbOptions.stream().filter(op -> op.button.isChecked()).collect(toSet());
 
-        if (sop.size()>0) {
-            String result = "";
+        if (!sop.isEmpty()) {
+            StringBuilder result = new StringBuilder();
             for (SelectOption opt : sop){
-                result += DELIMITER + opt.value;
+                result.append(DELIMITER).append(opt.value);
             }
 
             return result.substring(1);
@@ -141,9 +138,9 @@ public class ColumnMultiSelectView extends ColumnView {
         Set<SelectOption> sop = this.rdbOptions.stream().filter(op -> op.button.isChecked()).collect(toSet());
 
         if (sop.size()>0) {
-            String result = "";
+            StringBuilder result = new StringBuilder();
             for (SelectOption opt : sop){
-                result += DELIMITER + opt.label;
+                result.append(DELIMITER).append(opt.label);
             }
 
             return result.substring(1);
@@ -153,68 +150,70 @@ public class ColumnMultiSelectView extends ColumnView {
     }
 
     @Override
-    public void updateValues() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
+    public void refreshModelToUI() {
 
-        String value = column.getValue();
+        String value = columnModel.getValue();
+        Log.d("multiselect", "value = " + value);
 
-        if (value != null) {
-            String[] values = value.split(DELIMITER);
-            boolean readonlyChecked = false;
+        List<String> valuesList = value != null ? Arrays.asList(value.split(DELIMITER)) : new ArrayList<>();
+        boolean readonlyChecked = false;
 
-            for (String optionValue : values) {
-                SelectOption sop = this.rdbOptions.stream().filter(op -> op.value.equalsIgnoreCase(optionValue)).findFirst().orElse(null);
+        for (SelectOption selectOption : this.rdbOptions) {
+            boolean shouldBeChecked = valuesList.contains(selectOption.value);
 
-                if (sop != null) {
-                    this.rdgColumnRadioGroup.check(sop.button.getId());
-                    if (sop.readonly){
-                        readonlyChecked = true;
-                    }
-                }
+            // 1. Temporarily remove listener to prevent feedback loops and "live selection" logic during sync
+            selectOption.button.setOnCheckedChangeListener(null);
+
+            // 2. Only call setChecked if the state actually needs to change (avoids visual flicker)
+            if (selectOption.button.isChecked() != shouldBeChecked) {
+                selectOption.button.setChecked(shouldBeChecked);
             }
 
-            if (readonlyChecked) { //any readonly checked
-                for (SelectOption selectOption : this.rdbOptions) {
-                    selectOption.button.setClickable(false);
-                }
+            if (shouldBeChecked && selectOption.readonly) {
+                readonlyChecked = true;
             }
 
-            //hide all non selected if display_style = selected_only
-            if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_SELECTED_ONLY)){
-                List<String> valuesList = Arrays.asList(values);
-                for (SelectOption selectOption : this.rdbOptions) {
-                    if (!valuesList.contains(selectOption.value)) {
-                        selectOption.button.setVisibility(GONE);
-                    }
+            // 3. Re-attach the single shared listener
+            selectOption.button.setOnCheckedChangeListener(onCheckedChangeListener);
+        }
+
+        if (readonlyChecked) {
+            for (SelectOption selectOption : this.rdbOptions) {
+                selectOption.button.setClickable(false);
+            }
+        }
+
+        if (Column.DISPLAY_STYLE_SELECTED_ONLY.equals(this.column.getDisplayStyle())) {
+            for (SelectOption selectOption : this.rdbOptions) {
+                if (!valuesList.contains(selectOption.value)) {
+                    selectOption.button.setVisibility(GONE);
+                } else {
+                    selectOption.button.setVisibility(VISIBLE);
                 }
             }
         }
     }
 
     @Override
-    public void refreshState() {
+    public void refreshInteractionState() {
         refillOptions();
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     public List<String> getValues(){
-        //List<String> list = this.rdbOptions.stream().filter(op -> op.button.isChecked()).map(SelectOption::getValue).collect(toList());
-
-        //call this.column.getValue() and split by DELIMITER and store into a list
-        List<String> list = List.of(this.column.getValue().split(DELIMITER));
-
-        return list;
+        String value = columnModel.getValue();
+        if (value == null) return new ArrayList<>();
+        return Arrays.asList(value.split(DELIMITER));
     }
 
     @Override
@@ -225,7 +224,7 @@ public class ColumnMultiSelectView extends ColumnView {
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
 
-    class SelectOption {
+    static class SelectOption {
         public String value;
         public String label;
         public CheckBox button;
@@ -238,30 +237,6 @@ public class ColumnMultiSelectView extends ColumnView {
             this.label = label;
             this.button = button;
             this.readonly = readonly;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-
-        public CheckBox getButton() {
-            return button;
-        }
-
-        public void setButton(CheckBox button) {
-            this.button = button;
         }
 
         @Override

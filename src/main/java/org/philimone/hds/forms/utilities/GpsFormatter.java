@@ -4,6 +4,8 @@ import android.location.Location;
 
 import androidx.annotation.NonNull;
 
+import java.util.Map;
+
 import mz.betainteractive.utilities.StringUtil;
 
 public class GpsFormatter {
@@ -17,6 +19,13 @@ public class GpsFormatter {
         this.accuracy = accuracy;
     }
 
+    public GpsFormatter(String columnName, Map<String,Double> gpsValues) {
+        this.latitude = gpsValues.get(columnName+"Lat");
+        this.longitude = gpsValues.get(columnName+"Lon");
+        this.altitude = gpsValues.get(columnName+"Alt");
+        this.accuracy = gpsValues.get(columnName+"Acc");
+    }
+
     public static String format(Double latitude, Double longitude, Double altitude, Double accuracy){
         return new GpsFormatter(latitude, longitude, altitude, accuracy).format();
     }
@@ -25,7 +34,17 @@ public class GpsFormatter {
         return new GpsFormatter(location.getLatitude(), location.getLongitude(), location.getAltitude(), location.getAccuracy()*1D).format();
     }
 
+    public static String formatDMS(String columnName, Map<String, Double> gpsValues) {
+        return new GpsFormatter(columnName, gpsValues).formatDMS();
+    }
+
     public String format(){
+        //String lat = "" + latitude;
+        //String lon = "" + longitude;
+        return latitude + ", " + longitude + ", alt: "+altitude+", acc: "+accuracy;
+    }
+
+    public String formatDMS(){
         String lat = getLatitudeAsDMS(latitude,2);
         String lon = getLongitudeAsDMS(longitude, 2);
 

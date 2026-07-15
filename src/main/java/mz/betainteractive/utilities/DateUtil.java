@@ -173,6 +173,17 @@ public class DateUtil {
         }
     }
 
+    public static String formatTimeHM(Date date){
+        if (date==null) return null;
+
+        java.text.DateFormat formatter = new java.text.SimpleDateFormat("HH:mm");
+        try {
+            return formatter.format(date);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static String formatEthiopianYMD(java.util.Date date) {
         if (date==null) return null;
 

@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
@@ -26,13 +26,13 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
     private TimeSelector timePicker;
     private Date dateValue;
 
-    public ColumnTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_time_item, attrs, column, callListener);
+    public ColumnTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_time_item, attrs, columnModel, callListener);
         createView();
     }
 
-    public ColumnTimeView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnTimeView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -48,13 +48,13 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
             onButtonSelectDateClicked();
         });
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        btnSelectTime.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
+        btnSelectTime.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
@@ -70,17 +70,16 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
     public void onDateSelected(Date selectedDate, String selectedDateText) {
         this.txtSelectedTime.setText(selectedDateText);
         this.dateValue = selectedDate;
-        this.column.setValue(selectedDateText); //must save gregorian format
+        this.columnModel.setValue(selectedDateText);
 
         afterUserInput();
     }
 
     @Override
-    public void updateValues() {
+    public void refreshModelToUI() {
 
         String formattedDate = "";
 
-        //Get the date that will be displayed on txtSelectedDate - this date must be formatted into the correct calendar
         if (this.dateValue != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(this.dateValue);
@@ -89,38 +88,37 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
 
             formattedDate = String.format("%02d", hh) + ":" + String.format("%02d", mm);
 
-        } else if (!StringUtil.isBlank(this.column.getValue())) {
+        } else if (!StringUtil.isBlank(columnModel.getValue())) {
 
-            //check if this value is matching time format
-            if (!this.column.getValue().matches("\\d{2}:\\d{2}")) {
-                //get hours and minutes
-                String[] values = this.column.getValue().split(":");
-                int hh = Integer.parseInt(values[0]);
-                int mm = Integer.parseInt(values[1]);
-
-                Calendar cal = Calendar.getInstance();
-                cal.set(1900, 0, 1, hh, mm, 0);
-
-                formattedDate = this.column.getValue();
+            if (columnModel.getValue().matches("\\d{2}:\\d{2}")) {
+                formattedDate = columnModel.getValue();
+            } else {
+                String[] values = columnModel.getValue().split(":");
+                try {
+                    int hh = Integer.parseInt(values[0]);
+                    int mm = Integer.parseInt(values[1]);
+                    formattedDate = String.format("%02d", hh) + ":" + String.format("%02d", mm);
+                } catch (Exception e) {}
             }
         }
 
-        txtSelectedTime.setText(formattedDate);
-        btnSelectTime.setEnabled(!this.column.isReadOnly());
+        if (!StringUtil.isBlank(formattedDate)) {
+            txtSelectedTime.setText(formattedDate);
+        }
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        btnSelectTime.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        btnSelectTime.setEnabled(!this.column.isReadOnly());
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        btnSelectTime.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        btnSelectTime.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
+        this.columnModel.setValue(value);
         this.dateValue = DateUtil.toDateYMDHMS(value);
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
@@ -128,10 +126,8 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
         if (dateValue == null){
             return null;
         } else {
-            return DateUtil.formatGregorianYMDHMS(dateValue); //return gregorian if date is set
+            return DateUtil.formatGregorianYMDHMS(dateValue);
         }
-
-        //return txtSelectedDate.getText().toString();
     }
 
     public Date getValueAsDate() {
@@ -145,7 +141,5 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
 
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
-
-
 
 }

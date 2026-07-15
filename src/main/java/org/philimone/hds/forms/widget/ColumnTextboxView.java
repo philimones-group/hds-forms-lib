@@ -10,6 +10,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import java.math.BigDecimal;
@@ -22,14 +23,14 @@ public class ColumnTextboxView extends ColumnView {
     private TextView txtName;
     private EditText editTxtValue;
 
-    public ColumnTextboxView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_string_item, attrs, column, callListener);
+    public ColumnTextboxView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_string_item, attrs, columnModel, callListener);
 
         createView();
     }
 
-    public ColumnTextboxView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnTextboxView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -57,7 +58,7 @@ public class ColumnTextboxView extends ColumnView {
             }
         });
 
-        updateValues();
+        refreshModelToUI();
     }
 
     private void onInputTextChanged(String text) {
@@ -66,7 +67,7 @@ public class ColumnTextboxView extends ColumnView {
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
@@ -74,7 +75,7 @@ public class ColumnTextboxView extends ColumnView {
         switch (column.getType()){
             case STRING:
                 //if display style is PHONE NUMBER change the input type
-                if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_PHONE_NUMBER)){
+                if (Column.DISPLAY_STYLE_PHONE_NUMBER.equals(this.column.getDisplayStyle())){
                     editTxtValue.setInputType(InputType.TYPE_CLASS_PHONE);
                 } else {
                     editTxtValue.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -87,22 +88,23 @@ public class ColumnTextboxView extends ColumnView {
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
-    public void updateValues() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        editTxtValue.setText(column.getValue()==null ? "" : column.getValue());
+    public void refreshModelToUI() {
+        String newValue = columnModel.getValue() == null ? "" : columnModel.getValue();
+        if (!editTxtValue.getText().toString().equals(newValue)) {
+            editTxtValue.setText(newValue);
+        }
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
 
-        if (column.isReadOnly()) {
+        if (columnModel.isReadOnly()) {
             editTxtValue.setInputType(InputType.TYPE_NULL);
             editTxtValue.setTextIsSelectable(true);
             editTxtValue.setFocusable(false);
@@ -115,7 +117,7 @@ public class ColumnTextboxView extends ColumnView {
 
     @Override
     public String getValue() {
-        return this.column.getValue(); //editTxtValue.getText().toString();
+        return this.columnModel.getValue();
     }
 
     public Integer getValueAsInt(){

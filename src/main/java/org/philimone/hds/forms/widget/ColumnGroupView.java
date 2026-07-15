@@ -8,9 +8,7 @@ import android.os.Handler;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -18,31 +16,22 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
-import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.model.ColumnGroup;
-import org.philimone.hds.forms.model.ColumnRepeatGroup;
+import org.philimone.hds.forms.model.ColumnGroupModel;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 public class ColumnGroupView extends LinearLayout {
 
-    private static long ITEM_ID_COUNT;
-
-    private String uuid;
     private FormFragment formPanel;
-    private Context mContext;
-    private ColumnRepeatGroup columnRepeatGroup;
-    private ColumnGroup columnGroup;
-    private Integer repeatGroupIndex;
-    private Integer repeatGroupSize;
-    private boolean repeatGroupResizable;
+    private ColumnGroupModel groupModel;
+    private ExternalMethodCallListener methodCallListener;
+
     private TextView txtColumnGroupName;
     private TextView txtRepeatGroupRequired;
     private TextView txtRepeatGroupName;
@@ -51,111 +40,20 @@ public class ColumnGroupView extends LinearLayout {
     private LinearLayout formColumnGroupLayout;
     private RelativeLayout formToastLayout;
     private TextView formToastMessage;
-    private List<ColumnView> columnViews;
-    private boolean hidden;
-    private boolean displayable = true;
-    private boolean fragmentVisible = true;
-    private ColumnGroupView parentGroupView;
-    private ColumnGroupView nextGroupView;
-    private ExternalMethodCallListener methodCallListener;
+    private List<ColumnView> columnViews = new ArrayList<>();
 
-    public ColumnGroupView(FormFragment formPanel, Context context, @Nullable AttributeSet attrs, ColumnGroup columnGroup, ExternalMethodCallListener callListener) {
+    public ColumnGroupView(Context context) {
+        super(context);
+        init();
+    }
+
+    public ColumnGroupView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-
-        uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
-        this.formPanel = formPanel;
-        this.mContext = context;
-        this.columnGroup = columnGroup;
-        this.columnViews = new ArrayList<>();
-
-        this.methodCallListener = callListener;
-
-        buildViews();
+        init();
     }
 
-    public ColumnGroupView(FormFragment formPanel, Context context, ColumnRepeatGroup columnRepeatGroup, ColumnGroup columnGroup, Integer repeatGroupIndex, Integer repeatGroupSize, ExternalMethodCallListener callListener) {
-        super(context, null);
-
-        uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
-        this.formPanel = formPanel;
-        this.mContext = context;
-        this.columnRepeatGroup = columnRepeatGroup;
-        this.columnGroup = columnGroup;
-        this.repeatGroupIndex = repeatGroupIndex;
-        this.repeatGroupSize = repeatGroupSize;
-        this.methodCallListener = callListener;
-
-        this.columnViews = new ArrayList<>();
-
-        buildViews();
-    }
-
-    public ColumnGroupView(FormFragment formPanel, Context context, ColumnRepeatGroup columnRepeatGroup, ColumnGroup columnGroup, Integer repeatGroupIndex, boolean repeatGroupResizable, ExternalMethodCallListener callListener) {
-        super(context, null);
-
-        uuid = (ITEM_ID_COUNT++)+""; //UUID.randomUUID().toString();
-        this.formPanel = formPanel;
-        this.mContext = context;
-        this.columnRepeatGroup = columnRepeatGroup;
-        this.columnGroup = columnGroup;
-        this.repeatGroupIndex = repeatGroupIndex;
-        this.repeatGroupSize = null;
-        this.repeatGroupResizable = repeatGroupResizable;
-        this.methodCallListener = callListener;
-
-        this.columnViews = new ArrayList<>();
-
-        buildViews();
-    }
-
-    public ColumnGroupView(FormFragment formPanel, Context context, ColumnGroup columnGroup, ExternalMethodCallListener callListener) {
-        this(formPanel, context, null, columnGroup, callListener);
-    }
-
-    @Override
-    protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
-        super.onVisibilityChanged(changedView, visibility);
-
-        if (visibility == View.VISIBLE) {
-            refreshLabelTexts();
-        }
-    }
-
-    public FormFragment getFormPanel() {
-        return formPanel;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public boolean isHidden() {
-        return hidden;
-    }
-
-    public void setHidden(boolean hidden) {
-        this.hidden = hidden;
-        this.fragmentVisible = !hidden;
-    }
-
-    public boolean isRepeatGroupResizable() {
-        return repeatGroupResizable;
-    }
-
-    public boolean belongsToRepeatGroup(){
-        return columnRepeatGroup != null && repeatGroupIndex != null;
-    }
-
-    public ColumnRepeatGroup getColumnRepeatGroup() {
-        return columnRepeatGroup;
-    }
-
-    public Integer getRepeatGroupIndex() {
-        return repeatGroupIndex;
-    }
-
-    private void buildViews() {
-        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    private void init() {
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.column_group_view, this);
 
         this.txtColumnGroupName = findViewById(R.id.txtColumnGroupName);
@@ -166,245 +64,163 @@ public class ColumnGroupView extends LinearLayout {
         this.formColumnGroupLayout = findViewById(R.id.formColumnGroupLayout);
         this.formToastLayout = findViewById(R.id.formToastLayout);
         this.formToastMessage = findViewById(R.id.formToastMessage);
+    }
 
-        this.updateLabelText();
+    public void bind(FormFragment formPanel, ColumnGroupModel groupModel, ExternalMethodCallListener methodCallListener) {
+        this.formPanel = formPanel;
+        this.groupModel = groupModel;
+        this.methodCallListener = methodCallListener;
+
+        this.columnViews.clear();
+        this.formColumnGroupLayout.removeAllViews();
+
+        updateLabels();
 
         this.formToastMessage.setText("");
 
-        if (this.belongsToRepeatGroup()){
+        if (groupModel.isRepeatItem()) {
             this.formRepeatGroupLayout.setVisibility(VISIBLE);
-            setTextHtml(this.txtRepeatGroupName, this.columnRepeatGroup.getLabel()); //this.txtRepeatGroupName.setText(this.columnRepeatGroup.getLabel());
-
-            this.txtRepeatGroupIndex.setText(this.mContext.getString(R.string.repeat_group_instance_index_lbl, (repeatGroupIndex+1)+"", repeatGroupSize.toString()));
+            setTextHtml(this.txtRepeatGroupName, groupModel.getRepeatGroup().getLabel());
+            this.txtRepeatGroupIndex.setText(getContext().getString(R.string.repeat_group_instance_index_lbl, (groupModel.getRepeatIndex() + 1) + "", groupModel.getRepeatSize().toString()));
             this.txtColumnGroupName.setText("");
         } else {
             this.formRepeatGroupLayout.setVisibility(GONE);
         }
 
-        this.txtColumnGroupName.setVisibility(txtColumnGroupName.getText().length()==0 ? GONE : VISIBLE);
+        this.txtColumnGroupName.setVisibility(txtColumnGroupName.getText().length() == 0 ? GONE : VISIBLE);
 
-        boolean allHidden = true;
-
-        for (Column column : this.columnGroup.getColumns() ) {
-            ColumnView view = null;
-
-            if (column.getType() == ColumnType.INTEGER || column.getType() == ColumnType.DECIMAL || column.getType() == ColumnType.STRING) {
-                view = column.isReadOnly() ? new ColumnTextView(this, column, methodCallListener) : new ColumnTextboxView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.DATE) {
-                view = new ColumnDateView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.DATETIME) {
-                view = new ColumnDateTimeView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.SELECT){
-                view = new ColumnSelectView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.MULTI_SELECT) {
-                view = new ColumnMultiSelectView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.GPS) {
-                ColumnGpsView gpsView = new ColumnGpsView(this, column, methodCallListener);
-                view = gpsView;
-            }
-            if (column.getType() == ColumnType.NOTE) {
-                view = new ColumnNoteView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.TIME) {
-                view = new ColumnTimeView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.BARCODE) {
-                view = new ColumnBarcodeView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.IMAGE) {
-                view = new ColumnImageView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.VIDEO) {
-                view = new ColumnVideoView(this, column, methodCallListener);
-            }
-            if (column.getType() == ColumnType.AUDIO) {
-                view = new ColumnAudioView(this, column, methodCallListener);
-            }
-
-            if (column.getType() == ColumnType.COLLECTED_BY) {
-                column.setValue(formPanel.getUsername());
-
-                view = new ColumnTextView(this, column, methodCallListener);
-            }
-
-            if (column.getType() == ColumnType.INSTANCE_UUID) {
-                view = new ColumnTextView(this, column, methodCallListener);
-            }
-
-            if (column.getType() == ColumnType.DEVICE_ID) {
-                view = new ColumnTextView(this, column, methodCallListener);
-            }
-
-            if (column.getType() == ColumnType.START_TIMESTAMP || column.getType() == ColumnType.END_TIMESTAMP) {
-                view = new ColumnTextView(this, column, methodCallListener);
-            }
-
-            if (column.getType() == ColumnType.EXECUTION_STATUS) {
-                view = new ColumnTextView(this, column, methodCallListener);
-            }
-
-            if (column.getType() == ColumnType.TIMESTAMP) {
-                view = new ColumnTextView(this, column, methodCallListener);
-            }
+        for (ColumnModel columnModel : groupModel.getColumnModels()) {
+            ColumnView view = createColumnView(columnModel);
 
             if (view != null) {
                 formColumnGroupLayout.addView(view);
                 columnViews.add(view);
-
-                if (column.isHidden()){
-                    //view.setDisplayable(false);
-                }
-
-                view.setVisibility(column.isHidden() ? GONE : VISIBLE);
+                view.setVisibility(columnModel.getColumn().isHidden() ? GONE : VISIBLE);
             }
-
-
-
-            allHidden = allHidden && column.isHidden();
         }
 
-        if (allHidden) {
-            //Log.d("one is hidden", toString()+", CSIZE="+columnViews.size());
-            this.setHidden(true);
+        refreshChildViews();
+    }
 
-           //if (columnViews.size()==1) {
-           //    this.setHidden(true); //set columngroup view hidden
-           //}
+    private ColumnView createColumnView(ColumnModel columnModel) {
+        ColumnType type = columnModel.getType();
+        boolean readOnly = columnModel.isReadOnly();
 
+        // In a more advanced implementation, we would use a ViewPool here
+        if (type == ColumnType.INTEGER || type == ColumnType.DECIMAL || type == ColumnType.STRING) {
+            return readOnly ? new ColumnTextView(this, columnModel, methodCallListener) : new ColumnTextboxView(this, columnModel, methodCallListener);
+        }
+        if (type == ColumnType.DATE) return new ColumnDateView(this, columnModel, methodCallListener);
+        if (type == ColumnType.DATETIME) return new ColumnDateTimeView(this, columnModel, methodCallListener);
+        if (type == ColumnType.SELECT) return new ColumnSelectView(this, columnModel, methodCallListener);
+        if (type == ColumnType.MULTI_SELECT) return new ColumnMultiSelectView(this, columnModel, methodCallListener);
+        if (type == ColumnType.GPS) return new ColumnGpsView(this, columnModel, methodCallListener);
+        if (type == ColumnType.NOTE) return new ColumnNoteView(this, columnModel, methodCallListener);
+        if (type == ColumnType.TIME) return new ColumnTimeView(this, columnModel, methodCallListener);
+        if (type == ColumnType.BARCODE) return new ColumnBarcodeView(this, columnModel, methodCallListener);
+        if (type == ColumnType.IMAGE) return new ColumnImageView(this, columnModel, methodCallListener);
+        if (type == ColumnType.VIDEO) return new ColumnVideoView(this, columnModel, methodCallListener);
+        if (type == ColumnType.AUDIO) return new ColumnAudioView(this, columnModel, methodCallListener);
+
+        // System types usually rendered as TextView
+        if (type == ColumnType.COLLECTED_BY || type == ColumnType.INSTANCE_UUID || type == ColumnType.DEVICE_ID ||
+            type == ColumnType.START_TIMESTAMP || type == ColumnType.END_TIMESTAMP || type == ColumnType.EXECUTION_STATUS || type == ColumnType.TIMESTAMP) {
+            return new ColumnTextView(this, columnModel, methodCallListener);
         }
 
+        return null;
     }
 
-    private void refreshLabelTexts() {
-        updateLabelText();
+    private void updateLabels() {
+        if (groupModel.isRepeatItem()) {
+            setTextHtml(this.txtRepeatGroupName, groupModel.getRepeatGroup().getLabel());
+            this.txtColumnGroupName.setText("");
+        } else {
+            setTextHtml(this.txtColumnGroupName, groupModel.getColumnGroup().getLabel() != null ? groupModel.getColumnGroup().getLabel() : "");
+        }
     }
 
-    private void updateLabelText() {
-        setTextHtml(this.txtColumnGroupName, columnGroup.getLabel() != null ? columnGroup.getLabel(): ""); //this.txtColumnGroupName.setText(columnGroup.getLabel() != null ? columnGroup.getLabel(): "");
-    }
-
-    public void showToastMessage(@StringRes int messageResId){
-        setTextHtml(this.formToastMessage, mContext.getString(messageResId)); //this.formToastMessage.setText(mContext.getString(messageResId));
+    public void showToastMessage(@StringRes int messageResId) {
+        setTextHtml(this.formToastMessage, getContext().getString(messageResId));
 
         this.formToastLayout.setAlpha(1f);
         this.formToastLayout.setVisibility(VISIBLE);
         this.formToastLayout.animate().alpha(1f).setDuration(200).setListener(null);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                formToastLayout.animate().alpha(0f).setDuration(500).setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        formToastLayout.setVisibility(GONE);
-                    }
-                });
-            }
+        new Handler().postDelayed(() -> {
+            formToastLayout.animate().alpha(0f).setDuration(500).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    formToastLayout.setVisibility(GONE);
+                }
+            });
         }, 1500);
-
     }
 
     protected void setTextHtml(TextView textView, String labelText) {
-        // Ex: "O participante tem <b>febre</b>?"
         if (labelText != null) {
+            labelText = translateVariables(labelText);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                //API 24+
                 textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
             } else {
-                //older versions
                 textView.setText(Html.fromHtml(labelText));
             }
-
-            //allow clickable links
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
-    public List<ColumnView> getColumnViews(){
+    private String translateVariables(String text) {
+        if (mz.betainteractive.utilities.StringUtil.isBlank(text) || !text.contains("${")) return text;
+
+        // Get the last column model from the PREVIOUS group (if any) or the first column's previous model
+        ColumnModel parent = null;
+
+        if (!groupModel.getColumnModels().isEmpty()) {
+            parent = groupModel.getColumnModels().get(0).getPreviousModel();
+        } else {
+            ColumnGroupModel prevGroup = groupModel.getPreviousGroupModel();
+            while (prevGroup != null && prevGroup.getColumnModels().isEmpty()) {
+                prevGroup = prevGroup.getPreviousGroupModel();
+            }
+
+            if (prevGroup != null) {
+                List<ColumnModel> prevColumns = prevGroup.getColumnModels();
+                parent = prevColumns.get(prevColumns.size() - 1);
+            }
+        }
+
+        while (parent != null) {
+            String name = parent.getName();
+            String value = parent.isDisplayable() ? parent.getValue() : "";
+            if (value == null) value = "";
+
+            text = text.replace("${" + name + "}", value);
+            parent = parent.getPreviousModel();
+        }
+
+        return text;
+    }
+
+    public List<ColumnView> getColumnViews() {
         return this.columnViews;
     }
 
-    public boolean isDisplayable() {
-        return displayable;
+    public FormFragment getFormPanel() {
+        return formPanel;
     }
 
-    public void setDisplayable(boolean displayable) {
-        this.displayable = displayable;
+    public ColumnGroupModel getGroupModel() {
+        return groupModel;
     }
 
-    public ColumnGroupView getParentGroupView() {
-        return parentGroupView;
-    }
-
-    public void setParentGroupView(ColumnGroupView parentGroupView) {
-        this.parentGroupView = parentGroupView;
-    }
-
-    public ColumnGroupView getNextGroupView() {
-        return nextGroupView;
-    }
-
-    public void setNextGroupView(ColumnGroupView nextGroupView) {
-        this.nextGroupView = nextGroupView;
-    }
-
-    public void updateVisibility() {
-        boolean invisible = this.columnViews.stream().filter(t -> t.displayable == true).count()==0;
-        setDisplayable(!invisible);
-    }
-
-    public boolean evaluateDisplayCondition() {
-
-        for (ColumnView columnView : this.columnViews) {
-            columnView.evaluateDisplayCondition();
+    public void refreshChildViews() {
+        updateLabels();
+        for (ColumnView cv : columnViews) {
+            cv.refreshLabels();
+            cv.refreshInteractionState();
+            cv.refreshModelToUI();
+            cv.setVisibility(cv.getColumnModel().isDisplayable() && !cv.getColumn().isHidden() ? VISIBLE : GONE);
         }
-
-        updateVisibility();
-
-        return isDisplayable();
-    }
-
-    public void evaluateCalculations(){
-        for (ColumnView columnView : this.columnViews) {
-            columnView.evaluateCalculation();
-        }
-    }
-
-    public void evaluateReadOnly(){
-        for (ColumnView columnView : this.columnViews) {
-            columnView.evaluateReadOnly();
-        }
-    }
-
-    public void evaluateRequired(){
-        for (ColumnView columnView : this.columnViews) {
-            columnView.evaluateRequired();
-        }
-    }
-
-    public boolean isFragmentVisible() {
-        return fragmentVisible;
-    }
-
-    public void setFragmentVisible(boolean fragmentVisible) {
-        this.fragmentVisible = fragmentVisible;
-    }
-
-    public boolean equalsTo(ColumnGroupView groupView){
-        return this.uuid.equals(groupView.uuid);
-    }
-
-    @Override
-    public String toString() {
-        return "ColumnGroupView{" + getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(",")) + "}";
-    }
-
-    public long getItemId() {
-        return Long.parseLong(uuid);
     }
 }

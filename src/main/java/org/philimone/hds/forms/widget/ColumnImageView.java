@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,19 +14,15 @@ import android.widget.Toast;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import mz.betainteractive.utilities.StringUtil;
 
@@ -38,15 +33,15 @@ public class ColumnImageView extends ColumnView {
     private ImageView imgView;
     private TextView txtImageFile;
 
-    private ActivityResultLauncher<Intent> imageLauncher;
+    //private ActivityResultLauncher<Intent> imageLauncher;
 
-    public ColumnImageView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_image_item, attrs, column, callListener);
+    public ColumnImageView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_image_item, attrs, columnModel, callListener);
         createView();
     }
 
-    public ColumnImageView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnImageView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -58,57 +53,50 @@ public class ColumnImageView extends ColumnView {
 
         btTakePicture.setOnClickListener(v -> onButtonTakePictureClicked());
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        btTakePicture.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
+        btTakePicture.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
 
         initImageField(this.columnGroupView.getFormPanel());
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
     private void initImageField(FormFragment hostFragment) {
-        this.imageLauncher = hostFragment.registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    String instanceFileName = hostFragment.getFormInstanceFileName();
-                    String instancesDirPath = hostFragment.getInstancesDirPath();
-                    String newFileName = instanceFileName + "_" + column.getName() + ".jpg";
-                    File destFile = new File(instancesDirPath, newFileName);
-                    
-                    Log.d("ColumnImageView", "resultCode: " + result.getResultCode());
-                    Log.d("ColumnImageView", "destFile: " + destFile.getAbsolutePath() + " exists: " + destFile.exists());
-
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Uri savedUri = (result.getData() != null) ? result.getData().getData() : null;
-                        Log.d("ColumnImageView", "savedUri from data: " + savedUri);
-                        if (savedUri == null && destFile.exists()) {
-                            savedUri = Uri.fromFile(destFile);
-                        }
-                        
-                        if (savedUri != null) {
-                            Log.d("ColumnImageView", "calling setValue: " + savedUri);
-                            setValue(savedUri.toString());
-                        }
-                    } else if (result.getResultCode() != Activity.RESULT_CANCELED) {
-                        Toast.makeText(getContext(), getContext().getString(R.string.column_image_view_capture_cancelled_lbl), Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
+        // Registered on FormFragment
     }
 
-    private void onButtonTakePictureClicked() {
-        if (imageLauncher != null) {
-            openBuiltInCamera();
+    public void onImageCaptured(ActivityResult result) {
+        FormFragment hostFragment = this.getActivity();
+        String instanceFileName = hostFragment.getFormInstanceFileName();
+        String instancesDirPath = hostFragment.getInstancesDirPath();
+        String newFileName = instanceFileName + "_" + column.getName() + ".jpg";
+        File destFile = new File(instancesDirPath, newFileName);
+
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            Uri savedUri = (result.getData() != null) ? result.getData().getData() : null;
+            if (savedUri == null && destFile.exists()) {
+                savedUri = Uri.fromFile(destFile);
+            }
+
+            if (savedUri != null) {
+                setValue(savedUri.toString());
+                afterUserInput();
+            }
+        } else if (result.getResultCode() != Activity.RESULT_CANCELED) {
+            Toast.makeText(getContext(), getContext().getString(R.string.column_image_view_capture_cancelled_lbl), Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void onButtonTakePictureClicked() {
+        openBuiltInCamera();
+    }
+
     private void openBuiltInCamera() {
-        Log.d("built-in-camera", "testing");
         FormFragment hostFragment = this.columnGroupView.getFormPanel();
         String instanceFileName = hostFragment.getFormInstanceFileName();
         String instancesDirPath = hostFragment.getInstancesDirPath();
@@ -123,16 +111,15 @@ public class ColumnImageView extends ColumnView {
 
         Intent intent = new Intent(getContext(), CameraCaptureActivity.class);
         intent.putExtra(CameraCaptureActivity.EXTRA_OUTPUT_PATH, destFile.getAbsolutePath());
-        imageLauncher.launch(intent);
+
+        getActivity().launchImageCapture(this, intent);
     }
 
     @Override
-    public void updateValues() {
-        String imageValue = this.column.getValue();
-        Log.d("ColumnImageView", "updateValues: " + imageValue);
+    public void refreshModelToUI() {
+        String imageValue = columnModel.getValue();
         if (!StringUtil.isBlank(imageValue)) {
             Uri uri = resolveUri(imageValue);
-            Log.d("ColumnImageView", "resolved uri: " + uri);
             if (uri != null) {
                 String fileName = uri.getLastPathSegment();
                 txtImageFile.setText(fileName != null ? fileName : imageValue);
@@ -142,12 +129,10 @@ public class ColumnImageView extends ColumnView {
             
             imgView.setVisibility(VISIBLE);
 
-            // Load bitmap carefully
             try {
                 InputStream is = getContext().getContentResolver().openInputStream(uri);
                 if (is == null) throw new IOException("Could not open input stream");
                 
-                // Get dimensions and Calculate sample size
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
                 BitmapFactory.decodeStream(is, null, options);
@@ -157,12 +142,9 @@ public class ColumnImageView extends ColumnView {
 
                 is = getContext().getContentResolver().openInputStream(uri);
                 Bitmap bitmap = BitmapFactory.decodeStream(is, null, options);
-                Log.d("ColumnImageView", "bitmap: " + bitmap + " w: " + (bitmap != null ? bitmap.getWidth() : 0));
                 imgView.setImageBitmap(bitmap);
                 is.close();
             } catch (Exception e) {
-                Log.e("ColumnImageView", "Error loading image", e);
-                // try loading as direct file if content uri failed
                 try {
                     String path = imageValue.startsWith("file://") ? Uri.parse(imageValue).getPath() : imageValue;
                     if (path != null && new File(path).exists()) {
@@ -179,7 +161,7 @@ public class ColumnImageView extends ColumnView {
             imgView.setVisibility(GONE);
             imgView.setImageBitmap(null);
         }
-        btTakePicture.setEnabled(!this.column.isReadOnly());
+        btTakePicture.setEnabled(!columnModel.isReadOnly());
     }
 
     private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
@@ -200,22 +182,21 @@ public class ColumnImageView extends ColumnView {
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        btTakePicture.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        btTakePicture.setEnabled(!this.column.isReadOnly());
-        updateValues();
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        btTakePicture.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        btTakePicture.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     @Override

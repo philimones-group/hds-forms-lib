@@ -1,263 +1,67 @@
 package org.philimone.hds.forms.adapters;
 
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-
-import org.philimone.hds.forms.R;
-import org.philimone.hds.forms.model.ColumnRepeatGroup;
-import org.philimone.hds.forms.widget.ColumnGroupView;
-
+import org.philimone.hds.forms.model.ColumnGroupModel;
+import org.philimone.hds.forms.model.FormController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 public class ColumnGroupViewAdapter extends FragmentStateAdapter {
 
-    private List<ColumnGroupView> visibleFragments = new ArrayList<>();
-    private List<ColumnGroupView> defaultFragments = new ArrayList<>();
+    private List<ColumnGroupModel> visibleModels = new ArrayList<>();
+    private FormController formController;
 
-    public ColumnGroupViewAdapter(Fragment fragment, List<ColumnGroupView> groups) {
+    public ColumnGroupViewAdapter(Fragment fragment, FormController formController) {
         super(fragment);
-
-        groups.forEach(columnGroupView -> {
-            //Log.d("cgv "+columnGroupView.toString(), "hidden="+columnGroupView.isHidden());
-            if (!columnGroupView.isHidden()) {
-
-                defaultFragments.add(columnGroupView);
-
-                columnGroupView.evaluateDisplayCondition();
-
-                if (columnGroupView.isDisplayable()) { //only add previously visible items
-                    columnGroupView.setFragmentVisible(true);
-                    this.visibleFragments.add(columnGroupView);
-                } else {
-                    columnGroupView.setFragmentVisible(false);
-                }
-
-            }
-        });
+        this.formController = formController;
+        this.visibleModels.addAll(formController.getVisibleGroupModels());
     }
 
-    /**
-     * better call after updating column values
-     */
-    public void reEvaluateDisplayConditions(){
-        //this.defaultFragments.
-        this.visibleFragments.clear();
-
-        defaultFragments.forEach(columnGroupView -> {
-            columnGroupView.evaluateDisplayCondition();
-
-            if (columnGroupView.isDisplayable()) { //only add previously visible items
-                columnGroupView.setFragmentVisible(true);
-                this.visibleFragments.add(columnGroupView);
-            } else {
-                columnGroupView.setFragmentVisible(false);
-            }
-        });
-
+    public void refreshVisibleModels() {
+        this.visibleModels.clear();
+        this.visibleModels.addAll(formController.getVisibleGroupModels());
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        ColumnGroupView groupView = visibleFragments.get(position);
-        return ColumnGroupViewFragment.newInstance(groupView);
+        ColumnGroupModel groupModel = visibleModels.get(position);
+        return ColumnGroupViewFragment.newInstance(groupModel);
     }
-
-/*
-    @NonNull
-    @Override
-    public ColumnGroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.column_group_layout, parent, false);
-        LinearLayout mainLayout = (LinearLayout) view;
-
-        //add my saved view to parent
-        return new ColumnGroupViewHolder(mainLayout);
-    }*/
 
     @Override
     public long getItemId(int position) {
-        //Log.d("getitem", ""+position);
-
-        ColumnGroupView groupView = this.visibleFragments.get(position);
-        return groupView.getItemId();
+        return visibleModels.get(position).getUuid().hashCode();
     }
 
     @Override
     public boolean containsItem(long itemId) {
-        return contains(visibleFragments, itemId);
+        for (ColumnGroupModel model : visibleModels) {
+            if (model.getUuid().hashCode() == itemId) return true;
+        }
+        return false;
     }
 
     @Override
     public int getItemCount() {
-        return visibleFragments.size();
-    }
-/*
-    @Override
-    public void onBindViewHolder(@NonNull ColumnGroupViewHolder holder, int position) {
-
-        holder.removeViews();
-
-        ColumnGroupView groupView = this.visibleFragments.get(position); //nextGroup
-
-        Log.d("bind", ""+position+", "+groupView);
-
-        //if (groupView != null) {
-            holder.setColumnGroupView(groupView);
-        //}
-
-    }*/
-
-    public ColumnGroupView getItemView(int position) {
-        ColumnGroupView groupView = position < getItemCount() ? this.visibleFragments.get(position) : null;
-        return groupView;
+        return visibleModels.size();
     }
 
-    public void hidePage(ColumnGroupView groupView){
-
-        //printFragments();
-
-        if (groupView != null){// && groupView.isFragmentVisible()){
-            removePage(groupView);
-            groupView.setFragmentVisible(false);
-            notifyDataSetChanged();
-        }
-
-        printFragments();
+    public ColumnGroupModel getItemModel(int position) {
+        return (position >= 0 && position < visibleModels.size()) ? visibleModels.get(position) : null;
     }
 
-    public int showPage(int position, ColumnGroupView groupView) {
-
-        //printFragments();
-
-        if (groupView != null) {
-
-            //if (!groupView.isFragmentVisible()) {
-            if (!contains(this.visibleFragments, groupView)) {
-
-                groupView.setFragmentVisible(true);
-
-                Log.d("show-add", position+", "+groupView);
-                this.visibleFragments.add(position, groupView);
-
-                groupView.setFragmentVisible(true);
-                notifyDataSetChanged();
-
-                printFragments();
-            }
-        }
-
-        return position;
+    public int getItemPosition(ColumnGroupModel model) {
+        return visibleModels.indexOf(model);
     }
 
-    public int getItemPosition(ColumnGroupView columnGroupView) {
-        int index = this.visibleFragments.indexOf(columnGroupView);
-        return index;
-    }
-
-    public int getCorrectPosition(ColumnGroupView groupView) {
-        //get where item is in visibleFragments or where it should be
-
-        int index = this.visibleFragments.indexOf(groupView);
-        if (index != -1) return index;
-
-        //get possible position (get next left visible fg and next right visible fg)
-
-        //get left
-        ColumnGroupView leftgv = groupView.getParentGroupView();
-        ColumnGroupView rightgv = groupView.getNextGroupView();
-
-        while (leftgv != null) {
-            if (this.visibleFragments.indexOf(leftgv) != -1){ //exists on visible fragments
-                break;
-            }
-
-            leftgv = leftgv.getParentGroupView();
-        }
-
-        while (rightgv != null) {
-            if (this.visibleFragments.indexOf(rightgv) != -1){ //exists
-                break;
-            }
-
-            rightgv = rightgv.getNextGroupView();
-        }
-
-        if (leftgv == null && rightgv == null) {
-            return 0;
-        }
-
-        if (leftgv != null){
-            return this.visibleFragments.indexOf(leftgv)+1;
-        }
-
-        if (rightgv != null) {
-            return this.visibleFragments.indexOf(rightgv);
-        }
-
-        return 0;
-    }
-
-    private void printFragments() {
-        Log.d("frags", visibleFragments.stream().map(t -> t.toString()).collect(Collectors.joining(",")));
-    }
-
-    private boolean contains(List<ColumnGroupView> groupViews, ColumnGroupView groupView){
-        for (ColumnGroupView fg: groupViews) {
-            if (fg.equalsTo(groupView)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean contains(List<ColumnGroupView> fragments, long itemId){
-        for (ColumnGroupView fg: fragments) {
-            if (fg.getItemId()==itemId){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void removePage(ColumnGroupView groupView) {
-        if (groupView != null) {
-            this.visibleFragments.remove(groupView);
-            //fragment.setNewItemId();
-        }
-    }
-
-    public List<ColumnGroupView> getVisibleFragments() {
-        return visibleFragments;
-    }
-
-    public List<ColumnGroupView> getDefaultFragments() {
-        return this.defaultFragments;
-    }
-
-    public List<ColumnGroupView> getRepeatGroupViews(ColumnRepeatGroup repeatGroup){
-        List<ColumnGroupView> list = new ArrayList<>();
-
-        this.defaultFragments.forEach( cgView -> {
-            if (repeatGroup.equals(cgView.getColumnRepeatGroup())){
-                list.add(cgView);
-            }
-        });
-
-        return list;
+    public List<ColumnGroupModel> getVisibleModels() {
+        return visibleModels;
     }
 }

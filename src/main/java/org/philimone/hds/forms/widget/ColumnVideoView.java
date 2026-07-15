@@ -17,10 +17,9 @@ import android.widget.Toast;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -36,15 +35,15 @@ public class ColumnVideoView extends ColumnView {
     private ImageView imgVideoThumbnail;
     private TextView txtVideoFile;
 
-    private ActivityResultLauncher<Intent> videoLauncher;
+    //private ActivityResultLauncher<Intent> videoLauncher;
 
-    public ColumnVideoView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_video_item, attrs, column, callListener);
+    public ColumnVideoView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_video_item, attrs, columnModel, callListener);
         createView();
     }
 
-    public ColumnVideoView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnVideoView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -58,53 +57,51 @@ public class ColumnVideoView extends ColumnView {
         btRecordVideo.setOnClickListener(v -> onButtonRecordVideoClicked());
         btPlayVideo.setOnClickListener(v -> onButtonPlayVideoClicked());
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        btRecordVideo.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
+        btRecordVideo.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
 
         initVideoField(this.columnGroupView.getFormPanel());
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
     private void initVideoField(FormFragment hostFragment) {
-        this.videoLauncher = hostFragment.registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    String instanceFileName = hostFragment.getFormInstanceFileName();
-                    String instancesDirPath = hostFragment.getInstancesDirPath();
-                    String extension = ".mp4";
-                    String newFileName = instanceFileName + "_" + column.getName() + extension;
-                    File destFile = new File(instancesDirPath, newFileName);
-
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Uri savedUri = (result.getData() != null) ? result.getData().getData() : null;
-                        if (savedUri == null && destFile.exists()) {
-                            savedUri = Uri.fromFile(destFile);
-                        }
-
-                        if (savedUri != null) {
-                            setValue(savedUri.toString());
-                        }
-                    } else if (result.getResultCode() != Activity.RESULT_CANCELED) {
-                        Toast.makeText(getContext(), getContext().getString(R.string.column_video_view_capture_cancelled_lbl), Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
+        // Registered on FormFragment
     }
 
-    private void onButtonRecordVideoClicked() {
-        if (videoLauncher != null) {
-            openBuiltInVideoCamera();
+    public void onVideoCaptured(ActivityResult result) {
+        FormFragment hostFragment = this.getActivity();
+        String instanceFileName = hostFragment.getFormInstanceFileName();
+        String instancesDirPath = hostFragment.getInstancesDirPath();
+        String extension = ".mp4";
+        String newFileName = instanceFileName + "_" + column.getName() + extension;
+        File destFile = new File(instancesDirPath, newFileName);
+
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            Uri savedUri = (result.getData() != null) ? result.getData().getData() : null;
+            if (savedUri == null && destFile.exists()) {
+                savedUri = Uri.fromFile(destFile);
+            }
+
+            if (savedUri != null) {
+                setValue(savedUri.toString());
+                afterUserInput();
+            }
+        } else if (result.getResultCode() != Activity.RESULT_CANCELED) {
+            Toast.makeText(getContext(), getContext().getString(R.string.column_video_view_capture_cancelled_lbl), Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void onButtonRecordVideoClicked() {
+        openBuiltInVideoCamera();
+    }
+
     private void openBuiltInVideoCamera() {
-        //check permissions
         String[] permissions = new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.RECORD_AUDIO};
         boolean allGranted = true;
         for (String p : permissions) {
@@ -117,8 +114,6 @@ public class ColumnVideoView extends ColumnView {
         if (allGranted) {
             startBuiltInVideoCamera();
         } else {
-            // Since we can't easily launch another permission request here without another launcher,
-            // let's assume CameraCaptureActivity will handle its own permissions or just fail gracefully.
             startBuiltInVideoCamera();
         }
     }
@@ -140,11 +135,12 @@ public class ColumnVideoView extends ColumnView {
         Intent intent = new Intent(getContext(), CameraCaptureActivity.class);
         intent.putExtra(CameraCaptureActivity.EXTRA_OUTPUT_PATH, destFile.getAbsolutePath());
         intent.putExtra(CameraCaptureActivity.EXTRA_MODE, CameraCaptureActivity.MODE_VIDEO);
-        videoLauncher.launch(intent);
+
+        getActivity().launchVideoCapture(this, intent);
     }
 
     private void onButtonPlayVideoClicked() {
-        String videoValue = this.column.getValue();
+        String videoValue = columnModel.getValue();
         if (StringUtil.isBlank(videoValue)) return;
 
         Uri videoUri = resolveUri(videoValue);
@@ -160,8 +156,8 @@ public class ColumnVideoView extends ColumnView {
     }
 
     @Override
-    public void updateValues() {
-        String videoValue = this.column.getValue();
+    public void refreshModelToUI() {
+        String videoValue = columnModel.getValue();
         if (!StringUtil.isBlank(videoValue)) {
             Uri uri = resolveUri(videoValue);
             if (uri != null) {
@@ -175,10 +171,9 @@ public class ColumnVideoView extends ColumnView {
             imgVideoThumbnail.setVisibility(VISIBLE);
             btPlayVideo.setVisibility(VISIBLE);
 
-            // Load thumbnail
             try {
                 File file = null;
-                String videoValueRaw = this.column.getValue();
+                String videoValueRaw = columnModel.getValue();
                 
                 if (videoValueRaw != null) {
                     if (videoValueRaw.startsWith("file://") || videoValueRaw.startsWith("/")) {
@@ -190,14 +185,6 @@ public class ColumnVideoView extends ColumnView {
                         FormFragment activity = getActivity();
                         if (activity != null && activity.getInstancesDirPath() != null) {
                             file = new File(activity.getInstancesDirPath(), videoValueRaw);
-                        }
-                    }
-                    
-                    if (file == null || !file.exists()) {
-                        // try as simple filename
-                        Uri vUri = resolveUri(videoValueRaw);
-                        if (vUri != null && "file".equals(vUri.getScheme())) {
-                            file = new File(vUri.getPath());
                         }
                     }
                 }
@@ -222,25 +209,25 @@ public class ColumnVideoView extends ColumnView {
             imgVideoThumbnail.setVisibility(GONE);
             btPlayVideo.setVisibility(GONE);
         }
-        btRecordVideo.setEnabled(!this.column.isReadOnly());
+        btRecordVideo.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        btRecordVideo.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        btRecordVideo.setEnabled(!this.column.isReadOnly());
-        updateValues();
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        btRecordVideo.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        btRecordVideo.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value); updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     @Override

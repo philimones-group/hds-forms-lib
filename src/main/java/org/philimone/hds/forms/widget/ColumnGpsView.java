@@ -10,14 +10,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.utilities.GpsFormatter;
 import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
@@ -27,8 +26,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -49,16 +46,16 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     private LocationManager locationManager;
     private LoadingDialog loadingDialog;
 
-    private ActivityResultLauncher<String[]> requestPermissions;
+    //private ActivityResultLauncher<String[]> requestPermissions;
 
-    public ColumnGpsView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_gps_item, attrs, column, callListener);
+    public ColumnGpsView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_gps_item, attrs, columnModel, callListener);
 
         initialize();
     }
 
-    public ColumnGpsView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnGpsView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void initialize(){
@@ -67,15 +64,17 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     }
 
     private void initPermissions() {
-        this.requestPermissions = this.getActivity().registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissionResults -> {
-            boolean granted = !permissionResults.values().contains(false);
+        // Registered on FormFragment
+    }
 
-            if (granted) {
-                detectGpsLocation();
-            } else {
-                DialogFactory.createMessageInfo(this.getContext(), R.string.gps_title_lbl, R.string.gps_permissions_error).show();
-            }
-        });
+    public void onPermissionsGranted(Map<String, Boolean> permissionResults) {
+        boolean granted = !permissionResults.values().contains(false);
+
+        if (granted) {
+            detectGpsLocation();
+        } else {
+            DialogFactory.createMessageInfo(this.getContext(), R.string.gps_title_lbl, R.string.gps_permissions_error).show();
+        }
     }
 
     private void createView() {
@@ -94,13 +93,18 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.btGetGps.setOnClickListener(v -> onGetGpsClicked());
 
-        this.getGpsLayout.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        this.getGpsLayout.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
 
-        updateValues();
+        //if there is a gps values to be loaded we load
+        if (!this.columnModel.getGpsValues().isEmpty()) {
+            this.gpsLocationResult = getLocation(this.columnModel.getGpsValues());
+        }
+        
+        refreshModelToUI();
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
@@ -136,8 +140,8 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     private void ensurePermissionsGranted(final String... permissions) {
         boolean denied = Arrays.stream(permissions).anyMatch(permission -> ContextCompat.checkSelfPermission(this.getContext(), permission) == PackageManager.PERMISSION_DENIED);
 
-        if (denied) { //without access
-            requestPermissions.launch(permissions);
+        if (denied) {
+            getActivity().launchGpsPermissions(this, permissions);
         } else {
             detectGpsLocation();
         }
@@ -161,7 +165,6 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         String provider = gps_enabled ? LocationManager.GPS_PROVIDER : network_enabled ? LocationManager.NETWORK_PROVIDER : "";
 
         if (provider.isEmpty()) {
-            //No provider available
             DialogFactory.createMessageInfo(this.getContext(), R.string.gps_title_lbl, R.string.gps_no_provider_available_error).show();
             return;
         }
@@ -174,7 +177,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.postDelayed(() -> {
             showCancelGpsDetection();
-        }, 20000); //after 30 seconds
+        }, 20000);
     }
 
     private void showCancelGpsDetection() {
@@ -191,26 +194,21 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     }
 
     @Override
-    public void updateValues() {
+    public void refreshModelToUI() {
         clearGpsResultTexts();
-
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-
-        btGetGps.setEnabled(!this.column.isReadOnly());
 
         showResults();
     }
 
     @Override
-    public void refreshState() {
-        this.getGpsLayout.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        this.txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        this.btGetGps.setEnabled(!this.column.isReadOnly());
+    public void refreshInteractionState() {
+        this.getGpsLayout.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        this.txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        this.btGetGps.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
-    public void setValue(String value) { //do nothing
+    public void setValue(String value) {
         if (StringUtil.isBlank(value)) return;
 
         Double[] values = GpsFormatter.getValuesFrom(value);
@@ -222,37 +220,42 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
             this.gpsLocationResult.setAltitude(values[2]);
             this.gpsLocationResult.setAccuracy((float) (values[3]*1F));
 
-            updateValues();
+            refreshModelToUI();
         }
 
-
-        this.column.setValue(value);
-        //updateValues();
+        this.columnModel.setValue(value);
+        this.columnModel.setGpsValues(getValues());
     }
 
     public void setValues(Map<String,Double> gpsValues) {
         if (gpsValues == null) return;
 
-        this.gpsLocationResult = new Location("fake");
+        this.gpsLocationResult = getLocation(gpsValues);
+
+        this.setValue(GpsFormatter.format(this.gpsLocationResult)); //must save in format: "\d+, \d+, Alt: \d+, Acc: \d+"
+
+        refreshModelToUI();
+    }
+
+    private Location getLocation(Map<String,Double> gpsValues) {
+        Location location = new Location("fake");
 
         Double lat = gpsValues.get(column.getName()+"Lat");
         Double lon = gpsValues.get(column.getName()+"Lon");
         Double alt = gpsValues.get(column.getName()+"Alt");
         Double acc = gpsValues.get(column.getName()+"Acc");
 
-        if (lat != null) this.gpsLocationResult.setLatitude(lat);
-        if (lon != null) this.gpsLocationResult.setLongitude(lon);
-        if (alt != null) this.gpsLocationResult.setAltitude(alt);
-        if (acc != null) this.gpsLocationResult.setAccuracy((float) (acc*1F));
+        if (lat != null) location.setLatitude(lat);
+        if (lon != null) location.setLongitude(lon);
+        if (alt != null) location.setAltitude(alt);
+        if (acc != null) location.setAccuracy((float) (acc*1F));
 
-        this.setValue(GpsFormatter.format(this.gpsLocationResult));
-
-        updateValues();
+        return location;
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     public Map<String, Double> getValues(){
@@ -280,10 +283,8 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        showLoadingDialog(null, false);
-
         this.gpsLocationResult = location;
-        this.setValue(GpsFormatter.format(location));
+        this.setValue(GpsFormatter.format(location)); //must save in format: "\d+, \d+, Alt: \d+, Acc: \d+"
 
         showResults();
 
@@ -295,7 +296,6 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.d("megps", ""+provider+", status="+status);
     }
 
     @Override

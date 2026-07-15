@@ -7,7 +7,6 @@ import android.os.Build;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -16,18 +15,15 @@ import android.widget.TextView;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.model.ColumnValue;
+import org.philimone.hds.forms.model.ColumnModel;
+import org.philimone.hds.forms.model.FormController;
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.parsers.form.model.FormOptions;
+import org.philimone.hds.forms.model.enums.ColumnValueStatus;
 
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -36,25 +32,23 @@ import androidx.annotation.Nullable;
 public abstract class ColumnView extends LinearLayout {
 
     protected ColumnGroupView columnGroupView;
+    protected ColumnModel columnModel;
     protected Column column;
     protected TextView txtColumnRequired;
-    protected ColumnView parentColumn;
-    protected ColumnView nextColumn;
-    protected boolean displayable = true;
     protected ExternalMethodCallListener methodCallListener;
 
-    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
+    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
         super(view.getContext(), attrs);
         this.columnGroupView = view;
-        this.column = column;
-
+        this.columnModel = columnModel;
+        this.column = columnModel.getColumn();
         this.methodCallListener = callListener;
 
         buildViews(resource);
     }
 
-    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, resource,null, column, callListener);
+    public ColumnView(ColumnGroupView view, @LayoutRes int resource, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, resource, null, columnModel, callListener);
     }
 
     @Override
@@ -62,7 +56,7 @@ public abstract class ColumnView extends LinearLayout {
         super.onVisibilityChanged(changedView, visibility);
 
         if (visibility == View.VISIBLE) {
-            updateLabelTexts();
+            refreshLabels();
         }
     }
 
@@ -78,7 +72,7 @@ public abstract class ColumnView extends LinearLayout {
         return this.column.getName();
     }
 
-    public ColumnType getType(){
+    public ColumnType getType() {
         return this.column.getType();
     }
 
@@ -88,14 +82,18 @@ public abstract class ColumnView extends LinearLayout {
 
     public abstract void setValue(String value);
 
-    public abstract void updateValues();
+    public abstract void refreshModelToUI();
 
-    public abstract void refreshState();
+    public abstract void refreshInteractionState();
 
-    public abstract void updateLabelTexts();
+    public abstract void refreshLabels();
 
     public Column getColumn() {
         return this.column;
+    }
+
+    public ColumnModel getColumnModel() {
+        return columnModel;
     }
 
     protected Uri resolveUri(String value) {
@@ -135,298 +133,20 @@ public abstract class ColumnView extends LinearLayout {
     }
 
     protected void afterUserInput() {
+        // Update model value with USER_INPUT status
+        columnModel.setValue(getValue(), ColumnValueStatus.FROM_USER_INPUT);
 
-        //THIS SHOULDNT BE DONE HERE
+        // Notify controller to re-evaluate form logic
+        if (getActivity() != null && getActivity().getFormController() != null) {
+            FormController controller = getActivity().getFormController();
+            controller.onModelValueChanged(columnModel);
 
-        List<ColumnView> columnViews = columnGroupView.getColumnViews();
-
-        int i = columnViews.indexOf(this);
-
-        //calculate and evaluate display on the next column views of this groupview
-        for (int j = i+1; j < columnViews.size(); j++) {
-            ColumnView columnView = columnViews.get(j);
-            columnView.evaluateCalculation();
-            columnView.evaluateDisplayCondition();
-            columnView.evaluateRequired();
-            columnView.evaluateReadOnly();
+            columnGroupView.refreshChildViews();
         }
-    }
-
-    public ColumnValue getColumnValue(){
-        ColumnValue columnValue = new ColumnValue(columnGroupView, this);
-        return columnValue;
     }
 
     public boolean isDisplayable() {
-        return displayable;
-    }
-
-    public void setDisplayable(boolean displayable) {
-        this.displayable = displayable;
-
-        columnGroupView.updateVisibility();
-    }
-
-    public ColumnView getNextColumn() {
-        return nextColumn;
-    }
-
-    public void setNextColumn(ColumnView nextColumn) {
-        this.nextColumn = nextColumn;
-    }
-
-    public ColumnView getParentColumn() {
-        return parentColumn;
-    }
-
-    public void setParentColumn(ColumnView parentColumn) {
-        this.parentColumn = parentColumn;
-    }
-
-    private String translateVariables(String text) {
-        //Log.d("testing", "name=" + getName() + " parent="+parentColumn + ", trying text: \n"+text);
-        if (StringUtil.isBlank(text) || !text.contains("${")) return text;
-
-        ColumnView parent = parentColumn;
-        while (parent != null) {
-            String name = parent.getName();
-            String value = parent.isDisplayable() ? parent.getValue() : "";
-            if (value == null) value = "";
-
-            text = text.replaceAll("\\$\\{" + name + "\\}", value);
-
-            parent = parent.parentColumn;
-        }
-
-        return text;
-    }
-
-    private String translateExpression(String expression) {
-        //Map<String, String> previousValues = new LinkedHashMap<>();
-        ColumnView parent = parentColumn;
-        while (parent != null) {
-            //Log.d("parent-ev", ""+parent);
-
-            String name = parent.getName();
-            String value = parent.isDisplayable() ? parent.getValue() : "";
-            //previousValues.put(parent.getName(), value); //if not displayable will be empty
-
-            //replace variables with values
-
-            expression = expression.replaceAll("\\$\\{"+name+"\\}", "'" + value + "'");            
-            
-            parent = parent.parentColumn;
-        }
-
-        //Replace 'and' and 'or' for the equivalent javascript operator it handles isolated words and case-insensitive
-        expression = expression.replaceAll("(?i)\\band\\b", "&&");
-        expression = expression.replaceAll("(?i)\\bor\\b", "||");
-
-        //Replace '=' to comparison '==' to avoid breaking with '==', '===', '!=', '>=', '<='
-        expression = expression.replaceAll("(?<![<>=!])=(?![=])", "==");
-
-        //Replace '<>' (not equal) into standard JavaScript '!='
-        expression = expression.replaceAll("<>", "!=");
-        
-        return expression;
-    }
-
-    private String translateMethodCalls(String expression) {
-        //find method calls, call:methodName()
-        List<String> methodCalls = getExpressionCalls(expression);
-
-        for (String methodCall : methodCalls) {
-            //execute method calls -> listener call and return
-            String[] methodArgs = getMethodArgs(methodCall);
-            if (methodCallListener != null) {
-                String result = methodCallListener.onCallMethod(methodCall, methodArgs);
-                if (result != null) {
-                    expression = expression.replace("call:" + methodCall, result);
-                } else {
-                    expression = expression.replace("call:" + methodCall, "");;
-                }
-            }
-        }
-
-        return expression;
-    }
-
-    private List<String> getExpressionCalls(String expression){
-        ArrayList<String> list = new ArrayList<>();
-
-        String callRegex = "call:(.*?)\\)";
-        Pattern pattern_call = Pattern.compile(callRegex);
-        Matcher matcher_call = pattern_call.matcher(expression);
-        while (matcher_call.find()){
-            String method = matcher_call.group(1)+")";
-            list.add(method);
-        }
-
-        return list;
-    }
-
-    private String[] getMethodArgs(String methodCall){
-        ArrayList<String> list = new ArrayList<>();
-
-        String callRegex = "'(.*?)'";
-        Pattern pattern_call = Pattern.compile(callRegex);
-        Matcher matcher_call = pattern_call.matcher(methodCall);
-        while (matcher_call.find()){
-            String arg = matcher_call.group(1);
-            if (arg != null && arg.equalsIgnoreCase("null")){
-                arg = null;
-            }
-            list.add(arg);
-        }
-
-        return list.toArray(new String[list.size()]);
-    }
-
-    public void evaluateDisplayCondition(){
-
-        String displayCondition = column.getDisplayCondition();
-
-        //Log.d("evaluating", getName()+" -> "+displayCondition);
-
-        if (StringUtil.isBlank(displayCondition)) {
-            setDisplayable(true);
-        } else {
-            //get all column values (previous)
-            //Log.d("displaycondition", "o: "+displayCondition);
-            displayCondition = translateExpression(displayCondition);
-            displayCondition = translateMethodCalls(displayCondition);
-
-            //Log.d("displaycondition", "f: "+displayCondition);
-            //evaluate expression on a script engine
-            String result = getActivity().evaluateExpression(displayCondition).toString();
-            boolean visible = StringUtil.isBlank(result) ? true : result.equals("true");
-            //Log.d("evaluation", ""+result);
-
-            setDisplayable(visible);
-
-        }
-
-        //evaluate also select options display conditions
-        if (column.isOptionsConditionallyDisplayable() && (this instanceof ColumnSelectView || this instanceof ColumnMultiSelectView)) {
-
-            for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()){
-                if (StringUtil.isBlank(optionValue.displayCondition)){
-                    optionValue.displayable = true;
-                } else {
-                    String optionDisplayCondition = translateExpression(optionValue.displayCondition);
-                    optionDisplayCondition = translateMethodCalls(optionDisplayCondition);
-
-                    String result = getActivity().evaluateExpression(optionDisplayCondition).toString();
-                    boolean visible = StringUtil.isBlank(result) ? true : result.equals("true");
-                    optionValue.displayable = visible;
-                }
-            }
-
-            if (this instanceof  ColumnSelectView) {
-                ((ColumnSelectView) this).refillOptions();
-            } else {
-                ((ColumnMultiSelectView) this).refillOptions();
-            }
-        }
-
-    }
-
-    public void evaluateCalculation(){
-        String calculation = column.getCalculation();
-
-        if (StringUtil.isBlank(calculation)) return;
-
-        //replace variables with values
-        calculation = translateExpression(calculation);
-
-        //find method calls, call:methodName()
-        calculation = translateMethodCalls(calculation);
-
-        //Log.d("expression", calculation);
-        Object objResult = getActivity().evaluateExpression(calculation);
-        String result = objResult==null ? "" : objResult.toString();
-
-        //Log.d("expression-calc", "result: "+calculationResult);
-
-        //set column value
-        setValue(result); //Update the value according to the type
-    }
-
-    public void evaluateReadOnly(){
-        String readOnlyCondition = column.getReadOnlyCondition();
-
-        if (StringUtil.isBlank(readOnlyCondition)) {
-            column.setReadOnly(false);
-        } else {
-            //Log.d("expression*o", readOnlyCondition);
-            //replace variables with values
-            readOnlyCondition = translateExpression(readOnlyCondition);
-            //find method calls, call:methodName()
-            readOnlyCondition = translateMethodCalls(readOnlyCondition);
-
-
-            Object objResult = getActivity().evaluateExpression(readOnlyCondition);
-            String result = objResult == null ? "" : objResult.toString();
-            //Log.d("r*expression", readOnlyCondition+" >>>> "+result);
-            this.column.setReadOnly(StringUtil.getBooleanValue(result));
-        }
-
-        //evaluate also the readonly condition of the options
-        if (column.isOptionsConditionallyReadOnly() && (this instanceof ColumnSelectView || this instanceof ColumnMultiSelectView)) {
-
-            for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()){
-                if (!StringUtil.isBlank(optionValue.readonlyCondition)){
-                    //evaluate true or false first
-                    if ("true".equalsIgnoreCase(optionValue.readonlyCondition) || "yes".equalsIgnoreCase(optionValue.readonlyCondition)) {
-                        optionValue.readonly = true;
-                        continue;
-                    }
-                    if ("false".equalsIgnoreCase(optionValue.readonlyCondition) || "no".equalsIgnoreCase(optionValue.readonlyCondition)) {
-                        optionValue.readonly = false;
-                        continue;
-                    }
-
-                    String optionReadonlyCondition = translateExpression(optionValue.readonlyCondition);
-                    optionReadonlyCondition = translateMethodCalls(optionReadonlyCondition);
-
-                    String ronlyResult = getActivity().evaluateExpression(optionReadonlyCondition).toString();
-                    boolean optReadonly = StringUtil.isBlank(ronlyResult) ? false : ronlyResult.equals("true");
-                    optionValue.readonly = optReadonly;
-
-                }
-            }
-
-            if (this instanceof  ColumnSelectView) {
-                ((ColumnSelectView) this).refillOptions();
-            } else {
-                ((ColumnMultiSelectView) this).refillOptions();
-            }
-        }
-
-        refreshState();
-    }
-
-    public void evaluateRequired() {
-        String requiredCondition = column.getRequiredCondition();
-
-        if (StringUtil.isBlank(requiredCondition)) return;
-        //Log.d("expression-required", requiredCondition);
-        //replace variables with values
-        requiredCondition = translateExpression(requiredCondition);
-        //find method calls, call:methodName()
-        requiredCondition = translateMethodCalls(requiredCondition);
-
-
-        Object objResult = getActivity().evaluateExpression(requiredCondition);
-        String result = objResult==null ? "" : objResult.toString();
-        //Log.d("req*expression", requiredCondition+" >>>> "+result);
-        this.column.setRequired(StringUtil.getBooleanValue(result));
-
-        refreshState();
-    }
-
-    public boolean isHidden() {
-        return column.isHidden();
+        return columnModel.isDisplayable();
     }
 
     public DateUtil.SupportedCalendar getSupportedCalendar() {
@@ -434,25 +154,37 @@ public abstract class ColumnView extends LinearLayout {
     }
 
     protected void setTextHtml(TextView textView, String labelText) {
-        // Ex: "O participante tem <b>febre</b>?"
         if (labelText != null) {
             labelText = translateVariables(labelText);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                //API 24+
                 textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
             } else {
-                //older versions
                 textView.setText(Html.fromHtml(labelText));
             }
 
-            //allow clickable links
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
+    private String translateVariables(String text) {
+        if (StringUtil.isBlank(text) || !text.contains("${")) return text;
+
+        ColumnModel parent = columnModel.getPreviousModel();
+        while (parent != null) {
+            String name = parent.getName();
+            String value = parent.isDisplayable() ? parent.getValue() : "";
+            if (value == null) value = "";
+
+            text = text.replaceAll("\\$\\{" + name + "\\}", value);
+            parent = parent.getPreviousModel();
+        }
+
+        return text;
+    }
+
     @Override
     public String toString() {
-        return "ColumnView{"+ getName() +"}";
+        return "ColumnView{" + getName() + "}";
     }
 }

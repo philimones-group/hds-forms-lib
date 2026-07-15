@@ -1,6 +1,7 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.model.enums.ColumnValueStatus;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import mz.betainteractive.utilities.StringUtil;
 
@@ -14,6 +15,7 @@ public class Column implements Cloneable {
     private Map<String, FormOptions.OptionValue> typeOptions; //if SELECT/MULTI_SELECT
     private String label;
     private String value;
+    private String defaultValue;
     private boolean required;
     private String requiredCondition;
     private boolean readOnly;
@@ -45,7 +47,9 @@ public class Column implements Cloneable {
         }
 
         this.repeatCount = repeatCount;
-        this.value = value;
+        this.setValue(value);
+        this.defaultValue = value;
+
         this.label = label;
         this.requiredCondition = required;
         this.readOnlyCondition = readOnly;
@@ -158,6 +162,10 @@ public class Column implements Cloneable {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
     public String getLabel() {
@@ -277,4 +285,5 @@ public class Column implements Cloneable {
             throw new AssertionError(e);
         }
     }
+
 }

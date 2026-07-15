@@ -1,8 +1,11 @@
 package org.philimone.hds.forms.model;
 
+import android.net.Uri;
 import android.util.Log;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.parsers.form.model.FormOptions;
+import org.philimone.hds.forms.utilities.GpsFormatter;
 import org.philimone.hds.forms.widget.ColumnAudioView;
 import org.philimone.hds.forms.widget.ColumnBarcodeView;
 import org.philimone.hds.forms.widget.ColumnDateTimeView;
@@ -30,6 +33,7 @@ import mz.betainteractive.utilities.DateUtil;
 
 public class ColumnValue implements Serializable {
 
+    private String columnGroupUuid;
     private int columnGroupId;
     private int columnId;
     private ColumnView columnView;
@@ -49,87 +53,129 @@ public class ColumnValue implements Serializable {
 
     }
 
-    public ColumnValue(int columnGroupId, int columnId, Column column) {
-        this.columnGroupId = columnGroupId;
-        this.columnId = columnId;
-        this.column = column;
-    }
-
     public ColumnValue(ColumnGroupView columnGroupView, ColumnView columnView) {
         this.columnGroupId = columnGroupView.getId();
         this.columnId = columnView.getId();
         this.columnView = columnView;
         this.column = columnView.getColumn();
+        this.columnGroupUuid = columnGroupView.getGroupModel().getUuid();
 
-        if (columnGroupView.isDisplayable() && columnView.isDisplayable()) { //if it is not displayable just be null/empty
+        if (columnGroupView.getGroupModel().isDisplayable() && columnView.isDisplayable()) { //if it is not displayable just be null/empty
             retrieveValues(columnView);
         }
     }
 
-    private void retrieveValues(ColumnView columnView) {
-        if (columnView instanceof ColumnTextView) {
-            this.value = columnView.getValue();
-            this.valueLabel = this.value;
+    public ColumnValue(ColumnGroupModel groupModel, ColumnModel columnModel) {
+        this.columnGroupUuid = groupModel.getUuid();
+        this.column = columnModel.getColumn();
+        this.value = columnModel.getValue();
+        this.valueLabel = this.value;
+        this.gpsValues = columnModel.getGpsValues();
+        this.multiSelectValues = columnModel.getMultiSelectValues();
 
-            ColumnTextView columntxt = (ColumnTextView) columnView;
+        // Populate typed values based on ColumnType
+        ColumnType type = column.getType();
 
-            if (columnView.getType()==ColumnType.DECIMAL) { this.decimalValue = columntxt.getValueDecimal(); }
-            if (columnView.getType()==ColumnType.INTEGER) { this.integerValue = columntxt.getValueAsInt(); }
-            if (columnView.getType() == ColumnType.TIMESTAMP) {
-                DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
-                if (this.value != null) {
-                    this.dateValue = DateUtil.toDatePrecise(this.value);
-                    this.valueLabel = this.dateValue != null ? dateUtil.formatPrecise(this.dateValue) : this.value;
-                }
+        if (type == ColumnType.INTEGER && value != null) {
+            this.integerValue = columnModel.getIntegerValue();
+        }
+
+        if (type == ColumnType.DECIMAL && value != null) {
+            this.decimalValue = columnModel.getDecimalValue();
+        }
+
+        if (type == ColumnType.DATE && value != null) {
+            DateUtil dateUtil = new DateUtil(groupModel.getSupportedCalendar());
+            this.dateValue = DateUtil.toDateYMD(value);
+            this.valueLabel = this.dateValue != null ? dateUtil.formatYMD(this.dateValue) : this.value;
+        }
+
+        if (type == ColumnType.DATETIME && value != null) {
+            DateUtil dateUtil = new DateUtil(groupModel.getSupportedCalendar());
+            this.dateValue = DateUtil.toDateYMDHMS(value);
+            this.valueLabel = this.dateValue != null ? dateUtil.formatYMDHMS(this.dateValue) : this.value;
+        }
+
+        if (type == ColumnType.TIME && value != null) {
+            this.dateValue = DateUtil.toDateYMDHMS(value);
+            if (this.dateValue != null) {
+                this.valueLabel = DateUtil.formatTimeHM(this.dateValue);
             }
         }
-        if (columnView instanceof ColumnTextboxView) {
-            this.value = columnView.getValue();
-            this.valueLabel = this.value;
 
-            ColumnTextboxView columntxt = (ColumnTextboxView) columnView;
-            if (columntxt.getType()==ColumnType.DECIMAL) { this.decimalValue = columntxt.getValueDecimal(); }
-            if (columntxt.getType()==ColumnType.INTEGER) { this.integerValue = columntxt.getValueAsInt(); }
+        if (type == ColumnType.TIMESTAMP && value != null) {
+            DateUtil dateUtil = new DateUtil(groupModel.getSupportedCalendar());
+            this.dateValue = DateUtil.toDatePrecise(value);
+            this.valueLabel = this.dateValue != null ? dateUtil.formatPrecise(this.dateValue) : this.value;
+        }
+
+        // For GPS and MULTISELECT, they are already populated from columnModel
+        // For SELECT, we might not have the label here without the ColumnSelectView or the options map
+        // However, we can try to retrieve the label if options are available in Column
+        if (type == ColumnType.SELECT && value != null) {
+            this.valueLabel = columnModel.getSelectedValueLabel();
+        }
+
+        if (type == ColumnType.MULTI_SELECT) {
+            this.valueLabel = columnModel.getSelectedValuesLabels();
+        }
+
+        if (type == ColumnType.GPS) {
+            this.gpsValues = columnModel.getGpsValues();
+            if (this.gpsValues != null && !this.gpsValues.isEmpty()) {
+                this.valueLabel = GpsFormatter.formatDMS(getColumnName(), this.gpsValues);
+            }
+        }
+
+        if (type == ColumnType.AUDIO || type == ColumnType.IMAGE || type == ColumnType.VIDEO) {
+            if (this.value != null && this.value.startsWith("file:")) {
+                this.valueLabel = Uri.parse(this.value).getLastPathSegment();
+            }
+        }
+
+        // For backwards compatibility with code that uses integer IDs if any
+        this.columnGroupId = columnGroupUuid.hashCode();
+    }
+
+    private void retrieveValues(ColumnView columnView) {
+        ColumnModel columnModel = columnView.getColumnModel();
+        ColumnType type = columnView.getType();
+
+        this.value = columnView.getValue();
+        this.valueLabel = this.value;
+        this.gpsValues = columnModel.getGpsValues();
+        this.multiSelectValues = columnModel.getMultiSelectValues();
+
+        if (columnView instanceof ColumnTextView || columnView instanceof ColumnTextboxView) {
+            this.integerValue = columnModel.getIntegerValue();
+            this.decimalValue = columnModel.getDecimalValue();
+            
+            if (type == ColumnType.TIMESTAMP && value != null) {
+                DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
+                this.dateValue = DateUtil.toDatePrecise(this.value);
+                this.valueLabel = this.dateValue != null ? dateUtil.formatPrecise(this.dateValue) : this.value;
+            }
         }
         if (columnView instanceof ColumnDateView) {
             DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
             this.dateValue = ((ColumnDateView) columnView).getValueAsDate();
-            this.value = columnView.getValue();
             this.valueLabel = this.dateValue != null ? dateUtil.formatYMD(this.dateValue) : this.value;
         }
         if (columnView instanceof ColumnDateTimeView) {
             DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
             this.dateValue = ((ColumnDateTimeView) columnView).getValueAsDate();
-            this.value = columnView.getValue();
             this.valueLabel = this.dateValue != null ? dateUtil.formatYMDHMS(this.dateValue) : this.value;
         }
-        if (columnView instanceof ColumnSelectView) { //TEXTBOX.STRING
-            ColumnSelectView column = (ColumnSelectView) columnView;
-            this.value = columnView.getValue();
-            this.valueLabel = column.getSelectedValueLabel();
+        if (columnView instanceof ColumnSelectView) {
+            this.valueLabel = columnModel.getSelectedValueLabel();
         }
         if (columnView instanceof ColumnMultiSelectView) {
-            ColumnMultiSelectView column = ((ColumnMultiSelectView) columnView);
-            this.multiSelectValues = column.getValues();
-            this.value = column.getSelectedValue();
-            this.valueLabel = column.getSelectedValueLabel();
-        }
-        if (columnView instanceof ColumnGpsView) {
-            ColumnGpsView gpsView = (ColumnGpsView) columnView;
-            this.gpsValues = gpsView.getValues();
-            this.value = gpsView.getValue();
-            this.valueLabel = this.value;
+            this.valueLabel = columnModel.getSelectedValuesLabels();
         }
         if (columnView instanceof ColumnAudioView || columnView instanceof ColumnImageView || columnView instanceof ColumnVideoView) {
-            this.value = columnView.getValue();
             if (this.value != null && this.value.startsWith("file:")) {
-                this.value = android.net.Uri.parse(this.value).getLastPathSegment();
+                this.valueLabel = Uri.parse(this.value).getLastPathSegment();
             }
-            this.valueLabel = this.value;
-        }
-        if (columnView instanceof ColumnBarcodeView || columnView instanceof ColumnTimeView || columnView instanceof ColumnNoteView) {
-            this.value = columnView.getValue();
-            this.valueLabel = this.value;
         }
     }
 
@@ -139,6 +185,10 @@ public class ColumnValue implements Serializable {
 
     public void setColumnGroupId(int columnGroupId) {
         this.columnGroupId = columnGroupId;
+    }
+
+    public String getColumnGroupUuid() {
+        return columnGroupUuid;
     }
 
     public int getColumnId() {
@@ -155,10 +205,6 @@ public class ColumnValue implements Serializable {
 
     public void setColumn(Column column) {
         this.column = column;
-    }
-
-    public ColumnView getColumnView() {
-        return columnView;
     }
 
     public ColumnType getColumnType(){
@@ -213,10 +259,6 @@ public class ColumnValue implements Serializable {
         this.multiSelectValues = multiSelectValues;
     }
 
-    public boolean isRequired(){
-        return this.column.isRequired();
-    }
-
     public Map<String, Double> getGpsValues() {
         return gpsValues;
     }
@@ -241,9 +283,4 @@ public class ColumnValue implements Serializable {
         this.errorMessage = errorMessage;
         this.errors = errorMessage != null || errorMessage.isEmpty();
     }
-
-    public boolean isHidden(){
-        return this.column.isHidden();
-    }
 }
-

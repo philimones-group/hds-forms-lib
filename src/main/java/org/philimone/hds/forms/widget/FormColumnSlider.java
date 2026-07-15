@@ -2,19 +2,24 @@ package org.philimone.hds.forms.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
-import org.philimone.hds.forms.adapters.ColumnGroupViewPageAdapter;
-import org.philimone.hds.forms.listeners.GestureListener;
+import org.philimone.hds.forms.adapters.ColumnGroupViewFragment;
 import org.philimone.hds.forms.main.FormFragment;
-import org.philimone.hds.forms.model.ColumnValue;
+import org.philimone.hds.forms.model.ColumnGroupModel;
+import org.philimone.hds.forms.model.ColumnModel;
 import mz.betainteractive.utilities.StringUtil;
 
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 public class FormColumnSlider extends LinearLayout {
@@ -22,12 +27,10 @@ public class FormColumnSlider extends LinearLayout {
     private Context mContext;
     private ViewPager2 formViewPager;
     private GestureDetector gestureDetector;
-    private float prevX = -1;
-    private SlideDirection currentSlideDirection;
-    private int minPages;
-    private int maxPages;
     private OnNewPageSelectedEvents pageEvents = OnNewPageSelectedEvents.NO_ACTION;
     private FormFragment formFragment;
+    private int touchSlop;
+    private float startX, startY;
 
     public enum SlideDirection { BACKWARDS, FORWARDS}
 
@@ -55,9 +58,23 @@ public class FormColumnSlider extends LinearLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        boolean handled = onTouchEvent(event);
-        if (event.getAction() == MotionEvent.ACTION_UP) return handled;
-        return false;
+        this.gestureDetector.onTouchEvent(event);
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                startX = event.getX();
+                startY = event.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float diffX = Math.abs(event.getX() - startX);
+                float diffY = Math.abs(event.getY() - startY);
+                if (diffX > touchSlop && diffX > diffY) {
+                    return true;
+                }
+                break;
+        }
+
+        return super.onInterceptTouchEvent(event);
     }
 
     @Override
@@ -66,43 +83,45 @@ public class FormColumnSlider extends LinearLayout {
     }
 
     private void init() {
+        this.touchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
 
         this.formViewPager = new ViewPager2(this.getContext());
         this.formViewPager.setUserInputEnabled(false);
 
         this.addView(this.formViewPager, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
-        this.gestureDetector = new GestureDetector(mContext, new GestureListener(){
+        this.gestureDetector = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public void onSwipeLeft() {
-                onSlideForwards();
+            public boolean onDown(MotionEvent e) {
+                return true;
             }
 
             @Override
-            public void onSwipeRight() {
-                onSlideBackwards();
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 100 && Math.abs(velocityX) > 100) {
+                    if (diffX > 0) {
+                        onSlideBackwards();
+                    } else {
+                        onSlideForwards();
+                    }
+                    return true;
+                }
+                return false;
             }
         });
 
         this.formViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
-            }
-
-            @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                //Log.d("selected", ""+position+", "+pageEvents);
 
                 executeEvaluations(position);
 
-                switch (pageEvents) {
-                    case CHECK_REQUIRED:
-                        isCurrentRequiredEmptyField();
-                        break;
-                    case NO_ACTION: break;
-                    default: break;
+                if (pageEvents == OnNewPageSelectedEvents.CHECK_REQUIRED) {
+                    isCurrentRequiredEmptyField();
                 }
 
                 pageEvents = OnNewPageSelectedEvents.NO_ACTION;
@@ -112,96 +131,38 @@ public class FormColumnSlider extends LinearLayout {
     }
 
     public void onSlideBackwards() {
-
+        Log.d("is sliding back", "true");
         int current = formViewPager.getCurrentItem();
-        ColumnGroupView currentGroupView = getAdapter().getItemView(current);
-        ColumnGroupView prevGroupView = currentGroupView.getParentGroupView();
-        int previous = Math.max(current-1, 0);
-
-        while (prevGroupView != null) {
-
-            //Log.d("prev-try", ""+previous+", "+prevGroupView.getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(","))+", displayable="+prevGroupView.isDisplayable()+", fragmentVisible="+prevGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
-
-            if (prevGroupView.isFragmentVisible() && !prevGroupView.isHidden()) {
-                //Log.d("show", ""+previous+", "+prevGroupView);
-                formViewPager.setCurrentItem(previous, true);
-                break;
-            } else {
-                //if is invisible jump the item
-                prevGroupView = prevGroupView.getParentGroupView();
-            }
-        }
-
+        int previous = Math.max(current - 1, 0);
+        formViewPager.setCurrentItem(previous, true);
     }
 
     public void onSlideForwards() {
-        //handle required columns
-        if (isCurrentRequiredEmptyField()){
+        Log.d("is sliding forwards", "true");
+        if (isCurrentRequiredEmptyField()) {
             return;
         }
 
-        //get next groupView and calculate if is displayable or not
         int current = formViewPager.getCurrentItem();
-        ColumnGroupView currentGroupView = getAdapter().getItemView(current);
-        ColumnGroupView nextGroupView = currentGroupView != null ? currentGroupView.getNextGroupView() : null;
         int next = current + 1;
+        ColumnGroupViewAdapter adapter = getAdapter();
 
-        while (nextGroupView != null) {
-            boolean displayableBefore = nextGroupView.isDisplayable();
-            nextGroupView.evaluateDisplayCondition(); //execute the display condition script
-            nextGroupView.evaluateCalculations();
-            nextGroupView.evaluateRequired();
-            nextGroupView.evaluateReadOnly();
-
-            //Log.d("next-try", ""+next+", "+nextGroupView+", displayable=("+displayableBefore+"->"+nextGroupView.isDisplayable()+"), fragmentVisible="+nextGroupView.isFragmentVisible()+", pages="+getAdapter().getItemCount()+", current="+formViewPager.getCurrentItem());
-
-
-            if (nextGroupView.isDisplayable() && !nextGroupView.isHidden()) {
-
-                //if there is calculation execute it
-
-
-                getAdapter().showPage(next, nextGroupView);
-
-                //Log.d("show", ""+next+", nextg="+nextGroupView+", current="+ (getAdapter().getItemView(next)) +"/"+ formViewPager.getCurrentItem() +", RealNext="+(getAdapter().getItemView(next+1)));
-                formViewPager.setCurrentItem(next);
-
-                break;
-            } else {
-                getAdapter().hidePage(nextGroupView); //get next component
-                //get the next item
-                nextGroupView = nextGroupView.getNextGroupView();
-
-            }
+        if (adapter != null && next < adapter.getItemCount()) {
+            formViewPager.setCurrentItem(next, true);
         }
-
-        //Log.d("next-test", ""+next+", "+nextGroupView.getColumnViews().stream().map(t -> t.getName()).collect(Collectors.joining(",")));
-    }
-
-    int getNextItem(int currentItemIndex) {
-        int curr = currentItemIndex;
-        int next = curr==maxPages ? curr : curr+1;
-
-        return next;
-    }
-
-    int getPreviousItem(int currentItemIndex) {
-        int curr = currentItemIndex;
-        int prev = curr==minPages ? curr : curr-1;
-
-        return prev;
     }
 
     private boolean isCurrentRequiredEmptyField() {
-
         int position = formViewPager.getCurrentItem();
-        ColumnGroupView view = getAdapter().getItemView(position);
+        ColumnGroupViewAdapter adapter = getAdapter();
+        if (adapter == null) return false;
+        
+        ColumnGroupModel groupModel = adapter.getItemModel(position);
+        if (groupModel == null) return false;
 
-        for (ColumnView cview : view.getColumnViews()){
-            ColumnValue columnValue = cview.getColumnValue();
-
-            if (columnValue.isRequired() && StringUtil.isBlank(columnValue.getValue())){
-                displayRequiredToastMessage(view, cview);
+        for (ColumnModel cm : groupModel.getColumnModels()) {
+            if (cm.isRequired() && StringUtil.isBlank(cm.getValue())) {
+                displayRequiredToastMessage(cm);
                 return true;
             }
         }
@@ -209,35 +170,50 @@ public class FormColumnSlider extends LinearLayout {
         return false;
     }
 
-    public void displayRequiredToastMessage(ColumnGroupView view, ColumnView cview){
-        //check if FormFragment is in resume mode - if it is close it
-        if (formFragment != null){
+    public void displayRequiredToastMessage(ColumnModel columnModel) {
+        if (formFragment != null) {
             formFragment.closeResumeView();
         }
 
-        view.showToastMessage(R.string.column_required_lbl);
-        //focus the input
-        cview.setFocusable(true);
-        cview.requestFocus();
+        Log.d("trying to toast", columnModel.getName()+"");
+
+        // Search for the currently visible ColumnGroupView inside the ViewPager
+        ColumnGroupView currentView = findColumnGroupView(this.formViewPager);
+        if (currentView != null) {
+            currentView.showToastMessage(R.string.column_required_lbl);
+        }
+    }
+
+    private ColumnGroupView findColumnGroupView(View view) {
+        if (view instanceof ColumnGroupView && view.isShown()) {
+            return (ColumnGroupView) view;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) view;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                ColumnGroupView found = findColumnGroupView(vg.getChildAt(i));
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     public boolean hasAnyRequiredEmptyField() {
-
-        if (isCurrentRequiredEmptyField()){
-            //Log.d("current required", "");
+        if (isCurrentRequiredEmptyField()) {
             return true;
         }
 
-        for (int position=0; position < getAdapter().getVisibleFragments().size(); position++) {
-            ColumnGroupView columnGroupView = getAdapter().getItemView(position);
+        ColumnGroupViewAdapter adapter = getAdapter();
+        if (adapter == null) return false;
 
-            for (ColumnView cview : columnGroupView.getColumnViews()){
-                ColumnValue columnValue = cview.getColumnValue();
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            ColumnGroupModel groupModel = adapter.getItemModel(i);
+            if (groupModel == null) continue;
 
-                if (!cview.isHidden() && columnValue.isRequired() && StringUtil.isBlank(columnValue.getValue())){
+            for (ColumnModel cm : groupModel.getColumnModels()) {
+                if (cm.isDisplayable() && cm.isRequired() && StringUtil.isBlank(cm.getValue())) {
                     pageEvents = OnNewPageSelectedEvents.CHECK_REQUIRED;
-                    formViewPager.setCurrentItem(position, false);
-
+                    formViewPager.setCurrentItem(i, false);
                     return true;
                 }
             }
@@ -246,39 +222,17 @@ public class FormColumnSlider extends LinearLayout {
         return false;
     }
 
-    public void evaluateAllDisplayConditions() {
-        for (ColumnGroupView columnGroupView : this.getAdapter().getDefaultFragments()) {
-            columnGroupView.evaluateDisplayCondition();
-            //should add or remove from FormColumnSlider
-
-            if (columnGroupView.isDisplayable()){
-                //make it visible, add
-                //1,2,3,4,5,6,7,8
-                //1,2, ,4, ,6,7,8
-                //1,2,  3,  4,5,6
-                //   (3)
-
-                int position = this.getAdapter().getCorrectPosition(columnGroupView);
-                this.getAdapter().showPage(position, columnGroupView);
-            } else {
-                this.getAdapter().hidePage(columnGroupView);
+    public void executeEvaluations(int position) {
+        if (formFragment != null && formFragment.getFormController() != null) {
+            ColumnGroupModel groupModel = getAdapter().getItemModel(position);
+            if (groupModel != null) {
+                formFragment.getFormController().evaluateGroup(groupModel);
             }
-
         }
     }
 
-    public void executeEvaluations(int position){
-        ColumnGroupView currentGroupView = getAdapter().getItemView(position);
-        if (currentGroupView != null){
-            currentGroupView.evaluateCalculations();
-            currentGroupView.evaluateRequired();
-            currentGroupView.evaluateReadOnly();
-        }
-    }
-
-    public void gotoPage(ColumnView columnView) {
-        int position = getAdapter().getItemPosition(columnView.columnGroupView);
-
+    public void gotoPage(ColumnGroupModel model) {
+        int position = getAdapter().getItemPosition(model);
         if (position >= 0) {
             pageEvents = OnNewPageSelectedEvents.NO_ACTION;
             formViewPager.setCurrentItem(position, false);
@@ -287,24 +241,12 @@ public class FormColumnSlider extends LinearLayout {
 
     public void setAdapter(ColumnGroupViewAdapter adapter) {
         this.formViewPager.setAdapter(adapter);
-
-        minPages = 0;
-        maxPages = getAdapter().getItemCount()-1;
     }
 
     public ColumnGroupViewAdapter getAdapter() {
         if (this.formViewPager.getAdapter() instanceof ColumnGroupViewAdapter) {
             return (ColumnGroupViewAdapter) this.formViewPager.getAdapter();
         }
-
-        return null;
-    }
-
-    public ColumnGroupViewPageAdapter getAdapter2() {
-        if (this.formViewPager.getAdapter() instanceof ColumnGroupViewPageAdapter) {
-            return (ColumnGroupViewPageAdapter) this.formViewPager.getAdapter();
-        }
-
         return null;
     }
 }

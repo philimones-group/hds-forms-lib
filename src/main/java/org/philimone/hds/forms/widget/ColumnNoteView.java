@@ -1,36 +1,31 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.util.Date;
-
-import mz.betainteractive.utilities.DateUtil;
 
 public class ColumnNoteView extends ColumnView {
 
     private TextView txtName;
     private TextView txtValue;
 
-    public ColumnNoteView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_string_note_item, attrs, column, callListener);
+    public ColumnNoteView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_string_note_item, attrs, columnModel, callListener);
 
         createView();
     }
 
-    public ColumnNoteView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnNoteView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -38,34 +33,32 @@ public class ColumnNoteView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.txtValue = findViewById(R.id.txtColumnValue);
 
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
-    public void updateLabelTexts() {
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+    public void refreshLabels() {
+        setTextHtml(txtName, column.getLabel());
     }
 
-    public void updateValues(){
-        //txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
+    @Override
+    public void refreshModelToUI(){
         txtValue.setText("");
     }
 
     @Override
-    public void refreshState() {
-        //txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+    public void refreshInteractionState() {
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue("");
-        updateValues();
+        this.columnModel.setValue("");
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue(); //get value from the column [because this is readonly] //this.txtValue.getText().toString();
+        return this.columnModel.getValue();
     }
 
     public Integer getValueAsInt(){
@@ -73,7 +66,6 @@ public class ColumnNoteView extends ColumnView {
             try {
                 return Integer.parseInt(getValue());
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return null;
             }
         }
@@ -96,8 +88,6 @@ public class ColumnNoteView extends ColumnView {
     @Override
     public String getValueAsXml() {
         String name = this.column.getName();
-
-        //its empty
         return "<"+ name + " />";
     }
 

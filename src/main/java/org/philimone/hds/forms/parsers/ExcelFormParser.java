@@ -129,6 +129,7 @@ public class ExcelFormParser implements FormParser {
                     if (cellType.equals("end repeat")){
                         form.addColumn(repeatGroup);
                         repeatGroup = null;
+                        continue;
                     }
 
                     ColumnGroup group = mapGroup.get(cellGroup);

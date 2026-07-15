@@ -3,7 +3,6 @@ package org.philimone.hds.forms.main;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -30,27 +29,28 @@ import org.philimone.hds.forms.adapters.ColumnViewDataAdapter;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.listeners.FormCollectionListener;
 import org.philimone.hds.forms.model.CollectedDataMap;
-import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.model.ColumnGroup;
+import org.philimone.hds.forms.model.ColumnGroupModel;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.model.ColumnValue;
+import org.philimone.hds.forms.model.FormController;
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.PreloadMap;
 import org.philimone.hds.forms.model.RepeatColumnValue;
-import org.philimone.hds.forms.model.RepeatObject;
 import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.model.enums.RepeatCountType;
 import org.philimone.hds.forms.parsers.XmlDataReader;
 import org.philimone.hds.forms.parsers.XmlDataUpdater;
 
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
+import org.philimone.hds.forms.widget.ColumnAudioView;
+import org.philimone.hds.forms.widget.ColumnBarcodeView;
 import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
-import org.philimone.hds.forms.widget.ColumnTextView;
-import org.philimone.hds.forms.widget.ColumnView;
+import org.philimone.hds.forms.widget.ColumnImageView;
+import org.philimone.hds.forms.widget.ColumnVideoView;
 import org.philimone.hds.forms.widget.FormColumnSlider;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 
@@ -65,9 +65,9 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -75,7 +75,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
-public class FormFragment extends DialogFragment implements ExternalMethodCallListener {
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
+
+import android.content.Intent;
+
+public class FormFragment extends DialogFragment implements ExternalMethodCallListener, FormController.OnFormStateListener {
 
     private FragmentManager fragmentManager;
     private HForm form;
@@ -89,10 +94,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private Button btCloseResume;
     private Button btCancel;
     private Button btSave;
-    private List<ColumnGroupView> columnGroupViewList;
     private String username;
     private String deviceId;
-    private String instanceUUID;
     private String startTimestamp;
     private String endTimestamp;
     private boolean executeOnUpload;
@@ -108,18 +111,29 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     public DateUtil.SupportedCalendar supportedCalendar;
 
     private ActivityResultLauncher<String> requestPermission;
+    private ActivityResultLauncher<ScanOptions> barcodeLauncher;
+    private ActivityResultLauncher<String[]> audioPermissionLauncher;
+    private ActivityResultLauncher<Intent> imageLauncher;
+    private ActivityResultLauncher<Intent> videoLauncher;
+    private ActivityResultLauncher<String[]> gpsPermissionLauncher;
+
+    private ColumnBarcodeView activeBarcodeView;
+    private ColumnAudioView activeAudioView;
+    private ColumnImageView activeImageView;
+    private ColumnVideoView activeVideoView;
+    private ColumnGpsView activeGpsView;
 
     //Listeners
     private FormCollectionListener formListener;
 
+    private FormController formController;
+
     public FormFragment() {
         super();
 
-        this.columnGroupViewList = new ArrayList<>();
-
         initExpEngine();
 
-        initPermissions();
+        initLaunchers();
     }
 
     //Opening a new Form Instance
@@ -176,20 +190,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         return formFragment;
     }
 
-    /* Not being Used
-    public static FormFragment newInstance(FragmentManager fragmentManager, HForm form, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, form, instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
-    }
-
-    public static FormFragment newInstance(FragmentManager fragmentManager, File hFormXlsFile, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, new ExcelFormParser(hFormXlsFile).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
-    }
-
-    public static FormFragment newInstance(FragmentManager fragmentManager, InputStream fileInputStream, String instancesDirPath, String username, PreloadMap preloadedValues, boolean executeOnUpload, FormCollectionListener formListener) {
-        return newInstance(fragmentManager, new ExcelFormParser(fileInputStream).getForm(), instancesDirPath, username, preloadedValues, executeOnUpload, false, false, formListener);
-    }
-    */
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -228,13 +228,16 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         this.formListener.onFormLoaded(null);
     }
 
-    private void initPermissions() {
+    private void initLaunchers() {
         this.requestPermission = registerForActivityResult(new RequestPermission(), granted -> {
             if (granted) {
                 this.deviceId = readDeviceId();
 
                 Log.d("deviceid", ""+deviceId);
-                updateColumnDeviceId();
+                if (formController != null) {
+                    formController.getFormContext().deviceId = deviceId;
+                    formController.evaluateAll();
+                }
             } else {
                 //Log.d("deviceid", "no permission to read it");
                 DialogFactory.createMessageInfo(getCurrentContext(), R.string.device_id_title_lbl, R.string.device_id_permissions_error, new DialogFactory.OnClickListener() {
@@ -245,6 +248,61 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 }).show();
             }
         });
+
+        this.barcodeLauncher = registerForActivityResult(new ScanContract(), result -> {
+            if (activeBarcodeView != null) {
+                activeBarcodeView.onBarcodeResult(result);
+            }
+        });
+
+        this.audioPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            if (activeAudioView != null) {
+                activeAudioView.onPermissionsGranted(result);
+            }
+        });
+
+        this.imageLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (activeImageView != null) {
+                activeImageView.onImageCaptured(result);
+            }
+        });
+
+        this.videoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (activeVideoView != null) {
+                activeVideoView.onVideoCaptured(result);
+            }
+        });
+
+        this.gpsPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            if (activeGpsView != null) {
+                activeGpsView.onPermissionsGranted(result);
+            }
+        });
+    }
+
+    public void launchBarcodeScanner(ColumnBarcodeView view, ScanOptions options) {
+        this.activeBarcodeView = view;
+        this.barcodeLauncher.launch(options);
+    }
+
+    public void launchAudioPermissions(ColumnAudioView view, String[] permissions) {
+        this.activeAudioView = view;
+        this.audioPermissionLauncher.launch(permissions);
+    }
+
+    public void launchImageCapture(ColumnImageView view, Intent intent) {
+        this.activeImageView = view;
+        this.imageLauncher.launch(intent);
+    }
+
+    public void launchVideoCapture(ColumnVideoView view, Intent intent) {
+        this.activeVideoView = view;
+        this.videoLauncher.launch(intent);
+    }
+
+    public void launchGpsPermissions(ColumnGpsView view, String[] permissions) {
+        this.activeGpsView = view;
+        this.gpsPermissionLauncher.launch(permissions);
     }
 
     private void initialize(View view) {
@@ -281,7 +339,19 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         formSlider.setFormFragment(this);
 
-        initColumnViews();
+        initColumnGroupModels();
+    }
+
+    @Override
+    public void onFormStructureChanged() {
+        if (formSlider != null) {
+            formSlider.post(() -> {
+                if (formSlider.getAdapter() != null) {
+                    ColumnGroupViewAdapter adapter = (ColumnGroupViewAdapter) formSlider.getAdapter();
+                    adapter.refreshVisibleModels();
+                }
+            });
+        }
     }
 
     private void initFormTitle() {
@@ -297,12 +367,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     private void initLoading(){
-        //get start timestamp
-        this.startTimestamp = getTimestamp();
 
-        checkPermissionAndGetDeviceId();
-        loadColumnValues();
-        createFormInstanceFileName();
     }
 
     private void initExpEngine() {
@@ -331,7 +396,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private void onSaveClicked() {
 
         //update displayable of all fields
-        this.formSlider.evaluateAllDisplayConditions();
+        this.formController.evaluateAll();
 
         //check required fields
         if (this.formSlider.hasAnyRequiredEmptyField()){
@@ -340,6 +405,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         //get end timestamp
         this.endTimestamp = getTimestamp();
+        this.formController.finalizeForm(endTimestamp);
 
         //get column values
         CollectedDataMap columnValueMap = getCollectedData();
@@ -387,11 +453,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private void onResumeListItemClicked(int position) {
         ColumnViewDataAdapter adapter = (ColumnViewDataAdapter) this.lvResumeColumns.getAdapter();
-        //Log.d("position", ""+position +", adapter="+adapter);
         if (adapter != null) {
             closeResumeView();
-            ColumnView columnView = adapter.getItem(position);
-            this.formSlider.gotoPage(columnView);
+            ColumnModel columnModel = adapter.getItem(position);
+            if (columnModel != null) {
+                this.formSlider.gotoPage(columnModel.getParentGroupModel());
+            }
         }
     }
 
@@ -413,13 +480,13 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     private void loadResumeListView() {
-        List<ColumnView> list = new ArrayList<>();
+        List<ColumnModel> list = new ArrayList<>();
 
-        for (ColumnGroupView columnGroupView : columnGroupViewList) {
-            if (!columnGroupView.isHidden()) {
-                for (ColumnView columnView : columnGroupView.getColumnViews()) {
-                    if (!columnView.isHidden()) {
-                        list.add(columnView);
+        for (ColumnGroupModel groupModel : formController.getGroupModels()) {
+            if (!groupModel.isHidden()) {
+                for (ColumnModel columnModel : groupModel.getColumnModels()) {
+                    if (!columnModel.getColumn().isHidden()) {
+                        list.add(columnModel);
                     }
                 }
             }
@@ -434,110 +501,38 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     /**
-     * Create ColumnGroupView and ColumnViews based on the blueprint provided by ColumnGroups
+     * Create ColumnGroupModels based on the blueprint provided by ColumnGroups
      */
-    private void initColumnViews(){
-        //We need to upgrade this way of generating ColumnGroupView and ColumnViews, on large forms could hit performance
-
-        //add header layout content
-        ColumnGroupView headerGroupView = null;
-        boolean isUsingHeaderLayout = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-
-        if (this.form.hasHeader()) {
-            ColumnGroup columnGroup = this.form.getHeader();
-            headerGroupView = new ColumnGroupView(this, getCurrentContext(), columnGroup, this);
-            //this.columnGroupViewList.add(headerGroupView);
-
-            if (formHeaderLayout != null && isUsingHeaderLayout) {
-                formHeaderLayout.addView(headerGroupView);
-            }
-        }
-
-        //For the view groups
-        List<ColumnGroupView> groupViews = new ArrayList<>();
-        for (ColumnGroup group : form.getColumns() ) {
-
-            if (!group.isHeader()) {//ignore headers
-
-                if (group instanceof ColumnRepeatGroup){
-                    ColumnRepeatGroup repeatGroup = (ColumnRepeatGroup) group;
-
-                    RepeatCountType repeatCountType = repeatGroup.getRepeatCountType(this.preloadedColumnValues);
-
-                    if (repeatCountType == RepeatCountType.EMPTY) {
-                        //NOT IMPLEMENTED YET - it should ask if you want to add a group
-                        continue;
-                    }
-
-                    if (repeatGroup.getRepeatCountType(preloadedColumnValues) == RepeatCountType.VARIABLE){
-                        //NOT IMPLEMENTED YET - it should calculate the expression to get a value, but this cannot be done here
-                        continue;
-                    }
-
-                    //EXTERNAL LOADER OR CONSTANT VALUE
-                    //EXTERNAL LOADER - the inner objects are already loaded in the preloadedColumnValues (outside hds-forms-lib)
-                    //CONSTANT VALUE - its a number of times that group will be repeated
-
-                    Integer repeatGroupSize = repeatGroup.getRepeatSize(this.preloadedColumnValues);
-
-                    for (int repeatIndex = 0; repeatIndex < repeatGroupSize; repeatIndex++) {
-                        for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
-                            //innerGroup must be a clone and all its columns
-                            ColumnGroup newInnerGroup = innerGroup.clone();
-                            ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), repeatGroup, newInnerGroup, repeatIndex, repeatGroupSize, this);
-                            groupViews.add(groupView);
-                            this.columnGroupViewList.add(groupView);
-                        }
-                    }
-                } else {
-
-                    ColumnGroupView groupView = new ColumnGroupView(this, getCurrentContext(), group, this);
-                    groupViews.add(groupView);
-                    this.columnGroupViewList.add(groupView);
-                }
-
-
-            } else {
-                this.columnGroupViewList.add(headerGroupView);
-
-                if (!isUsingHeaderLayout) { //not using header layout - in landscape mode the header is a entire page
-                    groupViews.add(headerGroupView);
-                }else {
-                    //because the header is not part of the FormColumnSlider - we need to evaluate now
-
-                    headerGroupView.evaluateRequired();
-                    headerGroupView.evaluateReadOnly();
-                    headerGroupView.evaluateCalculations();
-                    headerGroupView.evaluateDisplayCondition();
-                }
-            }
-        }
-
-        final ColumnView[] previous = {null};
-        final ColumnGroupView[] previousGroups = {null};
-        for (ColumnGroupView columnGroupView : this.columnGroupViewList) {
-            if (previousGroups[0] != null) {
-                previousGroups[0].setNextGroupView(columnGroupView);
-                columnGroupView.setParentGroupView(previousGroups[0]);
-            }
-            previousGroups[0] = columnGroupView;
-
-            for (ColumnView columnView : columnGroupView.getColumnViews()) {
-                if (previous[0] != null) {
-                    previous[0].setNextColumn(columnView);
-                    columnView.setParentColumn(previous[0]);
-                }
-                previous[0] = columnView;
-
-            }
-        }
+    private void initColumnGroupModels(){
+        readInitialData();
+        FormController.FormContext context = new FormController.FormContext(supportedCalendar, username, deviceId, startTimestamp);
+        this.formController = new FormController(form, preloadedColumnValues, context, this);
+        this.formController.setStateListener(this);
+        this.formController.evaluateAll();
 
         // VIEWPAGER
-        ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(this, groupViews);
+        ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(this, this.formController);
 
         if (formSlider != null) {
             formSlider.setAdapter(adapter);
         }
+
+        //set header on formHeaderLayout
+        ColumnGroupModel headerGroupModel = this.formController.getHeaderGroupModel();
+        if (headerGroupModel != null) {
+            ColumnGroupView headerView = new ColumnGroupView(this.getContext());
+            headerView.bind(this, headerGroupModel, this);
+            this.formHeaderLayout.addView(headerView);
+        }
+    }
+
+    private void readInitialData() {
+        //get start timestamp
+        this.startTimestamp = getTimestamp();
+
+        checkPermissionAndGetDeviceId();
+        // loadColumnValues(); // Moved to FormController
+        createFormInstanceFileName();
     }
 
     /**
@@ -549,124 +544,27 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private CollectedDataMap getCollectedData(){
         CollectedDataMap map = new CollectedDataMap();
-        //List<ColumnValue> list = new ArrayList<>();
 
-        for (ColumnGroupView columnGroupView : columnGroupViewList) {
-            for (ColumnView columnView : columnGroupView.getColumnViews()) {
-                ColumnValue columnValue = new ColumnValue(columnGroupView, columnView);
+        for (ColumnGroupModel gm : formController.getGroupModels()) {
+            for (ColumnModel cm : gm.getColumnModels()) {
+                ColumnValue columnValue = new ColumnValue(gm, cm);
 
-                if (columnValue.getColumnType() == ColumnType.START_TIMESTAMP && StringUtil.isBlank(columnValue.getValue())) { //start must be blank - means the first time form is opened, otherwise is reopening a saved form
-                    columnValue.setValue(startTimestamp);
-                }
+                if (gm.isRepeatItem()) {
+                    ColumnRepeatGroup repeatGroup = gm.getRepeatGroup();
 
-                if (columnValue.getColumnType() == ColumnType.END_TIMESTAMP && backgroundMode==false) { //backgroung mode is not editing the form
-                    columnValue.setValue(endTimestamp);
-                }
-
-                if (columnGroupView.belongsToRepeatGroup()) {
-                    ColumnRepeatGroup repeatGroup = columnGroupView.getColumnRepeatGroup();
-
-                    //repeatGroup.name, columnValue.name, columnGroupView.repeatGroupIndex
                     RepeatColumnValue repeatColumnValue = map.getRepeatColumn(repeatGroup.getName());
                     repeatColumnValue = repeatColumnValue == null ? new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName()) : repeatColumnValue;
-                    repeatColumnValue.put(columnGroupView.getRepeatGroupIndex(), columnValue);
+                    repeatColumnValue.put(gm.getRepeatIndex(), columnValue);
 
                     map.put(repeatColumnValue);
                     continue;
                 }
 
-                map.put(columnValue.getColumnName(), columnValue);
-                //list.add(columnValue);
+                map.put(cm.getName(), columnValue);
             }
         }
 
         return map;
-    }
-
-    private void loadColumnValues(){
-
-        for (ColumnGroupView columnGroupView : columnGroupViewList) {
-            for (ColumnView columnView : columnGroupView.getColumnViews()) {
-
-                Column column = columnView.getColumn();
-
-                if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
-                    columnView.setValue(this.getDeviceId());
-                    Log.d("device-id*", columnView.getValue()+"");
-                }
-
-                if (columnView.getType() == ColumnType.TIMESTAMP && columnView instanceof ColumnTextView) {
-                    columnView.setValue(this.getTimestamp());
-                }
-
-                if (column.getType() == ColumnType.INSTANCE_UUID && column.isValueBlank()) { //id column - set only once
-                    this.instanceUUID = UUID.randomUUID().toString().replaceAll("-", "");
-
-                    columnView.setValue(instanceUUID);
-
-                    //Log.d("uuid-tag", ""+columnView.getValue());
-                }
-
-                if (columnGroupView.belongsToRepeatGroup()) {
-                    ColumnRepeatGroup repeatGroup = columnGroupView.getColumnRepeatGroup();
-                    Integer repeatIndex = columnGroupView.getRepeatGroupIndex();
-
-                    if (this.preloadedColumnValues.containsKey(repeatGroup.getName())) { //contains a RepeatObject?
-                        RepeatObject repeatObject = this.preloadedColumnValues.getRepeatObject(repeatGroup.getName());
-                        String value = repeatObject.get(repeatIndex, column.getName());
-                        columnView.setValue(value);
-                        continue;
-                    }
-                }
-
-                //overwrite values with pre-loaded data
-                if (this.preloadedColumnValues.containsKey(column.getName())) {
-                    String value = this.preloadedColumnValues.getStringValue(column.getName());
-                    columnView.setValue(value);
-                }
-
-                if (column.getType() == ColumnType.GPS) {
-                    Map<String, Double> gpsValues = getGpsPreloadedValues(column);
-                    ((ColumnGpsView) columnView).setValues(gpsValues);
-                }
-
-
-            }
-        }
-
-        //update visibility of fragments
-        if (formSlider.getAdapter() != null) {
-            formSlider.getAdapter().reEvaluateDisplayConditions();
-        }
-    }
-
-    private void updateColumnDeviceId() {
-        for (ColumnGroupView columnGroupView : columnGroupViewList) {
-            for (ColumnView columnView : columnGroupView.getColumnViews()) {
-
-                if (columnView.getType() == ColumnType.DEVICE_ID && columnView instanceof ColumnTextView) {
-                    columnView.setValue(this.getDeviceId());
-                    Log.d("device-id*2", columnView.getValue());
-                }
-
-            }
-        }
-    }
-
-    private Map<String, Double> getGpsPreloadedValues(Column gpsColumn) {
-        String[] gps_cols = new String[]{ "Lat", "Lon", "Alt", "Acc" };
-        Map<String,Double> gpsValues = new LinkedHashMap<>();
-
-        for (String ext : gps_cols) {
-            String column = gpsColumn.getName()+ext;
-
-            if (preloadedColumnValues.containsKey(column)){
-                String stringValue = preloadedColumnValues.getStringValue(column);
-                gpsValues.put(column, Double.parseDouble(stringValue));
-            }
-        }
-
-        return gpsValues.size()==0 ? null : gpsValues;
     }
 
     public String getInstancesDirPath() {
@@ -686,7 +584,8 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             formattedDate = new DateUtil(supportedCalendar).formatPrecise(date);
         }
 
-        this.formInstanceFileName = form.getFormId() + "-" + instanceUUID + "-" + formatUnderscoreDate(formattedDate);
+        String uuid = formController != null ? formController.getInstanceUUID() : "";
+        this.formInstanceFileName = form.getFormId() + "-" + uuid + "-" + formatUnderscoreDate(formattedDate);
 
         return this.formInstanceFileName;
     }
@@ -700,16 +599,17 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     private void setFocus(ColumnValue columnValue) {
-        ColumnGroupView groupView = columnGroupViewList.stream().filter(t -> t.getId()==columnValue.getColumnGroupId()).findFirst().orElse(null);
-        ColumnView columnView = columnValue.getColumnView();
+        String groupUuid = columnValue.getColumnGroupUuid();
+        
+        // Find the group model
+        ColumnGroupModel groupModel = formController.getGroupModels().stream()
+                .filter(gm -> gm.getUuid().equals(groupUuid))
+                .findFirst().orElse(null);
 
-        if (groupView != null && columnView != null) {
-            groupView.setFocusable(true);
-            columnView.setFocusable(true);
-            groupView.requestFocus();
-            columnView.requestFocus();
-
-            formSlider.gotoPage(columnView);
+        if (groupModel != null) {
+            // Tell the slider to go to this group/page
+            // We'll need a method in FormColumnSlider to handle models
+            formSlider.gotoPage(groupModel);
         }
     }
 
@@ -828,6 +728,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         }
 
         return false;
+    }
+
+    public FormController getFormController() {
+        return formController;
     }
 
     public void startCollecting(){

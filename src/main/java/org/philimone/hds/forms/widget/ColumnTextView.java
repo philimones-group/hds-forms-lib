@@ -1,13 +1,11 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import androidx.annotation.NonNull;
@@ -23,14 +21,14 @@ public class ColumnTextView extends ColumnView {
     private TextView txtName;
     private TextView txtValue;
 
-    public ColumnTextView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_string_ro_item, attrs, column, callListener);
+    public ColumnTextView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_string_ro_item, attrs, columnModel, callListener);
 
         createView();
     }
 
-    public ColumnTextView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnTextView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -38,44 +36,42 @@ public class ColumnTextView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.txtValue = findViewById(R.id.txtColumnValue);
 
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
-    public void updateValues(){
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        txtValue.setText(column.getValue()==null ? "" : column.getValue());
+    public void refreshModelToUI(){
+        txtValue.setText(columnModel.getValue()==null ? "" : columnModel.getValue());
 
         //If is a timestamp column display agnostic formatted datetime
         if (column.getType() == ColumnType.TIMESTAMP) {
 
             DateUtil dateUtil = new DateUtil(getSupportedCalendar());
-            if (column.getValue() != null) {
-                Date dateValue = DateUtil.toDatePrecise(column.getValue()); //get gregorian
+            if (columnModel.getValue() != null) {
+                Date dateValue = DateUtil.toDatePrecise(columnModel.getValue()); //get gregorian
                 txtValue.setText(dateValue != null ? dateUtil.formatPrecise(dateValue) : ""); ////transform to display
             }
         }
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue(); //get value from the column [because this is readonly] //this.txtValue.getText().toString();
+        return this.columnModel.getValue();
     }
 
     public Integer getValueAsInt(){
@@ -83,7 +79,6 @@ public class ColumnTextView extends ColumnView {
             try {
                 return Integer.parseInt(getValue());
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return null;
             }
         }

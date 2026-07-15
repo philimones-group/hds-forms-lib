@@ -1,15 +1,10 @@
 package org.philimone.hds.forms.widget;
 
-import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.util.AttributeSet;
-import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -19,21 +14,17 @@ import android.widget.Toast;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.widget.dialog.AudioRecorderSelector;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Locale;
+import java.util.Map;
 
 import mz.betainteractive.utilities.StringUtil;
 
@@ -49,19 +40,17 @@ public class ColumnAudioView extends ColumnView {
     private SeekBar audioSeekBar;
     private LinearLayout layoutPlayerPanel;
     private LinearLayout layoutAudioFile;
-
-    private ActivityResultLauncher<String[]> audioPermissionLauncher;
     private MediaPlayer mediaPlayer;
     private final Handler seekHandler = new Handler(Looper.getMainLooper());
     private boolean isPlaying = false;
 
-    public ColumnAudioView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_audio_item, attrs, column, callListener);
+    public ColumnAudioView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_audio_item, attrs, columnModel, callListener);
         createView();
     }
 
-    public ColumnAudioView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnAudioView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -78,7 +67,6 @@ public class ColumnAudioView extends ColumnView {
         btRecordAudio.setOnClickListener(v -> onButtonRecordAudioClicked());
         btPlayAudio.setOnClickListener(v -> onButtonPlayAudioClicked());
 
-        // WhatsApp feature: Allow scrubbing/seeking through the audio tracking line manually
         audioSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -91,44 +79,42 @@ public class ColumnAudioView extends ColumnView {
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        btRecordAudio.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
+        btRecordAudio.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
 
         layoutPlayerPanel.setVisibility(GONE);
 
         initAudioField(this.columnGroupView.getFormPanel());
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
     private void initAudioField(FormFragment hostFragment) {
-        this.audioPermissionLauncher = hostFragment.registerForActivityResult(
-                new ActivityResultContracts.RequestMultiplePermissions(),
-                result -> {
-                    Boolean granted = true;
-                    for (Boolean b : result.values()) {
-                        if (!b) {
-                            granted = false;
-                            break;
-                        }
-                    }
+        // Registered on FormFragment
+    }
 
-                    if (granted) {
-                        openAudioRecorder();
-                    } else {
-                        Toast.makeText(getContext(), R.string.column_audio_view_error_recording, Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
+    public void onPermissionsGranted(Map<String, Boolean> result) {
+        Boolean granted = true;
+        for (Boolean b : result.values()) {
+            if (!b) {
+                granted = false;
+                break;
+            }
+        }
+
+        if (granted) {
+            openAudioRecorder();
+        } else {
+            Toast.makeText(getContext(), R.string.column_audio_view_error_recording, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void onButtonRecordAudioClicked() {
-        //check permissions
         String[] permissions = new String[]{android.Manifest.permission.RECORD_AUDIO};
         boolean allGranted = true;
         for (String p : permissions) {
@@ -141,7 +127,7 @@ public class ColumnAudioView extends ColumnView {
         if (allGranted) {
             openAudioRecorder();
         } else {
-            audioPermissionLauncher.launch(permissions);
+            getActivity().launchAudioPermissions(this, permissions);
         }
     }
 
@@ -161,12 +147,13 @@ public class ColumnAudioView extends ColumnView {
 
         AudioRecorderSelector dialog = new AudioRecorderSelector(getContext(), destFile.getAbsolutePath(), filePath -> {
             setValue(Uri.fromFile(new File(filePath)).toString());
+            afterUserInput();
         });
         dialog.show();
     }
 
     private void onButtonPlayAudioClicked() {
-        String audioUriString = this.column.getValue();
+        String audioUriString = columnModel.getValue();
         if (audioUriString == null || audioUriString.isEmpty()) return;
 
         if (isPlaying) {
@@ -189,7 +176,7 @@ public class ColumnAudioView extends ColumnView {
 
             mediaPlayer.start();
             isPlaying = true;
-            btPlayAudio.setText(PAUSE_BUTTON_CHARACTER); // Change icon to Pause character
+            btPlayAudio.setText(PAUSE_BUTTON_CHARACTER);
             updateSeekBarLoop();
 
         } catch (IOException e) {
@@ -204,7 +191,7 @@ public class ColumnAudioView extends ColumnView {
             mediaPlayer.pause();
         }
         isPlaying = false;
-        btPlayAudio.setText(PLAY_BUTTON_CHARACTER); // Change icon back to Play character
+        btPlayAudio.setText(PLAY_BUTTON_CHARACTER);
         seekHandler.removeCallbacks(updaterRunnable);
     }
 
@@ -215,12 +202,11 @@ public class ColumnAudioView extends ColumnView {
             mediaPlayer = null;
         }
         isPlaying = false;
-        btPlayAudio.setText("▶");
+        btPlayAudio.setText(PLAY_BUTTON_CHARACTER);
         audioSeekBar.setProgress(0);
         txtAudioTimer.setText("00:00");
     }
 
-    // Background thread updater runnable to refresh seekbar milestones smoothly
     private final Runnable updaterRunnable = new Runnable() {
         @Override
         public void run() {
@@ -228,7 +214,7 @@ public class ColumnAudioView extends ColumnView {
                 int currentPos = mediaPlayer.getCurrentPosition();
                 audioSeekBar.setProgress(currentPos);
                 txtAudioTimer.setText(formatTime(currentPos));
-                seekHandler.postDelayed(this, 100); // Trigger update every 100ms
+                seekHandler.postDelayed(this, 100);
             }
         }
     };
@@ -244,36 +230,35 @@ public class ColumnAudioView extends ColumnView {
     }
 
     @Override
-    public void updateValues() {
-        String audioValue = this.column.getValue();
+    public void refreshModelToUI() {
+        String audioValue = columnModel.getValue();
         if (!StringUtil.isBlank(audioValue)) {
             Uri uri = resolveUri(audioValue);
             txtAudioFile.setText(uri.getLastPathSegment());
-            layoutPlayerPanel.setVisibility(VISIBLE); // Reveal WhatsApp slider panel
+            layoutPlayerPanel.setVisibility(VISIBLE);
         } else {
             txtAudioFile.setText(getContext().getString(R.string.column_audio_view_no_recorded_lbl));
-            layoutPlayerPanel.setVisibility(GONE);    // Collapse slider panel
+            layoutPlayerPanel.setVisibility(GONE);
         }
-        btRecordAudio.setEnabled(!this.column.isReadOnly());
+        btRecordAudio.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        btRecordAudio.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        btRecordAudio.setEnabled(!this.column.isReadOnly());
-        updateValues();
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        btRecordAudio.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        btRecordAudio.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     @Override

@@ -4,72 +4,55 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
+import org.philimone.hds.forms.main.FormFragment;
+import org.philimone.hds.forms.model.ColumnGroupModel;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class ColumnGroupViewFragment extends Fragment {
 
-    private static long ITEM_ID_COUNT;
-    private long itemId;
+    private ColumnGroupModel groupModel;
     private ColumnGroupView groupView;
-    private ViewGroup rootView;
 
     public ColumnGroupViewFragment() {
         // Required empty public constructor
-        this.itemId = ITEM_ID_COUNT++;
     }
 
-    public static ColumnGroupViewFragment newInstance(ColumnGroupView groupView) {
+    public static ColumnGroupViewFragment newInstance(ColumnGroupModel groupModel) {
         ColumnGroupViewFragment fragment = new ColumnGroupViewFragment();
-        fragment.groupView = groupView;
+        fragment.groupModel = groupModel;
         return fragment;
     }
 
-    /*
     @Override
-    public void onResume() {
-        super.onResume();
-        this.getView().requestLayout();
-    }*/
-
-    public long getItemId() {
-        return groupView.getItemId();
-    }
-
-    public long setNewItemId() {
-        this.itemId = itemId+100;
-        return this.itemId;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        rootView = (ViewGroup) inflater.inflate(R.layout.column_group_layout, container, false);
-        //rootView.requestDisallowInterceptTouchEvent(true);
-        removeViews(this.groupView.getParent());
-        rootView.addView(this.groupView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.column_group_layout, container, false);
+        
+        this.groupView = new ColumnGroupView(getContext());
+        FormFragment formFragment = (FormFragment) getParentFragment();
+        this.groupView.bind(formFragment, groupModel, formFragment);
+        
+        rootView.addView(groupView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+        
         return rootView;
     }
 
-    public void removeViews(ViewParent viewParent) {
-        if (viewParent != null && viewParent instanceof ViewGroup) {
-            ((ViewGroup) viewParent).removeAllViews();
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (this.groupView != null) {
+            this.groupView.refreshChildViews();
         }
     }
 
-    public ColumnGroupView getGroupView() {
-        return groupView;
+    public ColumnGroupModel getGroupModel() {
+        return groupModel;
     }
 }

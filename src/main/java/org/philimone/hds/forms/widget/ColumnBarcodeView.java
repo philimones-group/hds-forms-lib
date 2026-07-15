@@ -7,13 +7,12 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanIntentResult;
 import com.journeyapps.barcodescanner.ScanOptions;
 
 public class ColumnBarcodeView extends ColumnView {
@@ -22,15 +21,13 @@ public class ColumnBarcodeView extends ColumnView {
     private Button btGetBarcode;
     private TextView txtBarcode;
 
-    private ActivityResultLauncher<ScanOptions> barcodeLauncher;
-
-    public ColumnBarcodeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_barcode_item, attrs, column, callListener);
+    public ColumnBarcodeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_barcode_item, attrs, columnModel, callListener);
         createView();
     }
 
-    public ColumnBarcodeView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnBarcodeView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -44,74 +41,63 @@ public class ColumnBarcodeView extends ColumnView {
             onButtonScanBarcodeClicked();
         });
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        btGetBarcode.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
+        btGetBarcode.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
 
         initBarcodeField(this.columnGroupView.getFormPanel());
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
-    /**
-     * Call this inside your ColumnGroupView generation loop right after instantiation
-     */
     private void initBarcodeField(FormFragment hostFragment) {
-        // SELF-CONTAINED LAUNCHER REGISTRATION
-        // Each question view registers its own execution loop directly tied to the Fragment lifecycle
-        this.barcodeLauncher = hostFragment.registerForActivityResult(
-                new ScanContract(),
-                result -> {
-                    if (result.getContents() != null) {
-                        String scannedValue = result.getContents();
-                        // Update UI
-                        setValue(scannedValue);
-                    }
-                }
-        );
+        // Registered on FormFragment
     }
 
-    private void onButtonScanBarcodeClicked() {
-
-        if (barcodeLauncher != null) {
-            ScanOptions options = new ScanOptions();
-            options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES);
-            options.setPrompt(getContext().getString(R.string.bt_barcode_lbl));
-            options.setCameraId(0);
-            options.setBeepEnabled(false);
-            options.setBarcodeImageEnabled(false);
-            options.setOrientationLocked(false);
-
-            // Fire the camera via the host activity result pipeline
-            barcodeLauncher.launch(options);
+    public void onBarcodeResult(ScanIntentResult result) {
+        if (result.getContents() != null) {
+            String scannedValue = result.getContents();
+            setValue(scannedValue);
+            afterUserInput();
         }
     }
 
-    @Override
-    public void updateValues() {
-        txtBarcode.setText(this.column.getValue());
-        btGetBarcode.setEnabled(!this.column.isReadOnly());
+    private void onButtonScanBarcodeClicked() {
+        ScanOptions options = new ScanOptions();
+        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES);
+        options.setPrompt(getContext().getString(R.string.bt_barcode_lbl));
+        options.setCameraId(0);
+        options.setBeepEnabled(false);
+        options.setBarcodeImageEnabled(false);
+        options.setOrientationLocked(false);
+
+        getActivity().launchBarcodeScanner(this, options);
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        btGetBarcode.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        btGetBarcode.setEnabled(!this.column.isReadOnly());
+    public void refreshModelToUI() {
+        txtBarcode.setText(columnModel.getValue());
+    }
+
+    @Override
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        btGetBarcode.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        btGetBarcode.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     @Override

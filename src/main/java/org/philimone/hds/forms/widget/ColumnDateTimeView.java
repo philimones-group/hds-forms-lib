@@ -6,7 +6,7 @@ import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnModel;
 
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
@@ -26,14 +26,14 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     private Date dateValue;
     private DateUtil dateUtil;
 
-    public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_datetime_item, attrs, column, callListener);
+    public ColumnDateTimeView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_datetime_item, attrs, columnModel, callListener);
         this.dateUtil = new DateUtil(getSupportedCalendar());
         createView();
     }
 
-    public ColumnDateTimeView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnDateTimeView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -49,13 +49,13 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
             onButtonSelectDateClicked();
         });
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
-        btnSelectDate.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
+        btnSelectDate.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
     }
 
@@ -71,41 +71,39 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
     public void onDateSelected(Date selectedDate, String selectedDateText) {
         this.txtSelectedDate.setText(selectedDateText);
         this.dateValue = selectedDate;
-        this.column.setValue(DateUtil.formatGregorianYMDHMS(this.dateValue)); //must save gregorian format
+        this.columnModel.setValue(DateUtil.formatGregorianYMDHMS(this.dateValue));
 
         afterUserInput();
     }
 
     @Override
-    public void updateValues() {
+    public void refreshModelToUI() {
 
         String formattedDate = "";
 
-        //Get the date that will be displayed on txtSelectedDate - this date must be formatted into the correct calendar
         if (this.dateValue != null) {
             formattedDate = dateUtil.formatYMD(this.dateValue);
 
-        } else if (!StringUtil.isBlank(this.column.getValue())) {
-            Date date = DateUtil.toDateYMDHMS(this.column.getValue()); //column.getValue is always a gregorian date
+        } else if (!StringUtil.isBlank(columnModel.getValue())) {
+            Date date = DateUtil.toDateYMDHMS(columnModel.getValue());
             formattedDate = dateUtil.formatYMDHMS(date);
         }
 
         txtSelectedDate.setText(formattedDate);
-        btnSelectDate.setEnabled(!this.column.isReadOnly());
     }
 
     @Override
-    public void refreshState() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        btnSelectDate.setVisibility(this.column.isReadOnly() ? GONE : VISIBLE);
-        btnSelectDate.setEnabled(!this.column.isReadOnly());
+    public void refreshInteractionState() {
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        btnSelectDate.setVisibility(columnModel.isReadOnly() ? GONE : VISIBLE);
+        btnSelectDate.setEnabled(!columnModel.isReadOnly());
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
+        this.columnModel.setValue(value);
         this.dateValue = DateUtil.toDateYMDHMS(value);
-        updateValues();
+        refreshModelToUI();
     }
 
     @Override
@@ -113,10 +111,8 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
         if (dateValue == null){
             return null;
         } else {
-            return DateUtil.formatGregorianYMDHMS(dateValue); //return gregorian if date is set
+            return DateUtil.formatGregorianYMDHMS(dateValue);
         }
-
-        //return txtSelectedDate.getText().toString();
     }
 
     public Date getValueAsDate() {
@@ -130,7 +126,5 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
 
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
-
-
 
 }

@@ -75,7 +75,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginBottom="15dp"
             android:layout_gravity="center"
-            android:text="SCANNED TEXT"
+            android:text=""
             android:gravity="center"
             android:textSize="@dimen/column_value_textsize"
             android:textColor="@color/black"

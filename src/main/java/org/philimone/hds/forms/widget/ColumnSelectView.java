@@ -1,13 +1,6 @@
 package org.philimone.hds.forms.widget;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -16,10 +9,9 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.model.enums.ColumnType;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.parsers.form.model.FormOptions;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,16 +25,16 @@ public class ColumnSelectView extends ColumnView {
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
 
-    public ColumnSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull Column column, ExternalMethodCallListener callListener) {
-        super(view, R.layout.column_select_item, attrs, column, callListener);
+    public ColumnSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        super(view, R.layout.column_select_item, attrs, columnModel, callListener);
 
         this.rdbOptions = new ArrayList<>();
 
         createView();
     }
 
-    public ColumnSelectView(ColumnGroupView view, @NonNull Column column, ExternalMethodCallListener callListener) {
-        this(view, null, column, callListener);
+    public ColumnSelectView(ColumnGroupView view, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
+        this(view, null, columnModel, callListener);
     }
 
     private void createView() {
@@ -51,21 +43,16 @@ public class ColumnSelectView extends ColumnView {
         this.txtName = findViewById(R.id.txtColumnName);
         this.rdgColumnRadioGroup = findViewById(R.id.rdgColumnRadioGroup);
 
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        updateLabelTexts();
+        txtColumnRequired.setVisibility(columnModel.isRequired() ? VISIBLE : GONE);
+        refreshLabels();
 
-        this.rdgColumnRadioGroup.setEnabled(!this.column.isReadOnly());
+        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
 
-        this.rdgColumnRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                onSelectedItem(group, checkedId);
-            }
-        });
+        this.rdgColumnRadioGroup.setOnCheckedChangeListener((group, checkedId) -> onSelectedItem(group, checkedId));
 
         fillOptions();
 
-        updateValues();
+        refreshModelToUI();
     }
 
     private void onSelectedItem(RadioGroup group, int checkedId) {
@@ -74,8 +61,12 @@ public class ColumnSelectView extends ColumnView {
     }
 
     @Override
-    public void updateLabelTexts() {
+    public void refreshLabels() {
         setTextHtml(txtName, column.getLabel());
+
+        for (SelectOption selectOption : this.rdbOptions) {
+            setTextHtml(selectOption.button, selectOption.optionValue.label);
+        }
     }
 
     public void refillOptions(){
@@ -85,12 +76,12 @@ public class ColumnSelectView extends ColumnView {
 
             button.setEnabled(!selectOption.optionValue.readonly);
 
-            if (column.isReadOnly()) {
+            if (columnModel.isReadOnly()) {
                 button.setClickable(false);
             }
         }
 
-        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
+        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
     }
 
     private void fillOptions(){
@@ -99,16 +90,15 @@ public class ColumnSelectView extends ColumnView {
         for (String value : options.keySet()){
             FormOptions.OptionValue optionValue = options.get(value);
 
-            if (!optionValue.displayable) return;
+            if (!optionValue.displayable) continue;
 
             RadioButton button = new RadioButton(this.getContext());
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            setTextHtml(button, optionValue.label); //button.setText(optionValue.label);
-            //button.setTextSize(this.getContext().getResources().getDimension(R.dimen.column_value_textsize));
+            setTextHtml(button, optionValue.label);
             button.setTextColor(this.getContext().getResources().getColor(R.color.black));
             button.setEnabled(!optionValue.readonly);
 
-            if (column.isReadOnly()) {
+            if (columnModel.isReadOnly()) {
                 button.setClickable(false);
             }
 
@@ -116,8 +106,7 @@ public class ColumnSelectView extends ColumnView {
 
             this.rdbOptions.add(new SelectOption(optionValue, value, optionValue.label, button, optionValue.readonly));
         }
-        //Log.d("readonly-"+column.getName(), ""+column.isReadOnly());
-        this.rdgColumnRadioGroup.setEnabled(!column.isReadOnly());
+        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
     }
 
     private String getSelectedValue(){
@@ -135,11 +124,8 @@ public class ColumnSelectView extends ColumnView {
     }
 
     @Override
-    public void updateValues() {
-        txtColumnRequired.setVisibility(this.column.isRequired() ? VISIBLE : GONE);
-        setTextHtml(txtName, column.getLabel()); //txtName.setText(column.getLabel());
-
-        String value = column.getValue();
+    public void refreshModelToUI() {
+        String value = columnModel.getValue();
 
         if (value != null) {
             SelectOption sop = this.rdbOptions.stream().filter( op -> op.value.equalsIgnoreCase(value)).findFirst().orElse(null);
@@ -147,15 +133,13 @@ public class ColumnSelectView extends ColumnView {
             if (sop != null) {
                 this.rdgColumnRadioGroup.check(sop.button.getId());
 
-                //like HOH selected, if a readonly value is checked the other options should be disabled
                 if (sop.readonly) {
                     for (SelectOption selectOption : this.rdbOptions) {
                         selectOption.button.setClickable(false);
                     }
                 }
 
-                //hide all non selected if display_style = selected_only
-                if (this.column.getDisplayStyle().equals(Column.DISPLAY_STYLE_SELECTED_ONLY)){
+                if (Column.DISPLAY_STYLE_SELECTED_ONLY.equals(this.column.getDisplayStyle())){
                     for (SelectOption selectOption : this.rdbOptions) {
                         if (!selectOption.value.equals(value)) {
                             selectOption.button.setVisibility(GONE);
@@ -171,19 +155,19 @@ public class ColumnSelectView extends ColumnView {
     }
 
     @Override
-    public void refreshState() {
+    public void refreshInteractionState() {
         refillOptions();
     }
 
     @Override
     public void setValue(String value) {
-        this.column.setValue(value);
-        updateValues();
+        this.columnModel.setValue(value);
+        refreshModelToUI();
     }
 
     @Override
     public String getValue() {
-        return this.column.getValue();
+        return this.columnModel.getValue();
     }
 
     @Override
@@ -194,7 +178,7 @@ public class ColumnSelectView extends ColumnView {
         return value==null ? "<"+ name + " />" : "<"+name+">"+value+"</ "+name+">";
     }
 
-    class SelectOption {
+    static class SelectOption {
         public String value;
         public String label;
         public RadioButton button;
