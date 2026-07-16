@@ -76,10 +76,8 @@ public class ColumnVideoView extends ColumnView {
 
     public void onVideoCaptured(ActivityResult result) {
         FormFragment hostFragment = this.getActivity();
-        String instanceFileName = hostFragment.getFormInstanceFileName();
         String instancesDirPath = hostFragment.getInstancesDirPath();
-        String extension = ".mp4";
-        String newFileName = instanceFileName + "_" + column.getName() + extension;
+        String newFileName = generateMediaFilename(".mp4");
         File destFile = new File(instancesDirPath, newFileName);
 
         if (result.getResultCode() == Activity.RESULT_OK) {
@@ -120,7 +118,6 @@ public class ColumnVideoView extends ColumnView {
 
     private void startBuiltInVideoCamera() {
         FormFragment hostFragment = this.columnGroupView.getFormPanel();
-        String instanceFileName = hostFragment.getFormInstanceFileName();
         String instancesDirPath = hostFragment.getInstancesDirPath();
 
         if (instancesDirPath == null) {
@@ -128,8 +125,7 @@ public class ColumnVideoView extends ColumnView {
             return;
         }
 
-        String extension = ".mp4";
-        String newFileName = instanceFileName + "_" + column.getName() + extension;
+        String newFileName = generateMediaFilename(".mp4");
         File destFile = new File(instancesDirPath, newFileName);
 
         Intent intent = new Intent(getContext(), CameraCaptureActivity.class);

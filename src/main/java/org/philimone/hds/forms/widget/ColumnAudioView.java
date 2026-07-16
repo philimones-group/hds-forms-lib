@@ -133,7 +133,6 @@ public class ColumnAudioView extends ColumnView {
 
     private void openAudioRecorder() {
         FormFragment hostFragment = this.columnGroupView.getFormPanel();
-        String instanceFileName = hostFragment.getFormInstanceFileName();
         String instancesDirPath = hostFragment.getInstancesDirPath();
 
         if (instancesDirPath == null) {
@@ -141,8 +140,7 @@ public class ColumnAudioView extends ColumnView {
             return;
         }
 
-        String extension = ".amr";
-        String newFileName = instanceFileName + "_" + column.getName() + extension;
+        String newFileName = generateMediaFilename(".amr");
         File destFile = new File(instancesDirPath, newFileName);
 
         AudioRecorderSelector dialog = new AudioRecorderSelector(getContext(), destFile.getAbsolutePath(), filePath -> {

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
+import org.philimone.hds.forms.model.ColumnGroupModel;
 import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.FormController;
 import org.philimone.hds.forms.model.enums.ColumnType;
@@ -94,6 +95,29 @@ public abstract class ColumnView extends LinearLayout {
 
     public ColumnModel getColumnModel() {
         return columnModel;
+    }
+
+    protected String generateMediaFilename(String extension) {
+        FormFragment hostFragment = getActivity();
+        String instanceFileName = hostFragment.getFormInstanceFileName();
+
+        StringBuilder filename = new StringBuilder(instanceFileName);
+        filename.append("_").append(column.getName());
+
+        // Check if inside a repeat group and add indices to avoid collisions
+        // It recursively checks for parent repeat groups to handle nested loops
+        ColumnGroupModel group = columnModel.getParentGroupModel();
+        StringBuilder indices = new StringBuilder();
+        while (group != null) {
+            if (group.isRepeatItem()) {
+                indices.insert(0, "_" + group.getRepeatIndex());
+            }
+            group = group.getPreviousGroupModel();
+        }
+        filename.append(indices);
+
+        filename.append(extension);
+        return filename.toString();
     }
 
     protected Uri resolveUri(String value) {

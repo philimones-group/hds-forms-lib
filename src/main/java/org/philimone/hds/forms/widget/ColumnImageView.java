@@ -98,7 +98,6 @@ public class ColumnImageView extends ColumnView {
 
     private void openBuiltInCamera() {
         FormFragment hostFragment = this.columnGroupView.getFormPanel();
-        String instanceFileName = hostFragment.getFormInstanceFileName();
         String instancesDirPath = hostFragment.getInstancesDirPath();
 
         if (instancesDirPath == null) {
@@ -106,7 +105,7 @@ public class ColumnImageView extends ColumnView {
             return;
         }
 
-        String newFileName = instanceFileName + "_" + column.getName() + ".jpg";
+        String newFileName = generateMediaFilename(".jpg");
         File destFile = new File(instancesDirPath, newFileName);
 
         Intent intent = new Intent(getContext(), CameraCaptureActivity.class);
