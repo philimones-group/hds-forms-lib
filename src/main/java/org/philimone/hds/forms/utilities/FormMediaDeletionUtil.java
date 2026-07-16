@@ -1,95 +1,77 @@
 package org.philimone.hds.forms.utilities;
 
+import android.net.Uri;
+import android.util.Log;
+import android.util.Xml;
+
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.model.HForm;
-import org.philimone.hds.forms.model.enums.ColumnType;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashSet;
 import java.util.List;
-import android.util.Log;
-import android.net.Uri;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.Set;
 
 public class FormMediaDeletionUtil {
 
     public static void deleteMediaFiles(HForm form, File xmlFile) {
-        if (form == null || xmlFile == null || !xmlFile.exists()) {
+        if (form == null || !form.hasMediaColumns() || xmlFile == null || !xmlFile.exists()) {
             return;
         }
 
-        try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(xmlFile);
+        Set<String> mediaColumns = getAllMediaColumnNames(form);
+        if (mediaColumns.isEmpty()) return;
+
+        try (FileInputStream fis = new FileInputStream(xmlFile)) {
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            parser.setInput(fis, null);
 
             File instancesDir = xmlFile.getParentFile();
+            int eventType = parser.getEventType();
 
-            // Find the root element (Form ID)
-            NodeList rootList = doc.getElementsByTagName(form.getFormId());
-            if (rootList.getLength() > 0) {
-                Element rootElement = (Element) rootList.item(0);
-                processElement(instancesDir, rootElement, form.getColumns());
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    String tagName = parser.getName();
+                    if (mediaColumns.contains(tagName)) {
+                        String filename = parser.nextText();
+                        deleteMediaFile(instancesDir, filename);
+                    }
+                }
+                eventType = parser.next();
             }
 
         } catch (Exception e) {
-            Log.e("FormMediaDeletionUtil", "Error deleting media files", e);
+            Log.e("FormMediaDeletionUtil", "Error deleting media files using PullParser", e);
         }
     }
 
-    private static void processElement(File instancesDir, Element element, List<ColumnGroup> columnGroups) {
-        NodeList children = element.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                Element childElement = (Element) node;
-                String nodeName = childElement.getNodeName();
+    private static Set<String> getAllMediaColumnNames(HForm form) {
+        Set<String> names = new HashSet<>();
+        collectMediaColumns(form.getColumns(), names);
+        return names;
+    }
 
-                // Check if this node corresponds to a column or a repeat group
-                for (ColumnGroup group : columnGroups) {
-                    if (group instanceof ColumnRepeatGroup) {
-                        ColumnRepeatGroup rg = (ColumnRepeatGroup) group;
-                        if (rg.getGroupName().equals(nodeName)) {
-                            // It's a repeat group, process its instances
-                            processRepeatGroup(instancesDir, childElement, rg);
-                        }
-                    } else {
-                        // It's a regular group, check its columns
-                        Column column = group.getColumn(nodeName);
-                        if (column != null && isMediaColumn(column)) {
-                            deleteMediaFile(instancesDir, childElement.getTextContent());
-                        }
+    private static void collectMediaColumns(List<ColumnGroup> groups, Set<String> names) {
+        for (ColumnGroup group : groups) {
+            if (group instanceof ColumnRepeatGroup) {
+                collectMediaColumns(((ColumnRepeatGroup) group).getColumnsGroups(), names);
+            } else {
+                for (Column column : group.getColumns()) {
+                    if (column.isMediaColumn()) {
+                        names.add(column.getName());
                     }
                 }
             }
         }
     }
 
-    private static void processRepeatGroup(File instancesDir, Element groupElement, ColumnRepeatGroup rg) {
-        NodeList instances = groupElement.getElementsByTagName(rg.getNodeName());
-
-        for (int i = 0; i < instances.getLength(); i++) {
-            Node instance = instances.item(i);
-            if (instance.getNodeType() == Node.ELEMENT_NODE) {
-                processElement(instancesDir, (Element) instance, rg.getColumnsGroups());
-            }
-        }
-    }
-
-    private static boolean isMediaColumn(Column column) {
-        ColumnType type = column.getType();
-        return type == ColumnType.IMAGE || type == ColumnType.AUDIO || type == ColumnType.VIDEO;
-    }
-
     private static void deleteMediaFile(File instancesDir, String filename) {
-        if (filename == null || filename.isEmpty()) return;
+        if (filename == null || filename.trim().isEmpty()) return;
 
         File mediaFile = null;
 

@@ -1,24 +1,20 @@
 package org.philimone.hds.forms.parsers;
 
+import android.util.AtomicFile;
 import android.util.Log;
+import android.util.Xml;
 
 import org.philimone.hds.forms.model.HForm;
 import mz.betainteractive.utilities.StringUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlSerializer;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 public class XmlDataUpdater {
     private String xmlSavedFormPath;
@@ -30,49 +26,131 @@ public class XmlDataUpdater {
     }
 
     public void updateValues(Map<String, String> contentMap) {
+        if (contentMap == null || contentMap.isEmpty()) return;
+
+        File originalFile = new File(xmlSavedFormPath);
+        if (!originalFile.exists()) return;
+
+        AtomicFile atomicFile = new AtomicFile(originalFile);
+        FileOutputStream fos = null;
+
         try {
+            fos = atomicFile.startWrite();
+            
+            XmlSerializer serializer = Xml.newSerializer();
+            serializer.setOutput(fos, "UTF-8");
+            serializer.startDocument("UTF-8", null);
 
-            Set<String> columnsSet = contentMap.keySet();
-            File xmlFile = new File(xmlSavedFormPath);
+            try (FileInputStream fis = atomicFile.openRead()) {
+                XmlPullParser parser = Xml.newPullParser();
+                parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
+                parser.setInput(fis, null);
 
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(xmlFile);
+                int eventType = parser.getEventType();
+                String currentFormId = form.getFormId();
+                boolean insideRoot = false;
 
-            // Change the content of node
-            NodeList nodeList = doc.getElementsByTagName(this.form.getFormId());
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    switch (eventType) {
+                        case XmlPullParser.START_TAG:
+                            String namespace = parser.getNamespace();
+                            String prefix = parser.getPrefix();
+                            String tagName = parser.getName();
 
-            NodeList childList = nodeList.item(0).getChildNodes();
+                            if (prefix != null) {
+                                serializer.setPrefix(prefix, namespace);
+                            }
+                            serializer.startTag(namespace, tagName);
 
-            for (int i = 0; i < childList.getLength(); i++) {
+                            if (tagName.equals(currentFormId)) {
+                                insideRoot = true;
+                            }
 
-                Node node = childList.item(i);
+                            // Copy attributes
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                                serializer.attribute(parser.getAttributeNamespace(i), 
+                                                     parser.getAttributeName(i), 
+                                                     parser.getAttributeValue(i));
+                            }
 
-                if (node.getNodeType()==Node.ELEMENT_NODE && columnsSet.contains(node.getNodeName())){
+                            // Update value if needed
+                            if (insideRoot && contentMap.containsKey(tagName)) {
+                                String newValue = contentMap.get(tagName);
+                                serializer.text(newValue == null ? "" : newValue);
+                                
+                                // Robust skip: move to the corresponding END_TAG of this element
+                                skipSubtree(parser);
+                            }
+                            break;
 
-                    Element elementNode = (Element) node;
+                        case XmlPullParser.END_TAG:
+                            String endTagName = parser.getName();
+                            serializer.endTag(parser.getNamespace(), endTagName);
+                            if (endTagName.equals(currentFormId)) {
+                                insideRoot = false;
+                            }
+                            break;
 
-                    String value = contentMap.get(node.getNodeName());
+                        case XmlPullParser.TEXT:
+                            serializer.text(parser.getText());
+                            break;
 
-                    value = StringUtil.isBlank(value) ? "" : value;
+                        case XmlPullParser.CDSECT:
+                            serializer.cdsect(parser.getText());
+                            break;
 
-                    elementNode.setTextContent(value);
+                        case XmlPullParser.ENTITY_REF:
+                            serializer.entityRef(parser.getName());
+                            break;
+
+                        case XmlPullParser.IGNORABLE_WHITESPACE:
+                            serializer.ignorableWhitespace(parser.getText());
+                            break;
+
+                        case XmlPullParser.PROCESSING_INSTRUCTION:
+                            serializer.processingInstruction(parser.getText());
+                            break;
+
+                        case XmlPullParser.COMMENT:
+                            serializer.comment(parser.getText());
+                            break;
+
+                        case XmlPullParser.DOCDECL:
+                            serializer.docdecl(parser.getText());
+                            break;
+                    }
+                    eventType = parser.next();
                 }
-
             }
 
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            //transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-            // initialize StreamResult with File object to save to file
-            StreamResult result = new StreamResult(xmlFile);
-            DOMSource source = new DOMSource(doc);
-            transformer.transform(source, result);
+            serializer.endDocument();
+            serializer.flush();
+            
+            atomicFile.finishWrite(fos);
 
         } catch (Exception e) {
-            Log.d("error", ""+e.getMessage());
+            Log.e("XmlDataUpdater", "Error updating XML: " + e.getMessage(), e);
+            if (fos != null) {
+                atomicFile.failWrite(fos);
+            }
+        }
+    }
 
-            e.printStackTrace();
+    /**
+     * Skips all content within the current element, including nested tags, 
+     * until the matching END_TAG is reached.
+     */
+    private void skipSubtree(XmlPullParser parser) throws Exception {
+        int depth = 1;
+        while (depth != 0) {
+            switch (parser.next()) {
+                case XmlPullParser.END_TAG:
+                    depth--;
+                    break;
+                case XmlPullParser.START_TAG:
+                    depth++;
+                    break;
+            }
         }
     }
 }
