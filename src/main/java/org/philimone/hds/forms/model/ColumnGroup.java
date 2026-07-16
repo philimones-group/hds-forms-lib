@@ -13,6 +13,7 @@ public class ColumnGroup implements Cloneable {
     private Map<String, String> translatedLabel;
     private List<Column> columns;
     private boolean header;
+    private boolean hasMediaColumns;
 
     public ColumnGroup() {
         this.columns = new ArrayList<>();
@@ -63,12 +64,22 @@ public class ColumnGroup implements Cloneable {
     }
 
     public void setColumns(List<Column> columns) {
-        if (columns != null)
+        if (columns != null) {
             this.columns.addAll(columns);
+            for (Column column : columns) {
+                this.hasMediaColumns = this.hasMediaColumns || column.isMediaColumn();
+            }
+        }
     }
 
     public void addColumn(Column column) {
         this.columns.add(column);
+
+        this.hasMediaColumns = this.hasMediaColumns || column.isMediaColumn();
+    }
+
+    public boolean hasMediaColumns() {
+        return hasMediaColumns;
     }
 
     public boolean isHeader() {

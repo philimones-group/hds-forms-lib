@@ -182,6 +182,7 @@ public class FormController implements Serializable {
         if (type == ColumnType.END_TIMESTAMP && (columnModel.getValue() == null || columnModel.getValue().isEmpty())) {
             columnModel.setValue(formContext.endTimestamp, ColumnValueStatus.FROM_CALCULATION);
         }
+
     }
 
     private void loadGpsValue(ColumnModel columnModel) {
@@ -237,10 +238,20 @@ public class FormController implements Serializable {
      */
     public void finalizeForm(String endTimestamp) {
         this.formContext.endTimestamp = endTimestamp;
+
+        boolean mediaCollected = false;
         for (ColumnGroupModel gm : groupModels) {
             for (ColumnModel cm : gm.getColumnModels()) {
-                if (cm.getType() == ColumnType.END_TIMESTAMP) {
+                ColumnType type = cm.getType();
+                if (!mediaCollected && (type == ColumnType.IMAGE || type == ColumnType.VIDEO || type == ColumnType.AUDIO) && !cm.isValueBlank()) {
+                    mediaCollected = true;
+                }
+
+                if (type == ColumnType.END_TIMESTAMP) {
                     cm.setValue(endTimestamp, ColumnValueStatus.FROM_CALCULATION);
+                }
+                if (type == ColumnType.MEDIA_COLLECTED && mediaCollected) {
+                    cm.setValue(mediaCollected+"", ColumnValueStatus.FROM_CALCULATION);
                 }
             }
         }

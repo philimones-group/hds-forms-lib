@@ -12,12 +12,15 @@ public class HForm {
     public static final String COLUMN_END = "end";
     public static final String COLUMN_DEVICE_ID = "device_id";
     public static final String COLUMN_POST_EXECUTION = "postExecution";
+    public static final String COLUMN_MEDIA_COLLECTED = "media_collected";
 
     private String formId;
     private String formName;
     private String customTitle;
     private List<ColumnGroup> columns;
     private boolean postExecution;
+    private boolean hasMediaColumns;
+    private boolean hasMediaCollected;
 
     public HForm() {
         this.columns = new ArrayList<>();
@@ -48,6 +51,7 @@ public class HForm {
         Column column3 = new Column(COLUMN_END,       ColumnType.END_TIMESTAMP,   null, "", "", "", "true", "true", "", null, "", true);
         Column column4 = new Column(COLUMN_DEVICE_ID, ColumnType.DEVICE_ID,       null, "", "", "", "true", "true", "", null, "", true);
         Column column5 = new Column(COLUMN_POST_EXECUTION, ColumnType.EXECUTION_STATUS,   null, "", "", postExecution+"", "true", "true", "", null, "", true);
+        Column column6 = new Column(COLUMN_MEDIA_COLLECTED, ColumnType.MEDIA_COLLECTED,   null, "", "", "false", "true", "true", "", null, "", true);
 
         ColumnGroup initialGroup = new ColumnGroup();
         initialGroup.addColumn(column1);
@@ -55,6 +59,7 @@ public class HForm {
         initialGroup.addColumn(column3);
         initialGroup.addColumn(column4);
         initialGroup.addColumn(column5);
+        initialGroup.addColumn(column6);
 
         addColumn(initialGroup);
     }
@@ -88,12 +93,16 @@ public class HForm {
     }
 
     public void setColumns(List<ColumnGroup> columns) {
-        this.columns.addAll(columns);
+        for (ColumnGroup columnGroup : columns) {
+            addColumn(columnGroup);
+        }
     }
 
     public void addColumn(ColumnGroup columnGroup){
         if (!this.columns.contains(columnGroup)){
             this.columns.add(columnGroup);
+
+            this.hasMediaColumns = this.hasMediaColumns || columnGroup.hasMediaColumns();
         }
     }
 
@@ -124,6 +133,14 @@ public class HForm {
         if (colPostExec != null) {
             colPostExec.setValue(postExecution+"");
         }
+    }
+
+    public boolean hasMediaColumns() {
+        return hasMediaColumns;
+    }
+
+    public boolean hasMediaCollected() {
+        return hasMediaCollected;
     }
 
     public boolean isRepeatColumnName(String columnName) {

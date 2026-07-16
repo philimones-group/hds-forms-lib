@@ -286,4 +286,7 @@ public class Column implements Cloneable {
         }
     }
 
+    public boolean isMediaColumn() {
+        return getType()==ColumnType.IMAGE || getType()==ColumnType.AUDIO || getType() == ColumnType.VIDEO;
+    }
 }

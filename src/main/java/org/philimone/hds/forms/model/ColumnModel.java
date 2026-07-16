@@ -73,6 +73,10 @@ public class ColumnModel implements Serializable {
         return value;
     }
 
+    public boolean isValueBlank() {
+        return value == null || value.trim().isEmpty();
+    }
+
     public void setValue(String value) {
         this.value = value;
     }

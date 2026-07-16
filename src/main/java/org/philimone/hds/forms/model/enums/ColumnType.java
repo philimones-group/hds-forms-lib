@@ -28,7 +28,8 @@ public enum ColumnType {
     START_TIMESTAMP ("start"), /* Not visible*/
     END_TIMESTAMP ("end"),     /* Not visible*/
     DEVICE_ID ("device_id"),   /* Not visible*/
-    EXECUTION_STATUS ("server_execution_status");
+    EXECUTION_STATUS ("server_execution_status"), /* Not visible*/
+    MEDIA_COLLECTED ("media_collected"); /* Not visible*/
     //collectedBy
     //collectedDate
 
