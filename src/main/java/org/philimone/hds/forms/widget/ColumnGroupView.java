@@ -141,7 +141,11 @@ public class ColumnGroupView extends LinearLayout {
     }
 
     public void showToastMessage(@StringRes int messageResId) {
-        setTextHtml(this.formToastMessage, getContext().getString(messageResId));
+        showToastMessage(getContext().getString(messageResId));
+    }
+
+    public void showToastMessage(String message) {
+        setTextHtml(this.formToastMessage, message);
 
         this.formToastLayout.setAlpha(1f);
         this.formToastLayout.setVisibility(VISIBLE);

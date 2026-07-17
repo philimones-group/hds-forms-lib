@@ -34,7 +34,7 @@ public class FormColumnSlider extends LinearLayout {
 
     public enum SlideDirection { BACKWARDS, FORWARDS}
 
-    private enum OnNewPageSelectedEvents { CHECK_REQUIRED, NO_ACTION }
+    private enum OnNewPageSelectedEvents { CHECK_REQUIRED, CHECK_VALIDATION, NO_ACTION }
 
     public FormColumnSlider(Context context) {
         super(context);
@@ -124,6 +124,10 @@ public class FormColumnSlider extends LinearLayout {
                     isCurrentRequiredEmptyField();
                 }
 
+                if (pageEvents == OnNewPageSelectedEvents.CHECK_VALIDATION) {
+                    isCurrentInvalidField();
+                }
+
                 pageEvents = OnNewPageSelectedEvents.NO_ACTION;
             }
 
@@ -139,7 +143,7 @@ public class FormColumnSlider extends LinearLayout {
 
     public void onSlideForwards() {
         Log.d("is sliding forwards", "true");
-        if (isCurrentRequiredEmptyField()) {
+        if (isCurrentRequiredEmptyField() || isCurrentInvalidField()) {
             return;
         }
 
@@ -170,6 +174,23 @@ public class FormColumnSlider extends LinearLayout {
         return false;
     }
 
+    private boolean isCurrentInvalidField() {
+        ColumnGroupViewAdapter adapter = getAdapter();
+        if (adapter != null) {
+            int current = formViewPager.getCurrentItem();
+            ColumnGroupModel groupModel = adapter.getItemModel(current);
+            if (groupModel != null) {
+                for (ColumnModel columnModel : groupModel.getColumnModels()) {
+                    if (!columnModel.isValid() && columnModel.isDisplayable()) {
+                        displayValidationToastMessage(columnModel);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public void displayRequiredToastMessage(ColumnModel columnModel) {
         if (formFragment != null) {
             formFragment.closeResumeView();
@@ -181,6 +202,25 @@ public class FormColumnSlider extends LinearLayout {
         ColumnGroupView currentView = findColumnGroupView(this.formViewPager);
         if (currentView != null) {
             currentView.showToastMessage(R.string.column_required_lbl);
+        }
+    }
+
+    public void displayValidationToastMessage(ColumnModel columnModel) {
+        if (formFragment != null) {
+            formFragment.closeResumeView();
+        }
+
+        Log.d("trying to toast val", columnModel.getName() + "");
+
+        // Search for the currently visible ColumnGroupView inside the ViewPager
+        ColumnGroupView currentView = findColumnGroupView(this.formViewPager);
+        if (currentView != null) {
+            String message = columnModel.getResolvedValidationMessage();
+            if (StringUtil.isBlank(message)) {
+                currentView.showToastMessage(R.string.column_validation_err_lbl);
+            } else {
+                currentView.showToastMessage(message);
+            }
         }
     }
 
@@ -213,6 +253,30 @@ public class FormColumnSlider extends LinearLayout {
             for (ColumnModel cm : groupModel.getColumnModels()) {
                 if (cm.isDisplayable() && cm.isRequired() && StringUtil.isBlank(cm.getValue())) {
                     pageEvents = OnNewPageSelectedEvents.CHECK_REQUIRED;
+                    formViewPager.setCurrentItem(i, false);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasAnyInvalidField() {
+        if (isCurrentInvalidField()) {
+            return true;
+        }
+
+        ColumnGroupViewAdapter adapter = getAdapter();
+        if (adapter == null) return false;
+
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            ColumnGroupModel groupModel = adapter.getItemModel(i);
+            if (groupModel == null) continue;
+
+            for (ColumnModel cm : groupModel.getColumnModels()) {
+                if (cm.isDisplayable() && !cm.isValid()) {
+                    pageEvents = OnNewPageSelectedEvents.CHECK_VALIDATION;
                     formViewPager.setCurrentItem(i, false);
                     return true;
                 }

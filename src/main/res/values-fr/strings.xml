@@ -33,6 +33,7 @@
     <string name="device_id_permissions_error">Il sera nécessaire d\'accorder les permissions READ_PHONE_STATE pour pouvoir obtenir l\'ID du dispositif qui sera utilisé dans le formulaire.</string>
 
     <string name="column_required_lbl">Ce champ est obligatoire</string>
+    <string name="column_validation_err_lbl">La valeur de ce champ est invalide</string>
 
     <string name="datetime_selector_title_lbl">Sélectionnez la date</string>
     <string name="datetime_selector_button_lbl">Sélectionner la date</string>

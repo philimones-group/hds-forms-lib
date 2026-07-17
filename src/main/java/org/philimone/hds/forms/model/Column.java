@@ -23,6 +23,9 @@ public class Column implements Cloneable {
     private boolean hidden;
     private String repeatCount;
     private String calculation;
+    private String validation;
+    private String validationMessage;
+    private Map<String, String> translatedValidationMessage;
     private String displayCondition; /* [#variable|value][><=!=][#variable|value]*/
     private String displayStyle; /* selected_only*/
 
@@ -34,9 +37,10 @@ public class Column implements Cloneable {
 
     public Column() {
         this.typeOptions = new LinkedHashMap<>();
+        this.translatedValidationMessage = new LinkedHashMap<>();
     }
 
-    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, String required, String readOnly, String calculation, String displayCondition, String displayStyle, boolean hidden) {
+    public Column(String name, ColumnType type, Map<String, FormOptions.OptionValue> typeOptions, String repeatCount, String label, String value, String required, String readOnly, String calculation, String validation, String validationMessage, String displayCondition, String displayStyle, boolean hidden) {
         this();
 
         this.name = name;
@@ -54,6 +58,8 @@ public class Column implements Cloneable {
         this.requiredCondition = required;
         this.readOnlyCondition = readOnly;
         this.calculation = calculation;
+        this.validation = validation;
+        this.validationMessage = validationMessage;
         this.displayCondition = displayCondition;
         this.displayStyle = displayStyle;
         this.hidden = hidden;
@@ -224,6 +230,43 @@ public class Column implements Cloneable {
         this.calculation = calculation;
     }
 
+    public String getValidation() {
+        return validation;
+    }
+
+    public void setValidation(String validation) {
+        this.validation = validation;
+    }
+
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
+    }
+
+    public Map<String, String> getTranslatedValidationMessage() {
+        return translatedValidationMessage;
+    }
+
+    public void setTranslatedValidationMessage(Map<String, String> translatedValidationMessage) {
+        if (translatedValidationMessage != null) {
+            this.translatedValidationMessage = translatedValidationMessage;
+        }
+    }
+
+    public void addValidationMessage(String language, String message) {
+        this.translatedValidationMessage.put(language, message);
+    }
+
+    public String getValidationMessage(String language) {
+        if (language != null && translatedValidationMessage.containsKey(language)) {
+            return translatedValidationMessage.get(language);
+        }
+        return validationMessage;
+    }
+
     public String getDisplayCondition() {
         return displayCondition;
     }
@@ -277,6 +320,7 @@ public class Column implements Cloneable {
                 }
             }
             copy.typeOptions = newOptions;
+            copy.translatedValidationMessage = new LinkedHashMap<>(this.translatedValidationMessage);
 
             // Strings, enums, booleans are fine via Object.clone() (shallow) since they’re immutable or primitives
             return copy;

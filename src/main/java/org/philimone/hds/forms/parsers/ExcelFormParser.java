@@ -77,6 +77,8 @@ public class ExcelFormParser implements FormParser {
             int required_index = mapHeaderIndex.get("required");
             int readonly_index = mapHeaderIndex.get("readonly");
             int display_index = mapHeaderIndex.get("display_condition");
+            int validation_index = mapHeaderIndex.containsKey("validation") ? mapHeaderIndex.get("validation") : -1;
+            int validation_msg_index = mapLocalizedCellIndex.containsKey("validation_message") ? mapLocalizedCellIndex.get("validation_message") : (mapHeaderIndex.containsKey("validation_message") ? mapHeaderIndex.get("validation_message") : -1);
             int display_style_index = mapHeaderIndex.get("display_style");
             int hidden_index = mapHeaderIndex.containsKey("hidden") ? mapHeaderIndex.get("hidden") : -1;
 
@@ -102,6 +104,8 @@ public class ExcelFormParser implements FormParser {
                     String cellRequired = getCellValue(row.getCell(required_index));
                     String cellReadonly = getCellValue(row.getCell(readonly_index));
                     String cellDisplay = getCellValue(row.getCell(display_index));
+                    String cellValidation = validation_index == -1 ? null : getCellValue(row.getCell(validation_index));
+                    String cellValidationMsg = validation_msg_index == -1 ? null : getCellValue(row.getCell(validation_msg_index));
                     String cellDisplayStyle = getCellValue(row.getCell(display_style_index));
                     String cellHidden =hidden_index==-1 ? null : getCellValue(row.getCell(hidden_index));
 
@@ -112,6 +116,7 @@ public class ExcelFormParser implements FormParser {
                     cellRequired = convertBooleanUppercase(cellRequired);
                     cellReadonly = convertBooleanUppercase(cellReadonly);
                     cellDisplay = convertBooleanUppercase(cellDisplay);
+                    cellValidation = convertBooleanUppercase(cellValidation);
                     cellHidden = convertBooleanUppercase(cellHidden);
 
                     if (cellType.equals("start repeat")){
@@ -146,7 +151,7 @@ public class ExcelFormParser implements FormParser {
                     }
 
                     //Log.d("hidden cell", ""+cellHidden);
-                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, cellRequired, cellReadonly, cellCalculation, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
+                    Column column = new Column(cellName, ColumnType.getFrom(cellType), options.getOptions(cellOptions), cellRepeat, cellLabel, defaultValue, cellRequired, cellReadonly, cellCalculation, cellValidation, cellValidationMsg, cellDisplay, cellDisplayStyle, getBooleanValue(cellHidden));
 
                     group.addColumn(column);
 
@@ -161,9 +166,7 @@ public class ExcelFormParser implements FormParser {
             }
 
             //close file
-            if (inputStream != null){
-                inputStream.close();
-            }
+            inputStream.close();
 
             return form;
 

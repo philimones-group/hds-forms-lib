@@ -314,6 +314,9 @@ public class FormController implements Serializable {
 
         // 4. Evaluate Required Condition
         evaluateColumnRequiredCondition(columnModel);
+
+        // 5. Evaluate Validation Condition
+        evaluateColumnValidation(columnModel);
     }
 
     private void evaluateColumnCalculation(ColumnModel columnModel) {
@@ -354,6 +357,27 @@ public class FormController implements Serializable {
         if (!StringUtil.isBlank(requiredCondition)) {
             Object result = evaluator.evaluate(requiredCondition, columnModel);
             columnModel.setRequired("true".equals(result != null ? result.toString() : ""));
+        }
+    }
+
+    private void evaluateColumnValidation(ColumnModel columnModel) {
+        Column column = columnModel.getColumn();
+        String validation = column.getValidation();
+        if (!StringUtil.isBlank(validation)) {
+            Object result = evaluator.evaluate(validation, columnModel);
+            // If result is null, we treat it as valid (default)
+            // If result is not "true", it's invalid
+            boolean isValid = result == null || "true".equals(result.toString());
+            columnModel.setValid(isValid);
+            if (!isValid) {
+                // Resolved message is already localized during parsing into Column.validationMessage
+                columnModel.setResolvedValidationMessage(column.getValidationMessage());
+            } else {
+                columnModel.setResolvedValidationMessage(null);
+            }
+        } else {
+            columnModel.setValid(true);
+            columnModel.setResolvedValidationMessage(null);
         }
     }
 

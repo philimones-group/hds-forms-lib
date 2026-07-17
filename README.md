@@ -83,6 +83,8 @@ Defines the individual questions, notes, and groups within the form.
 *   **label / label::[lang]**: The text of the question displayed to the user.
 *   **default_value**: The initial answer when the form starts. Supports JavaScript equations.
 *   **calculation**: A JavaScript equation evaluated when the question becomes visible. The result becomes the field's value.
+*   **validation**: A logic expression that must evaluate to `true` for the field to be considered valid. If the expression returns `false`, the form blocks navigation and saving.
+*   **validation_message / validation_message::[lang]**: The localized error message displayed when the validation expression fails.
 *   **required**: A logic expression determining if the field must be answered before finishing.
 *   **readonly**: A logic expression determining if the user is prevented from editing the field.
 *   **display_condition**: The primary skip logic. If false, the question is invisible and its value is ignored.
@@ -91,9 +93,9 @@ Defines the individual questions, notes, and groups within the form.
 
 ## Logic and Expressions
 
-The library uses **JavaScript-style syntax** for calculations and conditions (`required`, `readonly`, `display_condition`, `hidden`).
+The library uses **JavaScript-style syntax** for calculations and conditions (`validation`, `required`, `readonly`, `display_condition`, `hidden`).
 
-*   **Variable Referencing**: Access other form values using the `${variable_name}` syntax.
+*   **Variable Referencing**: Access other form values using the `${variable_name}` syntax. You can also reference the **current field's value** using its own name (e.g., in a validation expression for a field named `age`, use `${age} >= 0`).
 *   **Operators**: Supports standard JS operators. You can also use friendly aliases like `and` (for `&&`) and `or` (for `||`).
 *   **External Method Calls**: You can trigger logic in the host Android application using the `call:` prefix:
     *   *Example*: `call:isInstitutionalHousehold()`

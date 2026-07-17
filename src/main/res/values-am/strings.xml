@@ -33,6 +33,7 @@
     <string name="device_id_permissions_error">በቅጽ ውስጥ የሚጠቀምበትን የመሣሪያ መለያ ለማንበብ የ READ_PHONE_STATE ፍቃድ መስጠት አለብዎት።</string>
 
     <string name="column_required_lbl">ይህ መስክ አስፈላጊ ነው</string>
+    <string name="column_validation_err_lbl">የዚህ መስክ ዋጋ ልክ አይደለም</string>
 
     <string name="datetime_selector_title_lbl">ቀን ይምረጡ</string>
     <string name="datetime_selector_button_lbl">ቀን ይምረጡ</string>

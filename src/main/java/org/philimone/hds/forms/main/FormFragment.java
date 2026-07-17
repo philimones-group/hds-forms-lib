@@ -403,6 +403,11 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             return;
         }
 
+        //check validation
+        if (this.formSlider.hasAnyInvalidField()){
+            return;
+        }
+
         //get end timestamp
         this.endTimestamp = getTimestamp();
         this.formController.finalizeForm(endTimestamp);

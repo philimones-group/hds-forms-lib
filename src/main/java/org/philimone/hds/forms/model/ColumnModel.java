@@ -31,6 +31,8 @@ public class ColumnModel implements Serializable {
     private boolean displayable = true;
     private boolean readOnly;
     private boolean required;
+    private boolean valid = true;
+    private String resolvedValidationMessage;
 
     // Helper for GPS and Multi-select which have complex values
     private Map<String, Double> gpsValues = new LinkedHashMap<>();
@@ -116,6 +118,22 @@ public class ColumnModel implements Serializable {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
+    public String getResolvedValidationMessage() {
+        return resolvedValidationMessage;
+    }
+
+    public void setResolvedValidationMessage(String resolvedValidationMessage) {
+        this.resolvedValidationMessage = resolvedValidationMessage;
     }
 
     public Map<String, Double> getGpsValues() {

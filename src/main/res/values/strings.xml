@@ -34,6 +34,7 @@
     <string name="device_id_permissions_error">You must grant READ_PHONE_STATE permissions to be able to read the device id value that will be used in the form.</string>
 
     <string name="column_required_lbl">This field is required</string>
+    <string name="column_validation_err_lbl">The value of this field is invalid</string>
 
     <string name="datetime_selector_title_lbl">Select the date</string>
     <string name="datetime_selector_button_lbl">Select date</string>
