@@ -3,6 +3,8 @@ package org.philimone.hds.forms.model;
 import android.util.Log;
 import org.apache.commons.jexl3.*;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
+import org.philimone.hds.forms.model.enums.ColumnType;
+
 import mz.betainteractive.utilities.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,9 @@ public class FormExpressionEvaluator {
     private ExternalMethodCallListener methodCallListener;
 
     public FormExpressionEvaluator(ExternalMethodCallListener methodCallListener) {
-        this.jexlEngine = new JexlBuilder().create();
+        // Use non-lenient arithmetic to ensure operations with null return null/error instead of defaulting to 0/empty
+        // We set strict to true via JexlBuilder to throw exceptions on null operands
+        this.jexlEngine = new JexlBuilder().strict(true).arithmetic(new JexlArithmetic(false)).create();
         this.methodCallListener = methodCallListener;
     }
 
@@ -28,19 +32,19 @@ public class FormExpressionEvaluator {
 
         String translated = translateExpression(expression, contextModel);
         translated = translateMethodCalls(translated);
-
+//Log.d("eval expression "+contextModel.getName(), ""+translated);
         try {
             JexlExpression jexlExpr = jexlEngine.createExpression(translated);
             JexlContext jexlContext = new MapContext();
             return jexlExpr.evaluate(jexlContext);
         } catch (Exception e) {
-            Log.e("FormExpressionEvaluator", "Error evaluating: " + translated, e);
+            Log.e("FormExpressionEvaluator", "Error evaluating: " + translated + " on "+contextModel.getName()+"("+contextModel.getValue()+") = "+translated, null);
             return null;
         }
     }
 
     private String translateExpression(String expression, ColumnModel contextModel) {
-        ColumnModel parent = contextModel.getPreviousModel();
+        ColumnModel parent = contextModel; //start with the current field
         
         while (parent != null) {
             String name = parent.getName();
@@ -48,9 +52,8 @@ public class FormExpressionEvaluator {
             String value = parent.isDisplayable() ? parent.getValue() : "";
             if (value == null) value = "";
 
-            // Escape single quotes if we are going to wrap in quotes, 
-            // but the original code doesn't seem to do advanced escaping
-            expression = expression.replaceAll("\\$\\{" + name + "\\}", "'" + value + "'");
+            // Use the variable's actual type for quoting, not the context field's type
+            expression = expression.replaceAll("\\$\\{" + name + "\\}", quote(value, parent.getType()));
             
             parent = parent.getPreviousModel();
         }
@@ -100,5 +103,15 @@ public class FormExpressionEvaluator {
             list.add(arg);
         }
         return list.toArray(new String[0]);
+    }
+
+    private String quote(String value, ColumnType type) {
+        if (StringUtil.isBlank(value)) return "null";
+
+        if (type == ColumnType.INTEGER || type == ColumnType.DECIMAL) {
+            return value;
+        } else {
+            return "'" + value + "'";
+        }
     }
 }

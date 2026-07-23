@@ -134,18 +134,19 @@ public class ColumnGroupView extends LinearLayout {
     private void updateLabels() {
         if (groupModel.isRepeatItem()) {
             setTextHtml(this.txtRepeatGroupName, groupModel.getRepeatGroup().getLabel());
+            this.txtRepeatGroupIndex.setText(getContext().getString(R.string.repeat_group_instance_index_lbl, (groupModel.getRepeatIndex() + 1) + "", groupModel.getRepeatSize().toString()));
             this.txtColumnGroupName.setText("");
         } else {
             setTextHtml(this.txtColumnGroupName, groupModel.getColumnGroup().getLabel() != null ? groupModel.getColumnGroup().getLabel() : "");
         }
     }
 
-    public void showToastMessage(@StringRes int messageResId) {
-        showToastMessage(getContext().getString(messageResId));
+    public void showToastMessage(@StringRes int messageResId, ColumnModel model) {
+        showToastMessage(getContext().getString(messageResId), model);
     }
 
-    public void showToastMessage(String message) {
-        setTextHtml(this.formToastMessage, message);
+    public void showToastMessage(String message, ColumnModel model) {
+        setTextHtml(this.formToastMessage, message, model);
 
         this.formToastLayout.setAlpha(1f);
         this.formToastLayout.setVisibility(VISIBLE);
@@ -162,8 +163,15 @@ public class ColumnGroupView extends LinearLayout {
     }
 
     protected void setTextHtml(TextView textView, String labelText) {
+        ColumnModel model = groupModel.getPrecedingColumnModel();
+        setTextHtml(textView, labelText, model);
+    }
+
+    protected void setTextHtml(TextView textView, String labelText, ColumnModel model) {
         if (labelText != null) {
-            labelText = translateVariables(labelText);
+            if (model != null) {
+                labelText = model.translateVariables(labelText);
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
@@ -172,38 +180,6 @@ public class ColumnGroupView extends LinearLayout {
             }
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
-    }
-
-    private String translateVariables(String text) {
-        if (mz.betainteractive.utilities.StringUtil.isBlank(text) || !text.contains("${")) return text;
-
-        // Get the last column model from the PREVIOUS group (if any) or the first column's previous model
-        ColumnModel parent = null;
-
-        if (!groupModel.getColumnModels().isEmpty()) {
-            parent = groupModel.getColumnModels().get(0).getPreviousModel();
-        } else {
-            ColumnGroupModel prevGroup = groupModel.getPreviousGroupModel();
-            while (prevGroup != null && prevGroup.getColumnModels().isEmpty()) {
-                prevGroup = prevGroup.getPreviousGroupModel();
-            }
-
-            if (prevGroup != null) {
-                List<ColumnModel> prevColumns = prevGroup.getColumnModels();
-                parent = prevColumns.get(prevColumns.size() - 1);
-            }
-        }
-
-        while (parent != null) {
-            String name = parent.getName();
-            String value = parent.isDisplayable() ? parent.getValue() : "";
-            if (value == null) value = "";
-
-            text = text.replace("${" + name + "}", value);
-            parent = parent.getPreviousModel();
-        }
-
-        return text;
     }
 
     public List<ColumnView> getColumnViews() {

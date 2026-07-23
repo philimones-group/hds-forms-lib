@@ -2,6 +2,7 @@ package org.philimone.hds.forms.adapters;
 
 import android.util.Log;
 import org.philimone.hds.forms.model.ColumnGroupModel;
+import org.philimone.hds.forms.model.ColumnRepeatModel;
 import org.philimone.hds.forms.model.FormController;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,9 @@ public class ColumnGroupViewAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         ColumnGroupModel groupModel = visibleModels.get(position);
+        if (groupModel instanceof ColumnRepeatModel) {
+            return ColumnRepeatViewFragment.newInstance((ColumnRepeatModel) groupModel);
+        }
         return ColumnGroupViewFragment.newInstance(groupModel);
     }
 

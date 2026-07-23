@@ -196,17 +196,17 @@ public class ColumnModel implements Serializable {
         return sb.toString();
     }
 
-    private String translateVariables(String text) {
+    public String translateVariables(String text) {
         if (StringUtil.isBlank(text) || !text.contains("${")) return text;
 
-        ColumnModel parent = this.getPreviousModel();
-        while (parent != null) {
-            String name = parent.getName();
-            String value = parent.isDisplayable() ? parent.getValue() : "";
+        ColumnModel current = this;
+        while (current != null) {
+            String name = current.getName();
+            String value = current.isDisplayable() ? current.getValue() : "";
             if (value == null) value = "";
 
             text = text.replace("${" + name + "}", value);
-            parent = parent.getPreviousModel();
+            current = current.getPreviousModel();
         }
 
         return text;

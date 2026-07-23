@@ -23,6 +23,7 @@ public class FormSettings {
     }
 
     public String getRepeatNodeName(String groupName){
-        return this.formRepeatNodes.get(groupName);
+        String nodeName = this.formRepeatNodes.get(groupName);
+        return nodeName == null ? groupName : nodeName;
     }
 }

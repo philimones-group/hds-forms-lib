@@ -87,15 +87,6 @@ public class XmlFormResult {
     }
 
     private String generateFilename(String basePath, String instanceFileName) {
-        //form-id + form-uuid + date
-        //collectedDate is a timestamp or precise date
-        String formattedDate = collectedDate;
-        if (collectedDate != null) {
-            Date date = DateUtil.toDatePrecise(collectedDate);
-            formattedDate = dateUtil.formatPrecise(date);
-        }
-        //return basePath + form.getFormId() + "-" + formUuid + "-" + formatUnderscoreDate(formattedDate) + ".xml";
-
         return basePath + instanceFileName + ".xml";
     }
 

@@ -89,6 +89,7 @@ public class ColumnDateView extends ColumnView implements DateTimeSelector.OnSel
 
         } else if (!StringUtil.isBlank(columnModel.getValue())) {
             Date date = DateUtil.toDateYMD(columnModel.getValue()); //column.getValue is always a gregorian date
+            this.dateValue = date;
             formattedDate = dateUtil.formatYMD(date);
         }
 

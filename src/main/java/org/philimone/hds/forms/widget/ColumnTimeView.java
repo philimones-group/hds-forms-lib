@@ -42,7 +42,7 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
         this.btnSelectTime = findViewById(R.id.btnSelectTime);
         this.txtSelectedTime = findViewById(R.id.txtSelectedTime);
 
-        this.timePicker = TimeSelector.createDateTimeWidget(this.getContext(), this);
+        this.timePicker = TimeSelector.createTimeWidget(this.getContext(), this);
 
         btnSelectTime.setOnClickListener(v -> {
             onButtonSelectDateClicked();
@@ -67,10 +67,10 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
     }
 
     @Override
-    public void onDateSelected(Date selectedDate, String selectedDateText) {
+    public void onTimeSelected(Date selectedDate, String dateFormatted, String selectedDateText) {
         this.txtSelectedTime.setText(selectedDateText);
         this.dateValue = selectedDate;
-        this.columnModel.setValue(selectedDateText);
+        this.columnModel.setValue(dateFormatted); //should save gregorian YMDHMS format
 
         afterUserInput();
     }
@@ -78,33 +78,33 @@ public class ColumnTimeView extends ColumnView implements TimeSelector.OnSelecte
     @Override
     public void refreshModelToUI() {
 
-        String formattedDate = "";
+        String formattedTime = "";
 
         if (this.dateValue != null) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(this.dateValue);
-            int hh = calendar.get(Calendar.HOUR_OF_DAY);
-            int mm = calendar.get(Calendar.MINUTE);
 
-            formattedDate = String.format("%02d", hh) + ":" + String.format("%02d", mm);
+            formattedTime = getFormattedTime(this.dateValue);
 
         } else if (!StringUtil.isBlank(columnModel.getValue())) {
 
-            if (columnModel.getValue().matches("\\d{2}:\\d{2}")) {
-                formattedDate = columnModel.getValue();
-            } else {
-                String[] values = columnModel.getValue().split(":");
-                try {
-                    int hh = Integer.parseInt(values[0]);
-                    int mm = Integer.parseInt(values[1]);
-                    formattedDate = String.format("%02d", hh) + ":" + String.format("%02d", mm);
-                } catch (Exception e) {}
+            Date xmlDateValue = DateUtil.toDateYMDHMS(columnModel.getValue());
+
+            if (xmlDateValue != null) { //need to match gregorian YMDHMS
+                formattedTime = getFormattedTime(xmlDateValue);
+                this.dateValue = xmlDateValue; //use the opportunity to update dataValue
             }
         }
 
-        if (!StringUtil.isBlank(formattedDate)) {
-            txtSelectedTime.setText(formattedDate);
+        if (!StringUtil.isBlank(formattedTime)) {
+            txtSelectedTime.setText(formattedTime);
         }
+    }
+
+    private String getFormattedTime(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int hh = calendar.get(Calendar.HOUR_OF_DAY);
+        int mm = calendar.get(Calendar.MINUTE);
+        return String.format("%02d", hh) + ":" + String.format("%02d", mm);
     }
 
     @Override

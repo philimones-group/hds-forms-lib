@@ -56,7 +56,8 @@
                         android:text="*"
                         android:textStyle="bold"
                         android:textColor="@color/nui_color_text_red"
-                        android:textSize="@dimen/column_name_textsize" />
+                        android:textSize="@dimen/column_name_textsize"
+                        android:visibility="gone"/>
 
                     <TextView
                         android:id="@+id/txtRepeatGroupName"

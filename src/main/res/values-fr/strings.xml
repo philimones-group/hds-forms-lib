@@ -35,6 +35,10 @@
     <string name="column_required_lbl">Ce champ est obligatoire</string>
     <string name="column_validation_err_lbl">La valeur de ce champ est invalide</string>
 
+    <string name="repeat_prompt_lbl">Voulez-vous ajouter une entrée?</string>
+    <string name="bt_add_lbl">Ajouter Une Nouvelle Entrée</string>
+    <string name="bt_remove_last_lbl">Supprimer La Dernière Entrée</string>
+
     <string name="datetime_selector_title_lbl">Sélectionnez la date</string>
     <string name="datetime_selector_button_lbl">Sélectionner la date</string>
     <string name="datetime_selector_not_selected_lbl">La date n\'est pas sélectionnée</string>

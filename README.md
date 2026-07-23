@@ -76,10 +76,10 @@ Defines the individual questions, notes, and groups within the form.
 *   **type**: The data type (e.g., `text`, `integer`, `decimal`, `select`, `multi_select`, `audio`, `image`, `video`, `gps`, `barcode`, `note`).
 *   **options**: For `select` or `multi_select` types, this links to the `name` defined in the **Options** sheet.
 *   **repeat_count**: Controls dynamic row generation:
-    *   *Empty*: Adds rows dynamically at the end.
-    *   *Number*: Fixed number of repetitions.
-    *   *Variable*: Evaluates an expression (e.g., `${num_children}`) to get a count.
-    *   *Loaded Values*: Iterates over externally loaded data.
+    *   *Empty*: Dynamic manual entries. Starts with 1 instance and provides a prompt page to **Add** or **Remove** subsequent entries.
+    *   *Number*: Fixed number of repetitions (e.g., `5`).
+    *   *Variable*: Evaluates an expression (e.g., `${num_children}`) to automatically set the count.
+    *   *`$external`*: Iterates over data pre-loaded into the `PreloadMap` from an external source (e.g., a database). User cannot manually add or remove these rows.
 *   **label / label::[lang]**: The text of the question displayed to the user.
 *   **default_value**: The initial answer when the form starts. Supports JavaScript equations.
 *   **calculation**: A JavaScript equation evaluated when the question becomes visible. The result becomes the field's value.

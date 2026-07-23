@@ -86,6 +86,7 @@ public class ColumnDateTimeView extends ColumnView implements DateTimeSelector.O
 
         } else if (!StringUtil.isBlank(columnModel.getValue())) {
             Date date = DateUtil.toDateYMDHMS(columnModel.getValue());
+            this.dateValue = date;
             formattedDate = dateUtil.formatYMDHMS(date);
         }
 

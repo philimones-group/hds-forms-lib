@@ -3,7 +3,6 @@ package org.philimone.hds.forms.model;
 import android.util.Log;
 
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.model.enums.ColumnValueStatus;
 import org.philimone.hds.forms.model.enums.RepeatCountType;
@@ -30,18 +29,17 @@ public class FormController implements Serializable {
     private FormContext formContext;
     private FormExpressionEvaluator evaluator;
     private String instanceUUID;
+    private boolean editingFormInstance;
 
     private ColumnGroupModel headerGroupModel;
 
-    private ColumnModel lastColumnModel;
-    private ColumnGroupModel lastGroupModel;
-
     private OnFormStateListener stateListener;
 
-    public FormController(HForm form, PreloadMap preloadedValues, FormContext formContext, ExternalMethodCallListener methodCallListener) {
+    public FormController(HForm form, boolean editingFormInstance, PreloadMap preloadedValues, FormContext formContext, ExternalMethodCallListener methodCallListener) {
         this.form = form;
         this.preloadedValues = (preloadedValues != null) ? preloadedValues : new PreloadMap();
         this.formContext = formContext;
+        this.editingFormInstance = editingFormInstance;
         this.evaluator = new FormExpressionEvaluator(methodCallListener);
         this.groupModels = new ArrayList<>();
         initializeModels();
@@ -56,6 +54,8 @@ public class FormController implements Serializable {
     }
 
     private void initializeModels() {
+        groupModels.clear();
+
         // 1. Handle Header if exists
         if (form.hasHeader()) {
             ColumnGroup headerGroup = form.getHeader();
@@ -66,7 +66,7 @@ public class FormController implements Serializable {
 
         // 2. Handle Body Columns
         for (ColumnGroup group : form.getColumns()) {
-            if (group.isHeader()) continue; // Already handled or ignored if redundant
+            if (group.isHeader()) continue;
 
             if (group instanceof ColumnRepeatGroup) {
                 expandRepeatGroup((ColumnRepeatGroup) group);
@@ -74,32 +74,147 @@ public class FormController implements Serializable {
                 createGroupModel(group, null, null, null);
             }
         }
+
+        relinkAll();
+        evaluateAll();
     }
 
     private void expandRepeatGroup(ColumnRepeatGroup repeatGroup) {
+        RepeatCountType repeatCountType = repeatGroup.getRepeatCountType();
         Integer repeatSize = repeatGroup.getRepeatSize(preloadedValues);
 
-        if (repeatSize == null || repeatSize <= 0) {
+        if (repeatCountType == RepeatCountType.VARIABLE) {
+            ColumnRepeatModel anchor = new ColumnRepeatModel(repeatGroup, repeatCountType);
+            anchor.setHidden(true);
+            anchor.setDisplayable(false);
+            groupModels.add(anchor);
 
-            RepeatCountType repeatCountType = repeatGroup.getRepeatCountType(preloadedValues);
+            //DONT INITIALIZE ANYTHING WAIT FOR THE repeat_count expression calculation
+            /*int targetSize = 0;
+            if (targetSize > 0) {
+                syncRepeatInstances(anchor, targetSize);
+            }*/
 
-            // TODO: Handle dynamic/variable repeat count evaluation
+            return;
+        } else if (repeatCountType == RepeatCountType.EMPTY) {
+            ColumnRepeatModel anchor = new ColumnRepeatModel(repeatGroup, repeatCountType);
+            anchor.setHidden(false);
+            anchor.setDisplayable(true);
+            groupModels.add(anchor);
+
+            // Sync preloaded/saved data or initialize with 1 instance for EMPTY type
+            int targetCount = (repeatSize==null || repeatSize==0) ? 1 : repeatSize;
+
+            //add anchor at the end of the repeat instances to ask for more instances
+            syncRepeatInstances(anchor, targetCount);
+
             return;
         }
 
-        for (int i = 0; i < repeatSize; i++) {
+        // Handles EXTERNAL_LOADER and CONSTANT_VALUE
+        for (int index = 0; index < repeatSize; index++) {
             for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
-                // For repeats, we use clones of the inner groups as per current implementation
                 ColumnGroup clonedInner = innerGroup.clone();
-                createGroupModel(clonedInner, repeatGroup, i, repeatSize);
+                createGroupModel(clonedInner, repeatGroup, index, repeatSize);
+            }
+        }
+    }
+
+    private void syncRepeatInstances(ColumnRepeatModel anchor, int targetCount) {
+        int currentCount = anchor.getCurrentInstanceCount();
+        if (targetCount == currentCount) return;
+
+        boolean structureChanged = false;
+        ColumnRepeatGroup repeatGroup = anchor.getRepeatDefinition();
+        //Log.d("repeat group", repeatGroup.getGroupName()+", currCount="+currentCount+", targetCount="+targetCount);
+
+        if (targetCount > currentCount) {
+            // Expand
+            int anchorIndex = groupModels.indexOf(anchor);
+
+            if (anchor.getRepeatCountType() == RepeatCountType.VARIABLE) {
+                int insertIndex = anchorIndex + 1;
+                insertIndex += anchor.getInstanceModels().size();
+
+                for (int i = currentCount; i < targetCount; i++) {
+                    for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
+                        ColumnGroup clonedInner = innerGroup.clone();
+                        ColumnGroupModel newModel = initializeGroupModel(clonedInner, repeatGroup, i, targetCount);
+
+                        groupModels.add(insertIndex++, newModel);
+                        anchor.addInstanceModel(newModel);
+                        structureChanged = true;
+                    }
+                }
+            } else if (anchor.getRepeatCountType() == RepeatCountType.EMPTY){
+                //the anchor is the last item so we insert before the anchor
+                int insertIndex = anchorIndex;
+
+                for (int i = currentCount; i < targetCount; i++) {
+                    for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
+                        ColumnGroup clonedInner = innerGroup.clone();
+                        ColumnGroupModel newModel = initializeGroupModel(clonedInner, repeatGroup, i, targetCount);
+
+                        groupModels.add(insertIndex++, newModel);
+                        anchor.addInstanceModel(newModel);
+                        structureChanged = true;
+                    }
+                }
+            }
+        } else {
+            // Shrink
+            int groupsPerInstance = repeatGroup.getColumnsGroups().size();
+            int instancesToRemove = currentCount - targetCount;
+            
+            for (int i = 0; i < instancesToRemove; i++) {
+                for (int j = 0; j < groupsPerInstance; j++) {
+                    ColumnGroupModel modelToRemove = anchor.getInstanceModels().remove(anchor.getInstanceModels().size() - 1);
+                    groupModels.remove(modelToRemove);
+                    structureChanged = true;
+                }
+            }
+        }
+
+        if (structureChanged) {
+            anchor.setCurrentInstanceCount(targetCount);
+            for (ColumnGroupModel gm : anchor.getInstanceModels()) {
+                gm.setRepeatSize(targetCount);
+            }
+            
+            relinkAll();
+            
+            if (stateListener != null) {
+                stateListener.onFormStructureChanged();
+            }
+        }
+    }
+
+    private void relinkAll() {
+        ColumnGroupModel lastGM = null;
+        ColumnModel lastCM = null;
+
+        for (ColumnGroupModel gm : groupModels) {
+            gm.setPreviousGroupModel(lastGM);
+            lastGM = gm;
+
+            for (ColumnModel cm : gm.getColumnModels()) {
+                cm.setPreviousModel(lastCM);
+                lastCM = cm;
             }
         }
     }
 
     private ColumnGroupModel createGroupModel(ColumnGroup group, ColumnRepeatGroup repeatParent, Integer repeatIndex, Integer repeatSize) {
+        ColumnGroupModel groupModel = initializeGroupModel(group, repeatParent, repeatIndex, repeatSize);
+        groupModels.add(groupModel);
+        return groupModel;
+    }
+
+    private ColumnGroupModel initializeGroupModel(ColumnGroup group, ColumnRepeatGroup repeatParent, Integer repeatIndex, Integer repeatSize) {
         ColumnGroupModel groupModel;
         
         if (repeatParent != null) {
+            //Log.d("creating inner group", repeatParent.getGroupName()+", index="+repeatIndex+", size="+repeatSize);
             groupModel = new ColumnGroupModel(repeatParent, group, repeatIndex, repeatSize);
         } else {
             groupModel = new ColumnGroupModel(group);
@@ -107,28 +222,12 @@ public class FormController implements Serializable {
 
         groupModel.setSupportedCalendar(formContext.supportedCalendar);
 
-        // Link groups
-        if (lastGroupModel != null) {
-            groupModel.setPreviousGroupModel(lastGroupModel);
-        }
-        lastGroupModel = groupModel;
-
         for (Column column : group.getColumns()) {
             ColumnModel columnModel = new ColumnModel(column, groupModel);
-            
-            // Link columns
-            if (lastColumnModel != null) {
-                columnModel.setPreviousModel(lastColumnModel);
-            }
-            lastColumnModel = columnModel;
-
-            // Initial value loading (logic from loadColumnValues)
             loadInitialValue(columnModel, repeatParent, repeatIndex);
-            
             groupModel.addColumnModel(columnModel);
         }
 
-        groupModels.add(groupModel);
         return groupModel;
     }
 
@@ -137,7 +236,7 @@ public class FormController implements Serializable {
         String columnName = column.getName();
         ColumnType type = column.getType();
 
-        // 1. Handle standard preloaded values (highest priority)
+        // 1. Handle standard preloaded values
         if (preloadedValues.containsKey(columnName)) {
             String value = preloadedValues.getStringValue(columnName);
             columnModel.setValue(value, ColumnValueStatus.FROM_XML);
@@ -158,7 +257,7 @@ public class FormController implements Serializable {
             loadGpsValue(columnModel);
         }
 
-        // 4. Handle special system types (only if still empty/not preloaded)
+        // 4. Handle special system types
         if (columnModel.getValue() == null || columnModel.getValue().isEmpty()) {
             if (type == ColumnType.INSTANCE_UUID) {
                 this.instanceUUID = UUID.randomUUID().toString().replace("-", "");
@@ -178,11 +277,9 @@ public class FormController implements Serializable {
             }
         }
 
-        // END_TIMESTAMP is always updated via finalizeForm, but we can set initial if available
         if (type == ColumnType.END_TIMESTAMP && (columnModel.getValue() == null || columnModel.getValue().isEmpty())) {
             columnModel.setValue(formContext.endTimestamp, ColumnValueStatus.FROM_CALCULATION);
         }
-
     }
 
     private void loadGpsValue(ColumnModel columnModel) {
@@ -202,10 +299,6 @@ public class FormController implements Serializable {
         
         if (!gpsValues.isEmpty()) {
             columnModel.setGpsValues(gpsValues);
-            // Also set the main string value if it exists or construct it
-            //if (preloadedValues.containsKey(baseName)) {
-            //    columnModel.setValue(preloadedValues.getStringValue(baseName));
-            //}
         }
     }
 
@@ -224,7 +317,6 @@ public class FormController implements Serializable {
     public List<ColumnGroupModel> getVisibleGroupModels() {
         List<ColumnGroupModel> visible = new ArrayList<>();
         for (ColumnGroupModel gm : groupModels) {
-            //Log.d("cgm "+gm.getUuid(), "header="+gm.isHeader()+", hidden="+gm.isHidden()+", displayable="+gm.isDisplayable());
             if (!gm.isHidden() && gm.isDisplayable()) {
                 visible.add(gm);
             }
@@ -232,49 +324,61 @@ public class FormController implements Serializable {
         return visible;
     }
 
-    /**
-     * Updates the end timestamp for all relevant columns before saving the form.
-     * @param endTimestamp the final timestamp to record
-     */
     public void finalizeForm(String endTimestamp) {
         this.formContext.endTimestamp = endTimestamp;
 
         boolean mediaCollected = false;
+        outer: for (ColumnGroupModel gm : groupModels) {
+            for (ColumnModel cm : gm.getColumnModels()) {
+                if (cm.getColumn().isMediaColumn() && !cm.isValueBlank()) {
+                    mediaCollected = true;
+                    break outer;
+                }
+            }
+        }
+        String mediaCollectedValue = Boolean.toString(mediaCollected);
+
         for (ColumnGroupModel gm : groupModels) {
             for (ColumnModel cm : gm.getColumnModels()) {
                 ColumnType type = cm.getType();
-                if (!mediaCollected && (type == ColumnType.IMAGE || type == ColumnType.VIDEO || type == ColumnType.AUDIO) && !cm.isValueBlank()) {
-                    mediaCollected = true;
-                }
-
                 if (type == ColumnType.END_TIMESTAMP) {
                     cm.setValue(endTimestamp, ColumnValueStatus.FROM_CALCULATION);
                 }
-                if (type == ColumnType.MEDIA_COLLECTED && mediaCollected) {
-                    cm.setValue(mediaCollected+"", ColumnValueStatus.FROM_CALCULATION);
+                if (type == ColumnType.MEDIA_COLLECTED) {
+                    cm.setValue(mediaCollectedValue, ColumnValueStatus.FROM_CALCULATION);
                 }
             }
         }
     }
 
     public void evaluateAll() {
-        for (ColumnGroupModel gm : groupModels) {
-            evaluateGroup(gm);
+        for (int i = 0; i < groupModels.size(); i++) {
+            ColumnGroupModel gm = groupModels.get(i);
+            if (gm instanceof ColumnRepeatModel) {
+                evaluateRepeatModel((ColumnRepeatModel) gm);
+            } else {
+                evaluateGroup(gm);
+            }
         }
     }
 
     public void onModelValueChanged(ColumnModel columnModel) {
-        // 1. Evaluate All Calculations, Display, ReadOnly and Required conditions
-        // Optimization: Start evaluating from the group containing the changed column,
-        // as dependencies in this engine only point to previous models.
-        int startIndex = groupModels.indexOf(columnModel.getParentGroupModel());
+        onModelValueChanged(columnModel.getParentGroupModel());
+    }
+
+    public void onModelValueChanged(ColumnGroupModel groupModel) {
+        int startIndex = groupModels.indexOf(groupModel);
         if (startIndex < 0) startIndex = 0;
 
         for (int i = startIndex; i < groupModels.size(); i++) {
-            evaluateGroup(groupModels.get(i));
+            ColumnGroupModel gm = groupModels.get(i);
+            if (gm instanceof ColumnRepeatModel) {
+                evaluateRepeatModel((ColumnRepeatModel) gm);
+            } else {
+                evaluateGroup(gm);
+            }
         }
 
-        // 2. Notify UI
         if (stateListener != null) {
             stateListener.onFormStructureChanged();
         }
@@ -284,12 +388,52 @@ public class FormController implements Serializable {
         for (ColumnModel cm : groupModel.getColumnModels()) {
             evaluateColumn(cm);
         }
-        
         updateGroupVisibility(groupModel);
     }
 
+    public void addRepeatInstance(ColumnRepeatModel anchor) {
+        syncRepeatInstances(anchor, anchor.getCurrentInstanceCount() + 1);
+    }
+
+    public void removeLastRepeatInstance(ColumnRepeatModel anchor) {
+        if (anchor.getCurrentInstanceCount() > 1) {
+            syncRepeatInstances(anchor, anchor.getCurrentInstanceCount() - 1);
+        }
+    }
+
+    private void evaluateRepeatModel(ColumnRepeatModel anchor) {
+        if (anchor.getRepeatCountType() == RepeatCountType.VARIABLE) {
+            String expression = anchor.getRepeatDefinition().getRepeatCount();
+            
+            // Context is the last column before the anchor
+            ColumnGroupModel prevGroup = anchor.getPreviousGroupModel();
+            while (prevGroup != null && (prevGroup.getColumnModels().isEmpty() || prevGroup instanceof ColumnRepeatModel)) {
+                prevGroup = prevGroup.getPreviousGroupModel();
+            }
+            
+            ColumnModel context = (prevGroup != null && !prevGroup.getColumnModels().isEmpty()) ? 
+                                  prevGroup.getColumnModels().get(prevGroup.getColumnModels().size() - 1) : 
+                                  null;
+            
+            Object result = evaluator.evaluate(expression, context); //The expression ${counts} + 1 - should not run
+
+            //Log.d("tag repeat "+anchor.getName(), "expression: "+result+"");
+            if (result instanceof Number) {
+                syncRepeatInstances(anchor, ((Number) result).intValue());
+            } else if (result instanceof String) {
+                try {
+                    syncRepeatInstances(anchor, Integer.parseInt((String) result));
+                } catch (Exception ignored) {}
+            }
+        } else if (anchor.getRepeatCountType() == RepeatCountType.EMPTY) {
+
+        }
+    }
+
     private void updateGroupVisibility(ColumnGroupModel groupModel) {
-        // Update group visibility based on child columns
+
+        if (groupModel instanceof ColumnRepeatModel) return;
+
         boolean anyVisible = false;
         for (ColumnModel cm : groupModel.getColumnModels()) {
             if (cm.isDisplayable() && !cm.getColumn().isHidden()) {
@@ -301,21 +445,10 @@ public class FormController implements Serializable {
     }
 
     public void evaluateColumn(ColumnModel columnModel) {
-        Column column = columnModel.getColumn();
-
-        // 1. Evaluate Calculation
         evaluateColumnCalculation(columnModel);
-
-        // 2. Evaluate Display Condition
         evaluateColumnDisplayCondition(columnModel);
-
-        // 3. Evaluate Read Only Condition
         evaluateColumnReadOnlyCondition(columnModel);
-
-        // 4. Evaluate Required Condition
         evaluateColumnRequiredCondition(columnModel);
-
-        // 5. Evaluate Validation Condition
         evaluateColumnValidation(columnModel);
     }
 
@@ -365,12 +498,9 @@ public class FormController implements Serializable {
         String validation = column.getValidation();
         if (!StringUtil.isBlank(validation)) {
             Object result = evaluator.evaluate(validation, columnModel);
-            // If result is null, we treat it as valid (default)
-            // If result is not "true", it's invalid
             boolean isValid = result == null || "true".equals(result.toString());
             columnModel.setValid(isValid);
             if (!isValid) {
-                // Resolved message is already localized during parsing into Column.validationMessage
                 columnModel.setResolvedValidationMessage(column.getValidationMessage());
             } else {
                 columnModel.setResolvedValidationMessage(null);

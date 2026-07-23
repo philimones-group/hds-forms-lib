@@ -65,13 +65,14 @@ public class ColumnRepeatGroup extends ColumnGroup {
         }
     }
 
-    public RepeatCountType getRepeatCountType(PreloadMap preloadedColumnValues){
+    public RepeatCountType getRepeatCountType(){
         String rexCons = "[0-9]+";
+        String rexExtr = "$external";
 
         if (repeatCount.matches(rexCons)){ //its a number
             return RepeatCountType.CONSTANT_VALUE;
         }
-        if (preloadedColumnValues.getRepeatObject(groupName) != null) { //this repeat group was loaded externally
+        if (repeatCount.equals(rexExtr)) { //preloadedColumnValues.getRepeatObject(groupName) != null) { //this repeat group was loaded externally
             return RepeatCountType.EXTERNAL_LOADER;
         }
         if (StringUtil.isBlank(repeatCount)) {
@@ -81,10 +82,18 @@ public class ColumnRepeatGroup extends ColumnGroup {
     }
 
     public Integer getRepeatSize(PreloadMap preloadedColumnValues) {
-        RepeatCountType type = getRepeatCountType(preloadedColumnValues);
+        RepeatCountType type = getRepeatCountType();
 
         if (type == RepeatCountType.EMPTY) {
-            //NOT IMPLEMENTED YET
+            //Try to read saved repeat groups
+            try {
+                RepeatObject repeatObject = preloadedColumnValues.getRepeatObject(this.getName());
+                if (repeatObject != null) {
+                    return repeatObject.count();
+                }
+            }catch (Exception ex){
+                //ex.printStackTrace();
+            }
             return 0;
         }
 

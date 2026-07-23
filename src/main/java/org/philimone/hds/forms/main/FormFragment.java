@@ -19,10 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlExpression;
-import org.apache.commons.jexl3.MapContext;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnViewDataAdapter;
@@ -105,6 +102,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private boolean backgroundMode;
     private boolean resumeMode;
+    private boolean editingFormInstance;
 
     private JexlEngine expressionEngine;
 
@@ -172,10 +170,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         formFragment.instancesDirPath = instancesDirPath;
         formFragment.backgroundMode = bgMode;
         formFragment.resumeMode = gotoResume;
+        formFragment.editingFormInstance = true;
 
         formFragment.form.setPostExecution(executeOnUpload);
 
         if (!StringUtil.isBlank(xmlSavedFormPath)){
+            formFragment.formInstanceFileName = formFragment.getInstanceFileName(xmlSavedFormPath);
 
             Map<String,Object> map = XmlDataReader.getXmlMappedData(xmlSavedFormPath, form);
             formFragment.preloadedColumnValues.putAll(map);
@@ -339,7 +339,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         formSlider.setFormFragment(this);
 
-        initColumnGroupModels();
+        initFormController();
     }
 
     @Override
@@ -372,20 +372,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private void initExpEngine() {
         this.expressionEngine = new JexlBuilder().create();
-    }
-
-    public Object evaluateExpression(String expressionText) {
-        JexlContext jexlContext = new MapContext();
-
-        try {
-            JexlExpression jxelExpression = this.expressionEngine.createExpression(expressionText);
-            return jxelExpression.evaluate(jexlContext);
-        } catch (Exception ex) {
-            Log.d("Jexl Evaluation", "Error: "+expressionText);
-            ex.printStackTrace();
-
-            return "false";
-        }
     }
 
     private void onCancelClicked(){
@@ -506,14 +492,16 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     /**
-     * Create ColumnGroupModels based on the blueprint provided by ColumnGroups
+     * Create FormController, ColumnGroupModels and Adapter based on the blueprint provided by ColumnGroups
      */
-    private void initColumnGroupModels(){
+    private void initFormController(){
         readInitialData();
         FormController.FormContext context = new FormController.FormContext(supportedCalendar, username, deviceId, startTimestamp);
-        this.formController = new FormController(form, preloadedColumnValues, context, this);
+        this.formController = new FormController(form, editingFormInstance, preloadedColumnValues, context, this);
         this.formController.setStateListener(this);
         this.formController.evaluateAll();
+
+        createFormInstanceFileName();
 
         // VIEWPAGER
         ColumnGroupViewAdapter adapter = new ColumnGroupViewAdapter(this, this.formController);
@@ -537,7 +525,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         checkPermissionAndGetDeviceId();
         // loadColumnValues(); // Moved to FormController
-        createFormInstanceFileName();
     }
 
     /**
@@ -551,12 +538,12 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         CollectedDataMap map = new CollectedDataMap();
 
         for (ColumnGroupModel gm : formController.getGroupModels()) {
+
             for (ColumnModel cm : gm.getColumnModels()) {
                 ColumnValue columnValue = new ColumnValue(gm, cm);
 
                 if (gm.isRepeatItem()) {
                     ColumnRepeatGroup repeatGroup = gm.getRepeatGroup();
-
                     RepeatColumnValue repeatColumnValue = map.getRepeatColumn(repeatGroup.getName());
                     repeatColumnValue = repeatColumnValue == null ? new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName()) : repeatColumnValue;
                     repeatColumnValue.put(gm.getRepeatIndex(), columnValue);
@@ -590,9 +577,23 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         }
 
         String uuid = formController != null ? formController.getInstanceUUID() : "";
-        this.formInstanceFileName = form.getFormId() + "-" + uuid + "-" + formatUnderscoreDate(formattedDate);
+
+        if (!editingFormInstance) {
+            //create new instance file name - if its editing it will just reuse the last one
+            this.formInstanceFileName = form.getFormId() + "-" + uuid + "-" + formatUnderscoreDate(formattedDate);
+        }
 
         return this.formInstanceFileName;
+    }
+
+    private String getInstanceFileName(String xmlSavedFormPath) {
+        File savedFile = new File(xmlSavedFormPath);
+        String filename = savedFile.getName();
+        if (filename.endsWith(".xml")) {
+            filename = filename.substring(0, filename.length() - 4);
+        }
+
+        return filename;
     }
 
     private String formatUnderscoreDate(String collectedDate) {
@@ -737,6 +738,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     public FormController getFormController() {
         return formController;
+    }
+
+    public FormColumnSlider getFormSlider() {
+        return formSlider;
     }
 
     public void startCollecting(){

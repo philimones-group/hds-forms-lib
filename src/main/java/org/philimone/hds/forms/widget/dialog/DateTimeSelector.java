@@ -285,12 +285,14 @@ public class DateTimeSelector extends AppCompatDialog {
         this.btDialogCancel.setVisibility(View.VISIBLE);
         this.dtpColumnTimeValue.setVisibility(dateWithTime ? View.VISIBLE : View.GONE);
 
-        if (currentSupportedCalendar == DateUtil.SupportedCalendar.GREGORIAN) {
-            this.ethiopianLayout.setVisibility(View.GONE);
-            this.dtpColumnDateValue.setVisibility(View.VISIBLE);
-        } else if (currentSupportedCalendar == DateUtil.SupportedCalendar.ETHIOPIAN) {
-            this.ethiopianLayout.setVisibility(View.VISIBLE);
-            this.dtpColumnDateValue.setVisibility(View.GONE);
+        if (dtpColumnDateValue != null) {
+            if (currentSupportedCalendar == DateUtil.SupportedCalendar.GREGORIAN) {
+                this.ethiopianLayout.setVisibility(View.GONE);
+                this.dtpColumnDateValue.setVisibility(View.VISIBLE);
+            } else if (currentSupportedCalendar == DateUtil.SupportedCalendar.ETHIOPIAN) {
+                this.ethiopianLayout.setVisibility(View.VISIBLE);
+                this.dtpColumnDateValue.setVisibility(View.GONE);
+            }
         }
 
         setDefaultDate(defaultDateValue);

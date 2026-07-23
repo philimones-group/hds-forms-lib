@@ -101,20 +101,12 @@ public abstract class ColumnView extends LinearLayout {
         FormFragment hostFragment = getActivity();
         String instanceFileName = hostFragment.getFormInstanceFileName();
 
+        // To avoid duplicates files inside repeat groups or other situations we will append a nanoTime
+        long uniqueTimestamp = System.nanoTime();
+
         StringBuilder filename = new StringBuilder(instanceFileName);
         filename.append("_").append(column.getName());
-
-        // Check if inside a repeat group and add indices to avoid collisions
-        // It recursively checks for parent repeat groups to handle nested loops
-        ColumnGroupModel group = columnModel.getParentGroupModel();
-        StringBuilder indices = new StringBuilder();
-        while (group != null) {
-            if (group.isRepeatItem()) {
-                indices.insert(0, "_" + group.getRepeatIndex());
-            }
-            group = group.getPreviousGroupModel();
-        }
-        filename.append(indices);
+        filename.append("_").append(uniqueTimestamp);
 
         filename.append(extension);
         return filename.toString();
@@ -179,7 +171,7 @@ public abstract class ColumnView extends LinearLayout {
 
     protected void setTextHtml(TextView textView, String labelText) {
         if (labelText != null) {
-            labelText = translateVariables(labelText);
+            labelText = columnModel.translateVariables(labelText);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 textView.setText(Html.fromHtml(labelText, Html.FROM_HTML_MODE_LEGACY));
@@ -189,22 +181,6 @@ public abstract class ColumnView extends LinearLayout {
 
             textView.setMovementMethod(LinkMovementMethod.getInstance());
         }
-    }
-
-    private String translateVariables(String text) {
-        if (StringUtil.isBlank(text) || !text.contains("${")) return text;
-
-        ColumnModel parent = columnModel.getPreviousModel();
-        while (parent != null) {
-            String name = parent.getName();
-            String value = parent.isDisplayable() ? parent.getValue() : "";
-            if (value == null) value = "";
-
-            text = text.replaceAll("\\$\\{" + name + "\\}", value);
-            parent = parent.getPreviousModel();
-        }
-
-        return text;
     }
 
     @Override

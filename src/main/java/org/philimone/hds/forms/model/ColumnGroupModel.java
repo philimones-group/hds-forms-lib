@@ -15,7 +15,7 @@ public class ColumnGroupModel implements Serializable {
     private String uuid;
     private ColumnGroup columnGroup;
     private ColumnGroupModel previousGroupModel;
-    private ColumnRepeatGroup repeatGroup; // Reference if this belongs to a repeat group
+    protected ColumnRepeatGroup repeatGroup; // Reference if this belongs to a repeat group
     private Integer repeatIndex;           // Index of the repeat (0, 1, 2...)
     private Integer repeatSize;            // Total number of repeats at creation time
 
@@ -67,8 +67,16 @@ public class ColumnGroupModel implements Serializable {
         return repeatIndex;
     }
 
+    public void setRepeatIndex(Integer repeatIndex) {
+        this.repeatIndex = repeatIndex;
+    }
+
     public Integer getRepeatSize() {
         return repeatSize;
+    }
+
+    public void setRepeatSize(Integer repeatSize) {
+        this.repeatSize = repeatSize;
     }
 
     public List<ColumnModel> getColumnModels() {
@@ -103,12 +111,34 @@ public class ColumnGroupModel implements Serializable {
         this.header = header;
     }
 
+    public String getName() {
+        return this.columnGroup.getName();
+    }
+
     public DateUtil.SupportedCalendar getSupportedCalendar() {
         return supportedCalendar;
     }
 
     public void setSupportedCalendar(DateUtil.SupportedCalendar supportedCalendar) {
         this.supportedCalendar = supportedCalendar;
+    }
+
+    public ColumnModel getPrecedingColumnModel() {
+        if (!columnModels.isEmpty()) {
+            return columnModels.get(0).getPreviousModel();
+        }
+
+        ColumnGroupModel prevGroup = previousGroupModel;
+        while (prevGroup != null && prevGroup.getColumnModels().isEmpty()) {
+            prevGroup = prevGroup.getPreviousGroupModel();
+        }
+
+        if (prevGroup != null) {
+            List<ColumnModel> prevColumns = prevGroup.getColumnModels();
+            return prevColumns.get(prevColumns.size() - 1);
+        }
+
+        return null;
     }
 
     @Override

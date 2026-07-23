@@ -67,24 +67,8 @@ public class ColumnViewDataAdapter extends ArrayAdapter<ColumnModel> {
         //we dont use HTML here is a plain text
         String labelText = model.getColumn().getLabel();
         if (labelText != null) {
-            labelText = translateVariables(labelText, model);
+            labelText = model.translateVariables(labelText);
             textView.setText(Html.fromHtml(labelText).toString()); //remove html tags if exists
         }
-    }
-
-    private String translateVariables(String text, ColumnModel columnModel) {
-        if (StringUtil.isBlank(text) || !text.contains("${")) return text;
-
-        ColumnModel parent = columnModel.getPreviousModel();
-        while (parent != null) {
-            String name = parent.getName();
-            String value = parent.isDisplayable() ? parent.getValue() : "";
-            if (value == null) value = "";
-
-            text = text.replace("${" + name + "}", value);
-            parent = parent.getPreviousModel();
-        }
-
-        return text;
     }
 }

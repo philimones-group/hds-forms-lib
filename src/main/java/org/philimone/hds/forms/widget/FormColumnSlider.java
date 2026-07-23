@@ -201,7 +201,7 @@ public class FormColumnSlider extends LinearLayout {
         // Search for the currently visible ColumnGroupView inside the ViewPager
         ColumnGroupView currentView = findColumnGroupView(this.formViewPager);
         if (currentView != null) {
-            currentView.showToastMessage(R.string.column_required_lbl);
+            currentView.showToastMessage(R.string.column_required_lbl, columnModel);
         }
     }
 
@@ -217,9 +217,9 @@ public class FormColumnSlider extends LinearLayout {
         if (currentView != null) {
             String message = columnModel.getResolvedValidationMessage();
             if (StringUtil.isBlank(message)) {
-                currentView.showToastMessage(R.string.column_validation_err_lbl);
+                currentView.showToastMessage(R.string.column_validation_err_lbl, columnModel);
             } else {
-                currentView.showToastMessage(message);
+                 currentView.showToastMessage(message, columnModel);
             }
         }
     }

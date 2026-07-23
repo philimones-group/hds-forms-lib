@@ -35,6 +35,10 @@
     <string name="column_required_lbl">ይህ መስክ አስፈላጊ ነው</string>
     <string name="column_validation_err_lbl">የዚህ መስክ ዋጋ ልክ አይደለም</string>
 
+    <string name="repeat_prompt_lbl">አዲስ መረጃ መጨመር ይፈልጋሉ?</string>
+    <string name="bt_add_lbl">አዲስ መረጃ ጨምር</string>
+    <string name="bt_remove_last_lbl">የመጨረሻውን መረጃ ሰርዝ</string>
+
     <string name="datetime_selector_title_lbl">ቀን ይምረጡ</string>
     <string name="datetime_selector_button_lbl">ቀን ይምረጡ</string>
     <string name="datetime_selector_not_selected_lbl">ቀን አልተመረጠም</string>

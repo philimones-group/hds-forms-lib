@@ -3,6 +3,7 @@ package org.philimone.hds.forms.widget.dialog;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -41,32 +42,9 @@ public class TimeSelector extends AppCompatDialog {
         this.mContext = context;
     }
 
-    public static TimeSelector createDateWidget(Context context, OnSelectedListener listener){
+    public static TimeSelector createTimeWidget(Context context, OnSelectedListener listener){
         TimeSelector dialog = new TimeSelector(context);
         dialog.listener = listener;
-
-        return dialog;
-    }
-
-    public static TimeSelector createDateTimeWidget(Context context, OnSelectedListener listener){
-        TimeSelector dialog = new TimeSelector(context);
-        dialog.listener = listener;
-
-        return dialog;
-    }
-
-    public static TimeSelector createDateWidget(Context context, Date defaultDate, OnSelectedListener listener){
-        TimeSelector dialog = new TimeSelector(context);
-        dialog.listener = listener;
-        dialog.defaultDateValue = defaultDate;
-
-        return dialog;
-    }
-
-    public static TimeSelector createDateTimeWidget(Context context, Date defaultDate, OnSelectedListener listener){
-        TimeSelector dialog = new TimeSelector(context);
-        dialog.listener = listener;
-        dialog.defaultDateValue = defaultDate;
 
         return dialog;
     }
@@ -122,7 +100,7 @@ public class TimeSelector extends AppCompatDialog {
         SelectedTime selectedTime = getDate();
 
         if (listener != null) {
-            listener.onDateSelected(selectedTime.date, selectedTime.timeFormatted);
+            listener.onTimeSelected(selectedTime.date, selectedTime.dateFormatted, selectedTime.timeFormatted);
         }
     }
 
@@ -144,7 +122,7 @@ public class TimeSelector extends AppCompatDialog {
 
         String formatted = String.format("%02d", hh) + ":" + String.format("%02d", mm);
 
-        return new SelectedTime(date, formatted);
+        return new SelectedTime(date, DateUtil.formatGregorianYMDHMS(date), formatted);
     }
 
     private void onOkClicked() {
@@ -156,13 +134,17 @@ public class TimeSelector extends AppCompatDialog {
         this.defaultDateValue = date;
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
+        Log.d("date", ""+date+", cal="+cal);
+        Log.d("dtp", ""+dtpColumnTimeValue);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            dtpColumnTimeValue.setHour(cal.get(Calendar.HOUR_OF_DAY));
-            dtpColumnTimeValue.setMinute(cal.get(Calendar.MINUTE));
-        } else {
-            dtpColumnTimeValue.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
-            dtpColumnTimeValue.setCurrentMinute(cal.get(Calendar.MINUTE));
+        if (dtpColumnTimeValue != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                dtpColumnTimeValue.setHour(cal.get(Calendar.HOUR_OF_DAY));
+                dtpColumnTimeValue.setMinute(cal.get(Calendar.MINUTE));
+            } else {
+                dtpColumnTimeValue.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
+                dtpColumnTimeValue.setCurrentMinute(cal.get(Calendar.MINUTE));
+            }
         }
     }
 
@@ -175,15 +157,17 @@ public class TimeSelector extends AppCompatDialog {
     }
 
     public interface OnSelectedListener {
-        void onDateSelected(Date selectedDate, String selectedDateText);
+        void onTimeSelected(Date selectedDate, String dateFormatted, String selectedDateText);
     }
 
     class SelectedTime {
         public Date date;
+        public String dateFormatted;
         public String timeFormatted;
 
-        public SelectedTime(Date date, String timeFormatted) {
+        public SelectedTime(Date date, String dateFormatted, String timeFormatted) {
             this.date = date;
+            this.dateFormatted = dateFormatted;
             this.timeFormatted = timeFormatted;
         }
     }
