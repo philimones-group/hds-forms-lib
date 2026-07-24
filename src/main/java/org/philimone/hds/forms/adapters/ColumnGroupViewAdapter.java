@@ -1,12 +1,10 @@
 package org.philimone.hds.forms.adapters;
 
-import android.util.Log;
 import org.philimone.hds.forms.model.ColumnGroupModel;
 import org.philimone.hds.forms.model.ColumnRepeatModel;
-import org.philimone.hds.forms.model.FormController;
+import org.philimone.hds.forms.main.FormController;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;

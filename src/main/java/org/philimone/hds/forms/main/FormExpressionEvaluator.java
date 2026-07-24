@@ -1,8 +1,9 @@
-package org.philimone.hds.forms.model;
+package org.philimone.hds.forms.main;
 
 import android.util.Log;
 import org.apache.commons.jexl3.*;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
+import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import mz.betainteractive.utilities.StringUtil;

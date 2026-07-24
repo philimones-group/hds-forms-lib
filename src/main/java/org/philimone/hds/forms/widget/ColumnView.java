@@ -15,9 +15,8 @@ import android.widget.TextView;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.Column;
-import org.philimone.hds.forms.model.ColumnGroupModel;
 import org.philimone.hds.forms.model.ColumnModel;
-import org.philimone.hds.forms.model.FormController;
+import org.philimone.hds.forms.main.FormController;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.model.enums.ColumnValueStatus;
 
