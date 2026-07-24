@@ -1,4 +1,4 @@
-package org.philimone.hds.forms.parsers;
+package org.philimone.hds.forms.model.parsers;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -11,8 +11,8 @@ import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.ColumnRepeatGroup;
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.parsers.form.model.FormOptions;
-import org.philimone.hds.forms.parsers.form.model.FormSettings;
+import org.philimone.hds.forms.model.parsers.form.model.FormOptions;
+import org.philimone.hds.forms.model.parsers.form.model.FormSettings;
 import mz.betainteractive.utilities.StringUtil;
 
 import java.io.File;

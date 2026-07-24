@@ -1,8 +1,7 @@
 package org.philimone.hds.forms.model;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.model.enums.ColumnValueStatus;
-import org.philimone.hds.forms.parsers.form.model.FormOptions;
+import org.philimone.hds.forms.model.parsers.form.model.FormOptions;
 import mz.betainteractive.utilities.StringUtil;
 
 import java.util.LinkedHashMap;

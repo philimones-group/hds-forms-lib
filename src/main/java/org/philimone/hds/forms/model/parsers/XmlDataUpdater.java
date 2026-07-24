@@ -1,4 +1,4 @@
-package org.philimone.hds.forms.parsers;
+package org.philimone.hds.forms.model.parsers;
 
 import android.util.AtomicFile;
 import android.util.Log;

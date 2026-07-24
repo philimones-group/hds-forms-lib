@@ -11,7 +11,7 @@ import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnModel;
-import org.philimone.hds.forms.parsers.form.model.FormOptions;
+import org.philimone.hds.forms.model.parsers.form.model.FormOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;

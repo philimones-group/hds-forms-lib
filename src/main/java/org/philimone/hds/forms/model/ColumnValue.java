@@ -1,25 +1,19 @@
 package org.philimone.hds.forms.model;
 
 import android.net.Uri;
-import android.util.Log;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.parsers.form.model.FormOptions;
 import org.philimone.hds.forms.utilities.GpsFormatter;
 import org.philimone.hds.forms.widget.ColumnAudioView;
-import org.philimone.hds.forms.widget.ColumnBarcodeView;
 import org.philimone.hds.forms.widget.ColumnDateTimeView;
 import org.philimone.hds.forms.widget.ColumnDateView;
-import org.philimone.hds.forms.widget.ColumnGpsView;
 import org.philimone.hds.forms.widget.ColumnGroupView;
 import org.philimone.hds.forms.widget.ColumnImageView;
 import org.philimone.hds.forms.widget.ColumnVideoView;
 import org.philimone.hds.forms.widget.ColumnMultiSelectView;
-import org.philimone.hds.forms.widget.ColumnNoteView;
 import org.philimone.hds.forms.widget.ColumnSelectView;
 import org.philimone.hds.forms.widget.ColumnTextView;
 import org.philimone.hds.forms.widget.ColumnTextboxView;
-import org.philimone.hds.forms.widget.ColumnTimeView;
 import org.philimone.hds.forms.widget.ColumnView;
 
 import java.io.Serializable;

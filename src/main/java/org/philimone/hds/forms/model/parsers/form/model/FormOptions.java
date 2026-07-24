@@ -1,4 +1,4 @@
-package org.philimone.hds.forms.parsers.form.model;
+package org.philimone.hds.forms.model.parsers.form.model;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
