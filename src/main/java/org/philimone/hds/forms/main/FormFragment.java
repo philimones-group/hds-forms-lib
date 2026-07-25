@@ -18,8 +18,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlEngine;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.adapters.ColumnGroupViewAdapter;
 import org.philimone.hds.forms.adapters.ColumnViewDataAdapter;
@@ -103,8 +101,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private boolean resumeMode;
     private boolean editingFormInstance;
 
-    private JexlEngine expressionEngine;
-
     public DateUtil.SupportedCalendar supportedCalendar;
 
     private ActivityResultLauncher<String> requestPermission;
@@ -127,8 +123,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     public FormFragment() {
         super();
-
-        initExpEngine();
 
         initLaunchers();
     }
@@ -367,10 +361,6 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private void initLoading(){
 
-    }
-
-    private void initExpEngine() {
-        this.expressionEngine = new JexlBuilder().create();
     }
 
     private void onCancelClicked(){

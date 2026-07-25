@@ -77,6 +77,11 @@ public class XmlDataUpdater {
                                 
                                 // Robust skip: move to the corresponding END_TAG of this element
                                 skipSubtree(parser);
+                                serializer.endTag(parser.getNamespace(), parser.getName());
+
+                                if (tagName.equals(currentFormId)) {
+                                    insideRoot = false;
+                                }
                             }
                             break;
 

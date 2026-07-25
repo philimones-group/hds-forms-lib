@@ -35,6 +35,12 @@ android {
 
 dependencies {
 
+    // Use 'api' so the App also sees the models transitively
+    api project(':hds-forms-model-lib')
+
+    // When we are ready and after published we will use this
+    //api 'org.philimone.hds.forms:hds-forms-model-lib:1.0.0'
+
     implementation 'com.android.support:appcompat-v7:34.0.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
@@ -44,14 +50,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    implementation 'org.apache.commons:commons-jexl3:3.2.1'
-
-    implementation 'org.apache.poi:poi:3.10-FINAL'
-    implementation 'org.apache.poi:poi-ooxml:3.10-FINAL'
-    implementation 'com.ibm.icu:icu4j:77.1' // or latest version
-
     implementation 'com.google.zxing:core:3.5.4'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+    implementation 'com.ibm.icu:icu4j:77.1' // or latest version
 
     // CameraX dependencies
     def camerax_version = "1.4.1"
