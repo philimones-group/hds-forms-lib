@@ -1,20 +1,17 @@
-package org.philimone.hds.forms.model.parsers;
+package org.philimone.hds.forms.utilities;
 
 import android.util.AtomicFile;
 import android.util.Log;
 import android.util.Xml;
 
 import org.philimone.hds.forms.model.HForm;
-import mz.betainteractive.utilities.StringUtil;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlSerializer;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 public class XmlDataUpdater {
     private String xmlSavedFormPath;

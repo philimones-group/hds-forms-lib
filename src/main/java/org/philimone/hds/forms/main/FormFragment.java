@@ -37,7 +37,7 @@ import org.philimone.hds.forms.model.ValidationResult;
 import org.philimone.hds.forms.model.XmlFormResult;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.model.parsers.XmlDataReader;
-import org.philimone.hds.forms.model.parsers.XmlDataUpdater;
+import org.philimone.hds.forms.utilities.XmlDataUpdater;
 
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;

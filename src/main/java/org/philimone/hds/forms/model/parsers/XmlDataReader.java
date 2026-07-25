@@ -1,22 +1,15 @@
 package org.philimone.hds.forms.model.parsers;
 
-import android.util.Log;
-
 import org.philimone.hds.forms.model.HForm;
 import org.philimone.hds.forms.model.RepeatObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -41,7 +34,7 @@ public class XmlDataReader {
 
             readMainNodes(node, map, form);
 
-            Log.d("processXml", "finished!");
+            //Log.d("processXml", "finished!");
 
         } catch (IOException e) {
             e.printStackTrace();
