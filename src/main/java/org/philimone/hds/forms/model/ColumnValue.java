@@ -1,12 +1,12 @@
 package org.philimone.hds.forms.model;
 
-import android.net.Uri;
-
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.model.utilities.GpsFormatter;
 
+import java.io.File;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,7 +99,25 @@ public class ColumnValue implements Serializable {
 
         if (type == ColumnType.AUDIO || type == ColumnType.IMAGE || type == ColumnType.VIDEO) {
             if (this.value != null && this.value.startsWith("file:")) {
-                this.valueLabel = Uri.parse(this.value).getLastPathSegment();
+                //this.valueLabel = Uri.parse(this.value).getLastPathSegment();
+
+                try {
+                    // Parse using standard Java URI to decode %20 spaces and special characters
+                    URI javaUri = new URI(this.value);
+                    String rawPath = javaUri.getPath();
+
+                    // Pass the path to java.io.File to isolate the operating-system-agnostic filename
+                    if (rawPath != null) {
+                        this.valueLabel = new File(rawPath).getName();
+                    } else {
+                        // Fallback if the path component returns null
+                        this.valueLabel = this.value.substring(this.value.lastIndexOf('/') + 1);
+                    }
+                } catch (Exception e) {
+                    // Safe cross-platform fallback string cutting
+                    int lastSlash = this.value.lastIndexOf('/');
+                    this.valueLabel = (lastSlash != -1) ? this.value.substring(lastSlash + 1) : this.value;
+                }
             }
         }
 

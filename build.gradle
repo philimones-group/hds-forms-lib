@@ -38,8 +38,6 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:34.0.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
-    implementation 'org.apache.poi:poi:3.10-FINAL'
-    implementation 'org.apache.poi:poi-ooxml:3.10-FINAL'
     implementation "androidx.activity:activity-ktx:1.10.1"
     implementation 'androidx.fragment:fragment-ktx:1.8.8'
     testImplementation 'junit:junit:4.13.2'
@@ -47,6 +45,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation 'org.apache.commons:commons-jexl3:3.2.1'
+
+    implementation 'org.apache.poi:poi:3.10-FINAL'
+    implementation 'org.apache.poi:poi-ooxml:3.10-FINAL'
     implementation 'com.ibm.icu:icu4j:77.1' // or latest version
 
     implementation 'com.google.zxing:core:3.5.4'
