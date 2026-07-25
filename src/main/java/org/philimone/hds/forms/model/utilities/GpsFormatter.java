@@ -1,11 +1,7 @@
-package org.philimone.hds.forms.utilities;
+package org.philimone.hds.forms.model.utilities;
 
-import android.location.Location;
-
-import androidx.annotation.NonNull;
-
+import java.util.Locale;
 import java.util.Map;
-
 import mz.betainteractive.utilities.StringUtil;
 
 public class GpsFormatter {
@@ -30,10 +26,6 @@ public class GpsFormatter {
         return new GpsFormatter(latitude, longitude, altitude, accuracy).format();
     }
 
-    public static String format(Location location){
-        return new GpsFormatter(location.getLatitude(), location.getLongitude(), location.getAltitude(), location.getAccuracy()*1D).format();
-    }
-
     public static String formatDMS(String columnName, Map<String, Double> gpsValues) {
         return new GpsFormatter(columnName, gpsValues).formatDMS();
     }
@@ -49,6 +41,26 @@ public class GpsFormatter {
         String lon = getLongitudeAsDMS(longitude, 2);
 
         return lat + ", " + lon + ", alt: "+altitude+", acc: "+accuracy;
+    }
+
+    private String getLatitudeAsDMS(Double latitude, int decimalPlace){
+        return convertComponent(latitude, true);
+    }
+
+    private String getLongitudeAsDMS(Double longitude, int decimalPlace){
+        return convertComponent(longitude, false);
+    }
+
+    private String convertComponent(double coordinate, boolean isLat) {
+        String direction = isLat ? (coordinate >= 0 ? "N" : "S") : (coordinate >= 0 ? "E" : "W");
+        double abs = Math.abs(coordinate);
+
+        int degrees = (int) abs;
+        double minutesRemainder = (abs - degrees) * 60;
+        int minutes = (int) minutesRemainder;
+        double seconds = (minutesRemainder - minutes) * 60;
+
+        return String.format(Locale.US, "%d°%d'%.1f\"%s", degrees, minutes, seconds, direction);
     }
 
     public static Double[] getValuesFrom(String formattedGps) {
@@ -75,21 +87,6 @@ public class GpsFormatter {
         return values;
     }
 
-    private String getLatitudeAsDMS(Double latitude, int decimalPlace){
-        String strLatitude = Location.convert(latitude, Location.FORMAT_SECONDS);
-        strLatitude = replaceDelimiters(strLatitude, decimalPlace);
-        strLatitude = strLatitude + " N";
-        return strLatitude;
-    }
-
-    private String getLongitudeAsDMS(Double longitude, int decimalPlace){
-        String strLongitude = Location.convert(longitude, Location.FORMAT_SECONDS);
-        strLongitude = replaceDelimiters(strLongitude, decimalPlace);
-        strLongitude = strLongitude + " W";
-        return strLongitude;
-    }
-
-    @NonNull
     private String replaceDelimiters(String str, int decimalPlace) {
         str = str.replaceFirst(":", "°");
         str = str.replaceFirst(":", "'");

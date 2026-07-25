@@ -3,7 +3,7 @@ package org.philimone.hds.forms.model;
 import android.net.Uri;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
-import org.philimone.hds.forms.utilities.GpsFormatter;
+import org.philimone.hds.forms.model.utilities.GpsFormatter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

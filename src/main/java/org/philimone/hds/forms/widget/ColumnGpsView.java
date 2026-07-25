@@ -17,7 +17,7 @@ import android.widget.TextView;
 import org.philimone.hds.forms.R;
 import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.ColumnModel;
-import org.philimone.hds.forms.utilities.GpsFormatter;
+import org.philimone.hds.forms.model.utilities.GpsFormatter;
 import mz.betainteractive.utilities.StringUtil;
 import org.philimone.hds.forms.widget.dialog.DialogFactory;
 import org.philimone.hds.forms.widget.dialog.LoadingDialog;
@@ -232,7 +232,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
 
         this.gpsLocationResult = getLocation(gpsValues);
 
-        this.setValue(GpsFormatter.format(this.gpsLocationResult)); //must save in format: "\d+, \d+, Alt: \d+, Acc: \d+"
+        this.setValue(GpsFormatter.format(this.gpsLocationResult.getLatitude(), this.gpsLocationResult.getLongitude(), this.gpsLocationResult.getAltitude(), this.gpsLocationResult.getAccuracy()*1D));
 
         refreshModelToUI();
     }
@@ -284,7 +284,7 @@ public class ColumnGpsView extends ColumnView implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         this.gpsLocationResult = location;
-        this.setValue(GpsFormatter.format(location)); //must save in format: "\d+, \d+, Alt: \d+, Acc: \d+"
+        this.setValue(GpsFormatter.format(location.getLatitude(), location.getLongitude(), location.getAltitude(), location.getAccuracy()*1D)); //must save in format: "\d+, \d+, Alt: \d+, Acc: \d+"
 
         showResults();
 
