@@ -15,7 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.philimone.hds.forms.R;
-import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
+import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.main.FormFragment;
 import org.philimone.hds.forms.model.ColumnModel;
 

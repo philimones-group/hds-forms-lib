@@ -1,4 +1,4 @@
-package org.philimone.hds.forms.listeners;
+package org.philimone.hds.forms.model.listeners;
 
 public interface ExternalMethodCallListener {
     /**

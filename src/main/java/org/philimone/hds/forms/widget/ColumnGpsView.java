@@ -15,7 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
-import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
+import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.utilities.GpsFormatter;
 import mz.betainteractive.utilities.StringUtil;

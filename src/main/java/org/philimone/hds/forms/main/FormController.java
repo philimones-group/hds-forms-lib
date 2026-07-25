@@ -1,6 +1,6 @@
 package org.philimone.hds.forms.main;
 
-import org.philimone.hds.forms.listeners.ExternalMethodCallListener;
+import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnGroup;
 import org.philimone.hds.forms.model.ColumnGroupModel;
