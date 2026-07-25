@@ -1,9 +1,8 @@
-package org.philimone.hds.forms.main;
+package org.philimone.hds.forms.model;
 
-import android.util.Log;
+
 import org.apache.commons.jexl3.*;
 import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
-import org.philimone.hds.forms.model.ColumnModel;
 import org.philimone.hds.forms.model.enums.ColumnType;
 
 import mz.betainteractive.utilities.StringUtil;
@@ -32,14 +31,12 @@ public class FormExpressionEvaluator {
         if (StringUtil.isBlank(expression)) return null;
 
         String translated = translateExpression(expression, contextModel);
-        translated = translateMethodCalls(translated);
-//Log.d("eval expression "+contextModel.getName(), ""+translated);
         try {
             JexlExpression jexlExpr = jexlEngine.createExpression(translated);
             JexlContext jexlContext = new MapContext();
             return jexlExpr.evaluate(jexlContext);
         } catch (Exception e) {
-            Log.e("FormExpressionEvaluator", "Error evaluating: " + translated + " on "+contextModel.getName()+"("+contextModel.getValue()+") = "+translated, null);
+            System.err.println("FormExpressionEvaluator: Error evaluating: " + translated + " on " + contextModel.getName() + "(" + contextModel.getValue() + ") = " + translated);
             return null;
         }
     }
