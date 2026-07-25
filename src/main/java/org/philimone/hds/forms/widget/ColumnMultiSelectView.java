@@ -26,7 +26,6 @@ import static java.util.stream.Collectors.toSet;
 
 public class ColumnMultiSelectView extends ColumnView {
 
-    public static final String DELIMITER = ",";
     private TextView txtName;
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
@@ -125,7 +124,7 @@ public class ColumnMultiSelectView extends ColumnView {
         if (!sop.isEmpty()) {
             StringBuilder result = new StringBuilder();
             for (SelectOption opt : sop){
-                result.append(DELIMITER).append(opt.value);
+                result.append(ColumnModel.DELIMITER).append(opt.value);
             }
 
             return result.substring(1);
@@ -140,7 +139,7 @@ public class ColumnMultiSelectView extends ColumnView {
         if (sop.size()>0) {
             StringBuilder result = new StringBuilder();
             for (SelectOption opt : sop){
-                result.append(DELIMITER).append(opt.label);
+                result.append(ColumnModel.DELIMITER).append(opt.label);
             }
 
             return result.substring(1);
@@ -155,7 +154,7 @@ public class ColumnMultiSelectView extends ColumnView {
         String value = columnModel.getValue();
         Log.d("multiselect", "value = " + value);
 
-        List<String> valuesList = value != null ? Arrays.asList(value.split(DELIMITER)) : new ArrayList<>();
+        List<String> valuesList = value != null ? Arrays.asList(value.split(ColumnModel.DELIMITER)) : new ArrayList<>();
         boolean readonlyChecked = false;
 
         for (SelectOption selectOption : this.rdbOptions) {
@@ -213,7 +212,7 @@ public class ColumnMultiSelectView extends ColumnView {
     public List<String> getValues(){
         String value = columnModel.getValue();
         if (value == null) return new ArrayList<>();
-        return Arrays.asList(value.split(DELIMITER));
+        return Arrays.asList(value.split(ColumnModel.DELIMITER));
     }
 
     @Override

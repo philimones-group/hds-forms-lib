@@ -22,6 +22,8 @@ import mz.betainteractive.utilities.StringUtil;
  */
 public class ColumnModel implements Serializable {
 
+    public static final String DELIMITER = ",";
+
     private Column column;
     private ColumnGroupModel parentGroupModel;
     private ColumnModel previousModel;
@@ -183,7 +185,7 @@ public class ColumnModel implements Serializable {
 
     public String getSelectedValuesLabels() {
         StringBuilder sb = new StringBuilder();
-        String[] values = value == null ? new String[0] : value.split(ColumnMultiSelectView.DELIMITER);
+        String[] values = value == null ? new String[0] : value.split(DELIMITER);
 
         for (int j = 0; j < values.length; j++) {
             String val = values[j];

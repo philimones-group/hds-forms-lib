@@ -4,17 +4,6 @@ import android.net.Uri;
 
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.utilities.GpsFormatter;
-import org.philimone.hds.forms.widget.ColumnAudioView;
-import org.philimone.hds.forms.widget.ColumnDateTimeView;
-import org.philimone.hds.forms.widget.ColumnDateView;
-import org.philimone.hds.forms.widget.ColumnGroupView;
-import org.philimone.hds.forms.widget.ColumnImageView;
-import org.philimone.hds.forms.widget.ColumnVideoView;
-import org.philimone.hds.forms.widget.ColumnMultiSelectView;
-import org.philimone.hds.forms.widget.ColumnSelectView;
-import org.philimone.hds.forms.widget.ColumnTextView;
-import org.philimone.hds.forms.widget.ColumnTextboxView;
-import org.philimone.hds.forms.widget.ColumnView;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -30,7 +19,6 @@ public class ColumnValue implements Serializable {
     private String columnGroupUuid;
     private int columnGroupId;
     private int columnId;
-    private ColumnView columnView;
     private Column column;
     private String value; //value for STRING,SELECT,
     private String valueLabel;
@@ -45,18 +33,6 @@ public class ColumnValue implements Serializable {
 
     public ColumnValue() {
 
-    }
-
-    public ColumnValue(ColumnGroupView columnGroupView, ColumnView columnView) {
-        this.columnGroupId = columnGroupView.getId();
-        this.columnId = columnView.getId();
-        this.columnView = columnView;
-        this.column = columnView.getColumn();
-        this.columnGroupUuid = columnGroupView.getGroupModel().getUuid();
-
-        if (columnGroupView.getGroupModel().isDisplayable() && columnView.isDisplayable()) { //if it is not displayable just be null/empty
-            retrieveValues(columnView);
-        }
     }
 
     public ColumnValue(ColumnGroupModel groupModel, ColumnModel columnModel) {
@@ -129,48 +105,6 @@ public class ColumnValue implements Serializable {
 
         // For backwards compatibility with code that uses integer IDs if any
         this.columnGroupId = columnGroupUuid.hashCode();
-    }
-
-    private void retrieveValues(ColumnView columnView) {
-        ColumnModel columnModel = columnView.getColumnModel();
-        ColumnType type = columnView.getType();
-
-        this.value = columnView.getValue();
-        this.valueLabel = this.value;
-        this.gpsValues = columnModel.getGpsValues();
-        this.multiSelectValues = columnModel.getMultiSelectValues();
-
-        if (columnView instanceof ColumnTextView || columnView instanceof ColumnTextboxView) {
-            this.integerValue = columnModel.getIntegerValue();
-            this.decimalValue = columnModel.getDecimalValue();
-            
-            if (type == ColumnType.TIMESTAMP && value != null) {
-                DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
-                this.dateValue = DateUtil.toDatePrecise(this.value);
-                this.valueLabel = this.dateValue != null ? dateUtil.formatPrecise(this.dateValue) : this.value;
-            }
-        }
-        if (columnView instanceof ColumnDateView) {
-            DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
-            this.dateValue = ((ColumnDateView) columnView).getValueAsDate();
-            this.valueLabel = this.dateValue != null ? dateUtil.formatYMD(this.dateValue) : this.value;
-        }
-        if (columnView instanceof ColumnDateTimeView) {
-            DateUtil dateUtil = new DateUtil(columnView.getSupportedCalendar());
-            this.dateValue = ((ColumnDateTimeView) columnView).getValueAsDate();
-            this.valueLabel = this.dateValue != null ? dateUtil.formatYMDHMS(this.dateValue) : this.value;
-        }
-        if (columnView instanceof ColumnSelectView) {
-            this.valueLabel = columnModel.getSelectedValueLabel();
-        }
-        if (columnView instanceof ColumnMultiSelectView) {
-            this.valueLabel = columnModel.getSelectedValuesLabels();
-        }
-        if (columnView instanceof ColumnAudioView || columnView instanceof ColumnImageView || columnView instanceof ColumnVideoView) {
-            if (this.value != null && this.value.startsWith("file:")) {
-                this.valueLabel = Uri.parse(this.value).getLastPathSegment();
-            }
-        }
     }
 
     public int getColumnGroupId() {
