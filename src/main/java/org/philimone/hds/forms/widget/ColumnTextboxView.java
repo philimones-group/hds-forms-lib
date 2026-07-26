@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.model.enums.ColumnDisplayStyle;
 import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnModel;
@@ -75,7 +76,7 @@ public class ColumnTextboxView extends ColumnView {
         switch (column.getType()){
             case STRING:
                 //if display style is PHONE NUMBER change the input type
-                if (Column.DISPLAY_STYLE_PHONE_NUMBER.equals(this.column.getDisplayStyle())){
+                if (ColumnDisplayStyle.PHONE_NUMBER.getCode().equals(this.column.getDisplayStyle())){
                     editTxtValue.setInputType(InputType.TYPE_CLASS_PHONE);
                 } else {
                     editTxtValue.setInputType(InputType.TYPE_CLASS_TEXT);

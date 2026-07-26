@@ -50,9 +50,9 @@ HDS Forms are designed using an Excel spreadsheet (`.xlsx`) and rendered directl
 Defines the global properties of the form.
 
 *   **form_id**: The unique, non-spaced identifier for the form.
-*   **form_name**: The human-readable name of the form (default language).
+*   **form_name**: The human-readable name of the form (default language), it supports referencing the special variable `${form_title}` that can be defined in `HForm` setCustomTitle.
 *   **form_name::[lang]**: Translations for the form name (e.g., `form_name::pt`, `form_name::fr`, `form_name::am`).
-*   **form_version**: The version number of the form definition.
+*   **form_version**: The version number of the form definition, can also be a text.
 *   **repeat_node_name**: The name of the node used for repeat groups in the generated XML file.
 
 ### 2. Options Sheet

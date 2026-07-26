@@ -8,6 +8,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import org.philimone.hds.forms.R;
+import org.philimone.hds.forms.model.enums.ColumnDisplayStyle;
 import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
 import org.philimone.hds.forms.model.ColumnModel;
@@ -182,13 +183,9 @@ public class ColumnMultiSelectView extends ColumnView {
             }
         }
 
-        if (Column.DISPLAY_STYLE_SELECTED_ONLY.equals(this.column.getDisplayStyle())) {
+        if (ColumnDisplayStyle.SELECTED_ONLY.getCode().equals(this.column.getDisplayStyle())) {
             for (SelectOption selectOption : this.rdbOptions) {
-                if (!valuesList.contains(selectOption.value)) {
-                    selectOption.button.setVisibility(GONE);
-                } else {
-                    selectOption.button.setVisibility(VISIBLE);
-                }
+                selectOption.button.setVisibility(valuesList.contains(selectOption.value) ? VISIBLE : GONE);
             }
         }
     }
