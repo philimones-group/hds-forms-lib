@@ -65,7 +65,6 @@ Defines the choices available for `select` and `multi_select` question types.
 *   **readonly**: A logic expression (or TRUE/FALSE) determining if the option is locked (useful for pre-filled data).
 *   **display_condition**: A logic expression determining if this specific option should be visible to the user. This is used to implement **cascade selections** (e.g., `${province} == '01'`).
 *   **display_style**: Specialized formatting for the label (e.g., `selected_only`, `phone_number`).
-*   **hidden**: A logic expression determining visibility (prefer using `display_condition`).
 
 ### 3. Columns Sheet
 Defines the individual questions, notes, and groups within the form.
