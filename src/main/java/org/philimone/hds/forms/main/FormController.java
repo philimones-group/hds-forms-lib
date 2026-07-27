@@ -14,6 +14,7 @@ import org.philimone.hds.forms.model.RepeatObject;
 import org.philimone.hds.forms.model.enums.ColumnType;
 import org.philimone.hds.forms.model.enums.ColumnValueStatus;
 import org.philimone.hds.forms.model.enums.RepeatCountType;
+import org.philimone.hds.forms.model.parsers.form.model.FormOptions;
 
 import mz.betainteractive.utilities.DateUtil;
 import mz.betainteractive.utilities.StringUtil;
@@ -458,6 +459,32 @@ public class FormController implements Serializable {
         evaluateColumnReadOnlyCondition(columnModel);
         evaluateColumnRequiredCondition(columnModel);
         evaluateColumnValidation(columnModel);
+        evaluateOptionsDisplayCondition(columnModel);
+        evaluateOptionsReadOnlyCondition(columnModel);
+    }
+
+    private void evaluateOptionsDisplayCondition(ColumnModel columnModel) {
+        Column column = columnModel.getColumn();
+        if (column.isOptionsConditionallyDisplayable()) {
+            for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()) {
+                if (!StringUtil.isBlank(optionValue.displayCondition)) {
+                    Object result = evaluator.evaluate(optionValue.displayCondition, columnModel);
+                    optionValue.displayable = (result == null || "true".equals(result.toString()));
+                }
+            }
+        }
+    }
+
+    private void evaluateOptionsReadOnlyCondition(ColumnModel columnModel) {
+        Column column = columnModel.getColumn();
+        if (column.isOptionsConditionallyReadOnly()) {
+            for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()) {
+                if (!StringUtil.isBlank(optionValue.readonlyCondition)) {
+                    Object result = evaluator.evaluate(optionValue.readonlyCondition, columnModel);
+                    optionValue.readonly = ("true".equals(result != null ? result.toString() : ""));
+                }
+            }
+        }
     }
 
     private void evaluateColumnCalculation(ColumnModel columnModel) {
