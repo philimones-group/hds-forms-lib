@@ -1,6 +1,9 @@
 package org.philimone.hds.forms.widget;
 
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -25,6 +28,7 @@ public class ColumnSelectView extends ColumnView {
     private TextView txtName;
     private RadioGroup rdgColumnRadioGroup;
     private List<SelectOption> rdbOptions;
+    private View.OnTouchListener noTouchListener = (v, event) -> true;
 
     public ColumnSelectView(ColumnGroupView view, @Nullable AttributeSet attrs, @NonNull ColumnModel columnModel, ExternalMethodCallListener callListener) {
         super(view, R.layout.column_select_item, attrs, columnModel, callListener);
@@ -70,44 +74,92 @@ public class ColumnSelectView extends ColumnView {
         }
     }
 
-    public void refillOptions(){
-        for (SelectOption selectOption : this.rdbOptions) {
-            RadioButton button = selectOption.button;
-            button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
-
-            button.setEnabled(!selectOption.optionValue.readonly);
-
-            if (columnModel.isReadOnly()) {
-                button.setClickable(false);
-            }
-        }
-
-        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
-    }
-
     private void fillOptions(){
         Map<String, FormOptions.OptionValue> options = this.column.getTypeOptions();
 
         for (String value : options.keySet()){
             FormOptions.OptionValue optionValue = options.get(value);
 
-            if (!optionValue.displayable) continue;
-
             RadioButton button = new RadioButton(this.getContext());
             button.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             setTextHtml(button, optionValue.label);
             button.setTextColor(this.getContext().getResources().getColor(R.color.black));
-            button.setEnabled(!optionValue.readonly);
 
-            if (columnModel.isReadOnly()) {
-                button.setClickable(false);
+            //if not displayable dont remove from the lists just make it GONE
+            if (!optionValue.displayable) {
+                button.setVisibility(GONE);
             }
 
-            this.rdgColumnRadioGroup.addView(button);
+            button.setEnabled(!optionValue.readonly);
 
+            this.rdgColumnRadioGroup.addView(button);
             this.rdbOptions.add(new SelectOption(optionValue, value, optionValue.label, button, optionValue.readonly));
         }
-        this.rdgColumnRadioGroup.setEnabled(!columnModel.isReadOnly());
+    }
+
+    public void refillOptions(){
+        for (SelectOption selectOption : this.rdbOptions) {
+            RadioButton button = selectOption.button;
+            button.setVisibility(selectOption.optionValue.displayable ? VISIBLE : GONE);
+        }
+    }
+
+    @Override
+    public void refreshInteractionState() {
+        refillOptions();
+    }
+
+    @Override
+    public void refreshModelToUI() {
+        String value = columnModel.getValue();
+
+        if (value != null) {
+            SelectOption selectedOpt = this.rdbOptions.stream().filter( op -> op.value.equalsIgnoreCase(value)).findFirst().orElse(null);
+
+            if (selectedOpt != null) {
+
+                // Prevent feedback loops: only check if not already checked
+                if (this.rdgColumnRadioGroup.getCheckedRadioButtonId() != selectedOpt.button.getId()) {
+                    this.rdgColumnRadioGroup.check(selectedOpt.button.getId());
+                }
+
+                selectedOpt.button.setEnabled(!selectedOpt.readonly);
+
+                if (columnModel.isReadOnly() || selectedOpt.readonly) {
+                    //When a readonly is selected or the column is readonly we must make everything readonly
+                    this.rdgColumnRadioGroup.setOnTouchListener(noTouchListener);
+                    for (SelectOption selectOption : this.rdbOptions) {
+                        selectOption.button.setClickable(false);
+                        selectOption.button.setFocusable(false);
+                        selectOption.button.setOnTouchListener(noTouchListener);
+                    }
+
+                    this.rdgColumnRadioGroup.setClickable(false);
+                    this.rdgColumnRadioGroup.setFocusable(false);
+                } else {
+                    //remove no touch
+
+                    for (SelectOption selectOption : this.rdbOptions) {
+                        selectOption.button.setClickable(true);
+                        selectOption.button.setFocusable(true);
+                        selectOption.button.setOnTouchListener(null);
+                    }
+                    this.rdgColumnRadioGroup.setClickable(true);
+                    this.rdgColumnRadioGroup.setFocusable(true);
+                    this.rdgColumnRadioGroup.setOnTouchListener(null);
+                }
+
+                if (ColumnDisplayStyle.SELECTED_ONLY.getCode().equals(this.column.getDisplayStyle())){
+                    //Only shows the selected item
+                    for (SelectOption selectOption : this.rdbOptions) {
+                        if (!selectOption.value.equals(value)) {
+                            selectOption.button.setVisibility(GONE);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     private String getSelectedValue(){
@@ -122,42 +174,6 @@ public class ColumnSelectView extends ColumnView {
         int id = this.rdgColumnRadioGroup.getCheckedRadioButtonId();
         SelectOption sop = this.rdbOptions.stream().filter( op -> op.button.getId()==id).findFirst().orElse(null);
         return sop==null ? null : sop.label;
-    }
-
-    @Override
-    public void refreshModelToUI() {
-        String value = columnModel.getValue();
-
-        if (value != null) {
-            SelectOption sop = this.rdbOptions.stream().filter( op -> op.value.equalsIgnoreCase(value)).findFirst().orElse(null);
-
-            if (sop != null) {
-                this.rdgColumnRadioGroup.check(sop.button.getId());
-
-                if (sop.readonly) {
-                    for (SelectOption selectOption : this.rdbOptions) {
-                        selectOption.button.setClickable(false);
-                    }
-                }
-
-                if (ColumnDisplayStyle.SELECTED_ONLY.getCode().equals(this.column.getDisplayStyle())){
-                    for (SelectOption selectOption : this.rdbOptions) {
-                        if (!selectOption.value.equals(value)) {
-                            selectOption.button.setVisibility(GONE);
-                        }
-                    }
-                }
-
-                sop.button.setEnabled(!sop.readonly);
-            }
-
-        }
-
-    }
-
-    @Override
-    public void refreshInteractionState() {
-        refillOptions();
     }
 
     @Override

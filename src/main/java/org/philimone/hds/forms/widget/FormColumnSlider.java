@@ -118,8 +118,6 @@ public class FormColumnSlider extends LinearLayout {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
-                executeEvaluations(position);
-
                 if (pageEvents == OnNewPageSelectedEvents.CHECK_REQUIRED) {
                     isCurrentRequiredEmptyField();
                 }
@@ -284,15 +282,6 @@ public class FormColumnSlider extends LinearLayout {
         }
 
         return false;
-    }
-
-    public void executeEvaluations(int position) {
-        if (formFragment != null && formFragment.getFormController() != null) {
-            ColumnGroupModel groupModel = getAdapter().getItemModel(position);
-            if (groupModel != null) {
-                formFragment.getFormController().evaluateGroup(groupModel);
-            }
-        }
     }
 
     public void gotoPage(ColumnGroupModel model) {

@@ -488,7 +488,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         FormController.FormContext context = new FormController.FormContext(supportedCalendar, username, deviceId, startTimestamp);
         this.formController = new FormController(form, editingFormInstance, preloadedColumnValues, context, this);
         this.formController.setStateListener(this);
-        this.formController.evaluateAll();
+        //this.formController.evaluateAll();
 
         createFormInstanceFileName();
 

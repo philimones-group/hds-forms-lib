@@ -1,5 +1,7 @@
 package org.philimone.hds.forms.main;
 
+import android.util.Log;
+
 import org.philimone.hds.forms.model.FormExpressionEvaluator;
 import org.philimone.hds.forms.model.listeners.ExternalMethodCallListener;
 import org.philimone.hds.forms.model.Column;
@@ -469,7 +471,7 @@ public class FormController implements Serializable {
             for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()) {
                 if (!StringUtil.isBlank(optionValue.displayCondition)) {
                     Object result = evaluator.evaluate(optionValue.displayCondition, columnModel);
-                    optionValue.displayable = (result == null || "true".equals(result.toString()));
+                    optionValue.displayable = StringUtil.getBooleanValue(result+"");
                 }
             }
         }
@@ -481,7 +483,7 @@ public class FormController implements Serializable {
             for (FormOptions.OptionValue optionValue : column.getTypeOptions().values()) {
                 if (!StringUtil.isBlank(optionValue.readonlyCondition)) {
                     Object result = evaluator.evaluate(optionValue.readonlyCondition, columnModel);
-                    optionValue.readonly = ("true".equals(result != null ? result.toString() : ""));
+                    optionValue.readonly = StringUtil.getBooleanValue(result+"");
                 }
             }
         }
@@ -504,7 +506,7 @@ public class FormController implements Serializable {
         String displayCondition = column.getDisplayCondition();
         if (!StringUtil.isBlank(displayCondition)) {
             Object result = evaluator.evaluate(displayCondition, columnModel);
-            columnModel.setDisplayable(result == null || "true".equals(result.toString()));
+            columnModel.setDisplayable(StringUtil.getBooleanValue(result+""));
         } else {
             columnModel.setDisplayable(true);
         }
@@ -515,7 +517,8 @@ public class FormController implements Serializable {
         String readOnlyCondition = column.getReadOnlyCondition();
         if (!StringUtil.isBlank(readOnlyCondition)) {
             Object result = evaluator.evaluate(readOnlyCondition, columnModel);
-            columnModel.setReadOnly("true".equals(result != null ? result.toString() : ""));
+            columnModel.setReadOnly(StringUtil.getBooleanValue(result+""));
+            //Log.d("col "+columnModel.getName(), "result = "+result);
         }
     }
 
@@ -524,7 +527,7 @@ public class FormController implements Serializable {
         String requiredCondition = column.getRequiredCondition();
         if (!StringUtil.isBlank(requiredCondition)) {
             Object result = evaluator.evaluate(requiredCondition, columnModel);
-            columnModel.setRequired("true".equals(result != null ? result.toString() : ""));
+            columnModel.setRequired(StringUtil.getBooleanValue(result+""));
         }
     }
 
@@ -533,7 +536,7 @@ public class FormController implements Serializable {
         String validation = column.getValidation();
         if (!StringUtil.isBlank(validation)) {
             Object result = evaluator.evaluate(validation, columnModel);
-            boolean isValid = result == null || "true".equals(result.toString());
+            boolean isValid = StringUtil.getBooleanValue(result+"");
             columnModel.setValid(isValid);
             if (!isValid) {
                 columnModel.setResolvedValidationMessage(column.getValidationMessage());
