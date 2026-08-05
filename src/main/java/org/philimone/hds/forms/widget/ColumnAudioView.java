@@ -250,7 +250,7 @@ public class ColumnAudioView extends ColumnView {
 
     @Override
     public void setValue(String value) {
-        this.columnModel.setValue(value);
+        this.columnModel.setValue(getFilename(value));
         refreshModelToUI();
     }
 
@@ -263,7 +263,6 @@ public class ColumnAudioView extends ColumnView {
     public String getValueAsXml() {
         String value = getValue();
         String name = this.column.getName();
-        if (value != null) { value = Uri.parse(value).getLastPathSegment(); }
         return value == null ? "<" + name + " />" : "<" + name + ">" + value + "</" + name + ">";
     }
 

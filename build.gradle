@@ -28,8 +28,8 @@ android {
         // Flag to enable support for the new language APIs - to enable java 8 new features on android < 24
         coreLibraryDesugaringEnabled = true
 
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -39,7 +39,7 @@ dependencies {
     api project(':hds-forms-model-lib')
 
     // When we are ready and after published we will use this
-    //api 'org.philimone.hds.forms:hds-forms-model-lib:1.0.0'
+    //api 'org.philimone.hds.forms.model:hds-forms-model-lib:1.0.0'
 
     implementation 'com.android.support:appcompat-v7:34.0.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'

@@ -96,6 +96,19 @@ public abstract class ColumnView extends LinearLayout {
         return columnModel;
     }
 
+    protected String getFilename(String pathOrUri) {
+        if (pathOrUri == null) return null;
+        if (pathOrUri.startsWith("file:") || pathOrUri.startsWith("/")) {
+            try {
+                return Uri.parse(pathOrUri).getLastPathSegment();
+            } catch (Exception e) {
+                int lastSlash = pathOrUri.lastIndexOf('/');
+                return (lastSlash != -1) ? pathOrUri.substring(lastSlash + 1) : pathOrUri;
+            }
+        }
+        return pathOrUri;
+    }
+
     protected String generateMediaFilename(String extension) {
         FormFragment hostFragment = getActivity();
         String instanceFileName = hostFragment.getFormInstanceFileName();

@@ -34,6 +34,7 @@ public class ColumnVideoView extends ColumnView {
     private Button btPlayVideo;
     private ImageView imgVideoThumbnail;
     private TextView txtVideoFile;
+    private String lastCapturedPath;
 
     //private ActivityResultLauncher<Intent> videoLauncher;
 
@@ -75,15 +76,14 @@ public class ColumnVideoView extends ColumnView {
     }
 
     public void onVideoCaptured(ActivityResult result) {
-        FormFragment hostFragment = this.getActivity();
-        String instancesDirPath = hostFragment.getInstancesDirPath();
-        String newFileName = generateMediaFilename(".mp4");
-        File destFile = new File(instancesDirPath, newFileName);
-
         if (result.getResultCode() == Activity.RESULT_OK) {
             Uri savedUri = (result.getData() != null) ? result.getData().getData() : null;
-            if (savedUri == null && destFile.exists()) {
-                savedUri = Uri.fromFile(destFile);
+            
+            if (savedUri == null && lastCapturedPath != null) {
+                File destFile = new File(lastCapturedPath);
+                if (destFile.exists()) {
+                    savedUri = Uri.fromFile(destFile);
+                }
             }
 
             if (savedUri != null) {
@@ -127,9 +127,10 @@ public class ColumnVideoView extends ColumnView {
 
         String newFileName = generateMediaFilename(".mp4");
         File destFile = new File(instancesDirPath, newFileName);
+        this.lastCapturedPath = destFile.getAbsolutePath();
 
         Intent intent = new Intent(getContext(), CameraCaptureActivity.class);
-        intent.putExtra(CameraCaptureActivity.EXTRA_OUTPUT_PATH, destFile.getAbsolutePath());
+        intent.putExtra(CameraCaptureActivity.EXTRA_OUTPUT_PATH, lastCapturedPath);
         intent.putExtra(CameraCaptureActivity.EXTRA_MODE, CameraCaptureActivity.MODE_VIDEO);
 
         getActivity().launchVideoCapture(this, intent);
@@ -217,7 +218,7 @@ public class ColumnVideoView extends ColumnView {
 
     @Override
     public void setValue(String value) {
-        this.columnModel.setValue(value);
+        this.columnModel.setValue(getFilename(value));
         refreshModelToUI();
     }
 
@@ -230,7 +231,6 @@ public class ColumnVideoView extends ColumnView {
     public String getValueAsXml() {
         String value = getValue();
         String name = this.column.getName();
-        if (value != null) { value = Uri.parse(value).getLastPathSegment(); }
         return value == null ? "<" + name + " />" : "<" + name + ">" + value + "</" + name + ">";
     }
 }
