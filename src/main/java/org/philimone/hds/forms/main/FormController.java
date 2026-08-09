@@ -23,6 +23,7 @@ import mz.betainteractive.utilities.StringUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,7 +71,7 @@ public class FormController implements Serializable {
         // 1. Handle Header if exists
         if (form.hasHeader()) {
             ColumnGroup headerGroup = form.getHeader();
-            this.headerGroupModel = createGroupModel(headerGroup, null, null, null);
+            this.headerGroupModel = createGroupModel(headerGroup, null, null, null, null, -1);
             this.headerGroupModel.setHeader(true);
             this.headerGroupModel.setHidden(true);
         }
@@ -80,9 +81,10 @@ public class FormController implements Serializable {
             if (group.isHeader()) continue;
 
             if (group instanceof ColumnRepeatGroup) {
-                expandRepeatGroup((ColumnRepeatGroup) group);
+                expandRepeatGroup((ColumnRepeatGroup) group, null, -1);
             } else {
-                createGroupModel(group, null, null, null);
+                createGroupModel(group, null, null, null, null, -1);
+
             }
         }
 
@@ -90,54 +92,95 @@ public class FormController implements Serializable {
         evaluateAll();
     }
 
-    private void expandRepeatGroup(ColumnRepeatGroup repeatGroup) {
+    /*
+     *  if expandInsertIndex is -1 - means that it must do the regular insert at the end of the groupModels
+     *  the expandRepeatGroup must return a ExpandRepeatGroupResult - shows what was created (getInsertedGroupsCount)
+     */
+    private ExpandRepeatGroupResult expandRepeatGroup(ColumnRepeatGroup repeatGroup, ColumnGroupModel parentContext, int expandInsertIndex) {
+
+        ExpandRepeatGroupResult result = new ExpandRepeatGroupResult();
         RepeatCountType repeatCountType = repeatGroup.getRepeatCountType();
         Integer repeatSize = repeatGroup.getRepeatSize(preloadedValues);
 
         if (repeatCountType == RepeatCountType.VARIABLE) {
             ColumnRepeatModel anchor = new ColumnRepeatModel(repeatGroup, repeatCountType);
+            anchor.setParentGroupModel(parentContext);
             anchor.setHidden(true);
             anchor.setDisplayable(false);
-            groupModels.add(anchor);
 
-            //DONT INITIALIZE ANYTHING WAIT FOR THE repeat_count expression calculation
-            /*int targetSize = 0;
-            if (targetSize > 0) {
-                syncRepeatInstances(anchor, targetSize);
-            }*/
+            if (expandInsertIndex == -1) {
+                groupModels.add(anchor);
+            } else {
+                groupModels.add(expandInsertIndex, anchor);
+            }
 
-            return;
+            result.createdGroupModels.add(anchor);
+            return result; //only add 1 addition
+
         } else if (repeatCountType == RepeatCountType.EMPTY) {
             ColumnRepeatModel anchor = new ColumnRepeatModel(repeatGroup, repeatCountType);
+            anchor.setParentGroupModel(parentContext);
             anchor.setHidden(false);
             anchor.setDisplayable(true);
-            groupModels.add(anchor);
+
+            if (expandInsertIndex == -1) {
+                groupModels.add(anchor);
+            } else {
+                groupModels.add(expandInsertIndex, anchor);
+            }
 
             // Sync preloaded/saved data or initialize with 1 instance for EMPTY type
             int targetCount = (repeatSize==null || repeatSize==0) ? 1 : repeatSize;
 
             //add anchor at the end of the repeat instances to ask for more instances
-            syncRepeatInstances(anchor, targetCount);
+            SyncRepeatInstanceResult syncRepeatResult = syncRepeatInstances(anchor, targetCount);
+            int totalInsertedGroups = syncRepeatResult.getInsertedGroupsCount();
 
-            return;
+            result.createdGroupModels.add(anchor);
+            result.createdGroupModels.addAll(syncRepeatResult.createdGroupModels);
+            return result; //add 1 anchor inserted + totalInsertedGroups
         }
 
         // Handles EXTERNAL_LOADER and CONSTANT_VALUE
         for (int index = 0; index < repeatSize; index++) {
+            ColumnGroupModel firstModelInInstance = null;
+
             for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
                 ColumnGroup clonedInner = innerGroup.clone();
-                createGroupModel(clonedInner, repeatGroup, index, repeatSize);
+
+                if (clonedInner instanceof ColumnRepeatGroup) {
+                    ExpandRepeatGroupResult expandRepeatResult = expandRepeatGroup((ColumnRepeatGroup) clonedInner, firstModelInInstance, expandInsertIndex); //but this is a nested repeat group
+                    expandInsertIndex = (expandInsertIndex != -1) ? (expandInsertIndex + expandRepeatResult.getInsertedGroupsCount()) : -1;
+
+                    result.createdGroupModels.addAll(expandRepeatResult.createdGroupModels);
+                } else {
+                    ColumnGroupModel model = createGroupModel(clonedInner, parentContext, repeatGroup, index, repeatSize, expandInsertIndex);
+                    if (firstModelInInstance == null) firstModelInInstance = model;
+                    expandInsertIndex = (expandInsertIndex != -1) ? expandInsertIndex+1 : -1;
+                    result.createdGroupModels.add(model);
+                }
             }
         }
+
+        return result;
     }
 
-    private void syncRepeatInstances(ColumnRepeatModel anchor, int targetCount) {
+    /**
+     * This method expands or shrinks a repeat group inner Column Groups
+     * @param anchor
+     * @param targetCount
+     * @return the number of inserted/removed groups models
+     */
+    private SyncRepeatInstanceResult syncRepeatInstances(ColumnRepeatModel anchor, int targetCount) {
+        SyncRepeatInstanceResult result = new SyncRepeatInstanceResult();
         int currentCount = anchor.getCurrentInstanceCount();
-        if (targetCount == currentCount) return;
+        if (targetCount == currentCount) return result; //nothing inserted/removed
 
         boolean structureChanged = false;
         ColumnRepeatGroup repeatGroup = anchor.getRepeatDefinition();
         //Log.d("repeat group", repeatGroup.getGroupName()+", currCount="+currentCount+", targetCount="+targetCount);
+
+        ColumnGroupModel parentContext = anchor.getParentGroupModel();
 
         if (targetCount > currentCount) {
             // Expand
@@ -145,16 +188,40 @@ public class FormController implements Serializable {
 
             if (anchor.getRepeatCountType() == RepeatCountType.VARIABLE) {
                 int insertIndex = anchorIndex + 1;
-                insertIndex += anchor.getInstanceModels().size();
+                insertIndex += anchor.getInstanceModels().size(); //adds to the end
 
                 for (int i = currentCount; i < targetCount; i++) {
+                    ColumnGroupModel firstModelInInstance = null;
+
                     for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
                         ColumnGroup clonedInner = innerGroup.clone();
-                        ColumnGroupModel newModel = initializeGroupModel(clonedInner, repeatGroup, i, targetCount);
 
+                        if (clonedInner instanceof ColumnRepeatGroup) {
+                            //if the inner group is a ColumnRepeatGroup we must expand it too
+                            //but should be added at insertIndex - but after expand we must sync a new insertIndex
+                            //the expandRepeatGroup must return the new the number of insertedColumnGroups
+                            //inside expandRepeatGroups the groupModels already added
+                            ExpandRepeatGroupResult expandResult = expandRepeatGroup((ColumnRepeatGroup) innerGroup, firstModelInInstance, insertIndex);
+                            int totalInsertedGroups = expandResult.getInsertedGroupsCount();
+                            insertIndex += totalInsertedGroups;
+
+                            for (ColumnGroupModel createdModel : expandResult.createdGroupModels) {
+                                anchor.addInstanceModel(createdModel);
+                                result.createdGroupModels.add(createdModel);
+                            }
+                            result.expanded = true;
+                            continue;
+                        }
+
+                        ColumnGroupModel newModel = initializeGroupModel(clonedInner, parentContext, repeatGroup, i, targetCount);
+                        if (firstModelInInstance == null) firstModelInInstance = newModel;
+
+                        //adding new groupModel to the end of existing models
                         groupModels.add(insertIndex++, newModel);
                         anchor.addInstanceModel(newModel);
                         structureChanged = true;
+
+                        result.createdGroupModels.add(newModel);
                     }
                 }
             } else if (anchor.getRepeatCountType() == RepeatCountType.EMPTY){
@@ -162,27 +229,59 @@ public class FormController implements Serializable {
                 int insertIndex = anchorIndex;
 
                 for (int i = currentCount; i < targetCount; i++) {
+                    ColumnGroupModel firstModelInInstance = null;
+
                     for (ColumnGroup innerGroup : repeatGroup.getColumnsGroups()) {
                         ColumnGroup clonedInner = innerGroup.clone();
-                        ColumnGroupModel newModel = initializeGroupModel(clonedInner, repeatGroup, i, targetCount);
+
+                        if (clonedInner instanceof ColumnRepeatGroup) {
+                            //if the inner group is a ColumnRepeatGroup we must expand it too
+                            //but should be added at insertIndex - but after expand we must sync a new insertIndex
+                            //the expandRepeatGroup must return the new the number of insertedColumnGroups
+                            //inside expandRepeatGroups the groupModels already added
+                            ExpandRepeatGroupResult expandResult = expandRepeatGroup((ColumnRepeatGroup) innerGroup, firstModelInInstance, insertIndex);
+                            int totalInsertedGroups = expandResult.getInsertedGroupsCount();
+                            insertIndex += totalInsertedGroups;
+
+                            for (ColumnGroupModel createdModel : expandResult.createdGroupModels) {
+                                anchor.addInstanceModel(createdModel);
+                                result.createdGroupModels.add(createdModel);
+                            }
+                            result.expanded = true;
+                            continue;
+                        }
+
+                        ColumnGroupModel newModel = initializeGroupModel(clonedInner, parentContext, repeatGroup, i, targetCount);
+                        if (firstModelInInstance == null) firstModelInInstance = newModel;
 
                         groupModels.add(insertIndex++, newModel);
                         anchor.addInstanceModel(newModel);
                         structureChanged = true;
+
+                        result.createdGroupModels.add(newModel);
                     }
                 }
             }
         } else {
             // Shrink
-            int groupsPerInstance = repeatGroup.getColumnsGroups().size();
             int instancesToRemove = currentCount - targetCount;
-            
             for (int i = 0; i < instancesToRemove; i++) {
-                for (int j = 0; j < groupsPerInstance; j++) {
-                    ColumnGroupModel modelToRemove = anchor.getInstanceModels().remove(anchor.getInstanceModels().size() - 1);
-                    groupModels.remove(modelToRemove);
-                    structureChanged = true;
+                int lastInstanceIdx = anchor.getCurrentInstanceCount() - 1;
+
+                // Use an iterator to safely remove all models belonging to this specific instance
+                Iterator<ColumnGroupModel> it = anchor.getInstanceModels().iterator();
+                while (it.hasNext()) {
+                    ColumnGroupModel m = it.next();
+                    if (m.getRepeatIndex() != null && m.getRepeatIndex() == lastInstanceIdx) {
+                        if (m instanceof ColumnRepeatModel) {
+                            removeModels((ColumnRepeatModel) m); // Clean up the nested tree
+                        }
+                        groupModels.remove(m); // Remove from UI
+                        it.remove(); // Remove from parent tracking
+                        structureChanged = true;
+                    }
                 }
+                anchor.setCurrentInstanceCount(lastInstanceIdx);
             }
         }
 
@@ -198,6 +297,19 @@ public class FormController implements Serializable {
                 stateListener.onFormStructureChanged();
             }
         }
+
+        return result;
+    }
+
+    private void removeModels(ColumnRepeatModel anchor){
+        while (!anchor.getInstanceModels().isEmpty()) {
+            ColumnGroupModel m = anchor.getInstanceModels().remove(anchor.getInstanceModels().size() - 1);
+            if (m instanceof ColumnRepeatModel) {
+                removeModels((ColumnRepeatModel) m);
+            }
+            groupModels.remove(m);
+        }
+        anchor.clearInstanceModels();
     }
 
     private void relinkAll() {
@@ -215,13 +327,19 @@ public class FormController implements Serializable {
         }
     }
 
-    private ColumnGroupModel createGroupModel(ColumnGroup group, ColumnRepeatGroup repeatParent, Integer repeatIndex, Integer repeatSize) {
-        ColumnGroupModel groupModel = initializeGroupModel(group, repeatParent, repeatIndex, repeatSize);
-        groupModels.add(groupModel);
+    private ColumnGroupModel createGroupModel(ColumnGroup group, ColumnGroupModel parentContext, ColumnRepeatGroup repeatParent, Integer repeatIndex, Integer repeatSize, int insertIndex) {
+        ColumnGroupModel groupModel = initializeGroupModel(group, parentContext, repeatParent, repeatIndex, repeatSize);
+
+        if (insertIndex == -1) {
+            groupModels.add(groupModel);
+        } else {
+            groupModels.add(insertIndex, groupModel);
+        }
+
         return groupModel;
     }
 
-    private ColumnGroupModel initializeGroupModel(ColumnGroup group, ColumnRepeatGroup repeatParent, Integer repeatIndex, Integer repeatSize) {
+    private ColumnGroupModel initializeGroupModel(ColumnGroup group, ColumnGroupModel parentContext, ColumnRepeatGroup repeatParent, Integer repeatIndex, Integer repeatSize) {
         ColumnGroupModel groupModel;
         
         if (repeatParent != null) {
@@ -231,6 +349,7 @@ public class FormController implements Serializable {
             groupModel = new ColumnGroupModel(group);
         }
 
+        groupModel.setParentGroupModel(parentContext);
         groupModel.setSupportedCalendar(formContext.supportedCalendar);
 
         for (Column column : group.getColumns()) {
@@ -362,17 +481,6 @@ public class FormController implements Serializable {
         }
     }
 
-    public void evaluateAll() {
-        for (int i = 0; i < groupModels.size(); i++) {
-            ColumnGroupModel gm = groupModels.get(i);
-            if (gm instanceof ColumnRepeatModel) {
-                evaluateRepeatModel((ColumnRepeatModel) gm);
-            } else {
-                evaluateGroup(gm);
-            }
-        }
-    }
-
     public void onModelValueChanged(ColumnModel columnModel) {
         onModelValueChanged(columnModel.getParentGroupModel());
     }
@@ -395,13 +503,6 @@ public class FormController implements Serializable {
         }
     }
 
-    public void evaluateGroup(ColumnGroupModel groupModel) {
-        for (ColumnModel cm : groupModel.getColumnModels()) {
-            evaluateColumn(cm);
-        }
-        updateGroupVisibility(groupModel);
-    }
-
     public void addRepeatInstance(ColumnRepeatModel anchor) {
         syncRepeatInstances(anchor, anchor.getCurrentInstanceCount() + 1);
     }
@@ -410,6 +511,25 @@ public class FormController implements Serializable {
         if (anchor.getCurrentInstanceCount() > 1) {
             syncRepeatInstances(anchor, anchor.getCurrentInstanceCount() - 1);
         }
+    }
+
+    //region Evaluation Methods
+    public void evaluateAll() {
+        for (int i = 0; i < groupModels.size(); i++) {
+            ColumnGroupModel gm = groupModels.get(i);
+            if (gm instanceof ColumnRepeatModel) {
+                evaluateRepeatModel((ColumnRepeatModel) gm);
+            } else {
+                evaluateGroup(gm);
+            }
+        }
+    }
+
+    public void evaluateGroup(ColumnGroupModel groupModel) {
+        for (ColumnModel cm : groupModel.getColumnModels()) {
+            evaluateColumn(cm);
+        }
+        updateGroupVisibility(groupModel);
     }
 
     private void evaluateRepeatModel(ColumnRepeatModel anchor) {
@@ -546,6 +666,25 @@ public class FormController implements Serializable {
         } else {
             columnModel.setValid(true);
             columnModel.setResolvedValidationMessage(null);
+        }
+    }
+    //endregion
+
+    class ExpandRepeatGroupResult {
+
+        public List<ColumnGroupModel> createdGroupModels = new ArrayList<>();
+
+        public int getInsertedGroupsCount() {
+            return createdGroupModels.size();
+        }
+    }
+
+    class SyncRepeatInstanceResult {
+        public List<ColumnGroupModel> createdGroupModels = new ArrayList<>();
+        public boolean expanded = false;
+
+        public int getInsertedGroupsCount() {
+            return createdGroupModels.size();
         }
     }
 

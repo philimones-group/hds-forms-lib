@@ -532,20 +532,55 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
                 ColumnValue columnValue = new ColumnValue(gm, cm);
 
                 if (gm.isRepeatItem()) {
-                    ColumnRepeatGroup repeatGroup = gm.getRepeatGroup();
-                    RepeatColumnValue repeatColumnValue = map.getRepeatColumn(repeatGroup.getName());
-                    repeatColumnValue = repeatColumnValue == null ? new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName()) : repeatColumnValue;
-                    repeatColumnValue.put(gm.getRepeatIndex(), columnValue);
-
-                    map.put(repeatColumnValue);
-                    continue;
+                    RepeatColumnValue rcv = getRepeatColumnValue(map, gm);
+                    rcv.put(gm.getRepeatIndex(), columnValue);
+                } else {
+                    map.put(cm.getName(), columnValue);
                 }
-
-                map.put(cm.getName(), columnValue);
             }
         }
 
         return map;
+    }
+
+    private RepeatColumnValue getRepeatColumnValue(CollectedDataMap map, ColumnGroupModel gm) {
+        ColumnRepeatGroup repeatGroup = gm.getRepeatGroup();
+        ColumnGroupModel contextGM = gm.getParentGroupModel();
+
+        // Find the nearest ancestor that is a repeat instance
+        while (contextGM != null && !contextGM.isRepeatItem()) {
+            contextGM = contextGM.getParentGroupModel();
+        }
+
+        if (contextGM == null) {
+            // Top-level repeat: Find or create in the root map
+            RepeatColumnValue rcv = map.getRepeatColumn(repeatGroup.getName());
+            if (rcv == null) {
+                rcv = new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName());
+                map.put(rcv);
+            }
+            return rcv;
+        } else {
+            // Nested repeat:
+            // 1. Recursively get the RepeatColumnValue that contains the parent instance
+            RepeatColumnValue parentRCV = getRepeatColumnValue(map, contextGM);
+
+            // 2. Get the specific instance index of the parent
+            int parentIndex = contextGM.getRepeatIndex();
+
+            // 3. Find/Create the child RepeatColumnValue inside that parent instance
+            ColumnValue childCV = parentRCV.get(repeatGroup.getName(), parentIndex);
+            RepeatColumnValue childRCV;
+
+            if (childCV instanceof RepeatColumnValue) {
+                childRCV = (RepeatColumnValue) childCV;
+            } else {
+                childRCV = new RepeatColumnValue(repeatGroup.getGroupName(), repeatGroup.getNodeName());
+                parentRCV.put(parentIndex, repeatGroup.getName(), childRCV);
+            }
+
+            return childRCV;
+        }
     }
 
     public String getInstancesDirPath() {
