@@ -22,6 +22,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import java.util.List;
+
 public class FormColumnSlider extends LinearLayout {
 
     private Context mContext;
@@ -149,8 +151,12 @@ public class FormColumnSlider extends LinearLayout {
         int next = current + 1;
         ColumnGroupViewAdapter adapter = getAdapter();
 
-        if (adapter != null && next < adapter.getItemCount()) {
-            formViewPager.setCurrentItem(next, true);
+        if (adapter != null) {
+            if (next < adapter.getItemCount()) {
+                formViewPager.setCurrentItem(next, true);
+            } else {
+                getFormFragment().openResumeView(FormFragment.ResumeEntryMethod.SWIPE);
+            }
         }
     }
 
@@ -290,6 +296,22 @@ public class FormColumnSlider extends LinearLayout {
             pageEvents = OnNewPageSelectedEvents.NO_ACTION;
             formViewPager.setCurrentItem(position, false);
         }
+    }
+
+    public void gotoLastPage() {
+        List<ColumnGroupModel> vmodels = getAdapter().getVisibleModels();
+        if (vmodels != null) {
+            int last = vmodels.size()-1;
+            if (last >= 0) {
+                pageEvents = OnNewPageSelectedEvents.NO_ACTION;
+                formViewPager.setCurrentItem(last, true);
+                vmodels = null;
+            }
+        }
+    }
+
+    public void gotoFirstPage() {
+        formViewPager.setCurrentItem(0, true);
     }
 
     public void setAdapter(ColumnGroupViewAdapter adapter) {

@@ -8,10 +8,16 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.transition.Slide;
+import android.transition.TransitionManager;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -65,6 +71,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
@@ -78,6 +85,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
     private FragmentManager fragmentManager;
     private HForm form;
+    private ConstraintLayout formMainConstraintLayout;
     private FormColumnSlider formSlider;
     private TextView txtFormTitle;
     private LinearLayout formHeaderLayout;
@@ -120,6 +128,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     private FormCollectionListener formListener;
 
     private FormController formController;
+
+    private ResumeEntryMethod resumeEntryMethod;
+    public enum ResumeEntryMethod { SWIPE, BUTTON }
+    private GestureDetector formResumeLayoutSwipeDetector;
 
     public FormFragment() {
         super();
@@ -302,6 +314,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         //this.formViewPagerLayout = view.findViewById(R.id.formViewPagerLayout);
         this.formSlider = view.findViewById(R.id.formSlider);
+        this.formMainConstraintLayout = view.findViewById(R.id.formMainConstraintLayout);
         this.txtFormTitle = (TextView) view.findViewById(R.id.txtFormTitle);
         this.formHeaderLayout = (LinearLayout) view.findViewById(R.id.formHeaderLayout);
         this.formContentLayout = view.findViewById(R.id.formContentLayout);
@@ -328,11 +341,52 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
             onResumeListItemClicked(position);
         });
 
+        setupResumeBackSwipeDetector();
+
         initFormTitle();
 
         formSlider.setFormFragment(this);
 
         initFormController();
+    }
+
+    private void setupResumeBackSwipeDetector() {
+        formResumeLayoutSwipeDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+
+            private final int SWIPE_MIN_DISTANCE = 120;
+            private final int SWIPE_MAX_OFF_PATH = 250;
+            private final int SWIPE_THRESHOLD_VELOCITY = 200;
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+
+                float deltaX = e2.getX() - e1.getX();
+                float deltaY = e2.getY() - e1.getY();
+
+                //too vertical - let the resume ListView scroll normally
+                if (Math.abs(deltaY) > SWIPE_MAX_OFF_PATH) return false;
+
+                //dragging to the right = backwards, opposite of the entrance slide from END
+                if (deltaX > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    if (resumeEntryMethod == ResumeEntryMethod.SWIPE) {
+                        openLastPage();
+                        closeResumeView();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        View.OnTouchListener touchListener = (v, event) -> {
+            formResumeLayoutSwipeDetector.onTouchEvent(event);
+            return false;
+        };
+
+        this.formResumeLayout.setOnTouchListener(touchListener);
+        this.lvResumeColumns.setOnTouchListener(touchListener);
     }
 
     @Override
@@ -424,7 +478,7 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
     }
 
     private void onOpenResumeClicked(){
-        openResumeView();
+        openResumeView(ResumeEntryMethod.BUTTON);
     }
 
     private void onCloseResumeClicked(){
@@ -435,32 +489,91 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
         ColumnViewDataAdapter adapter = (ColumnViewDataAdapter) this.lvResumeColumns.getAdapter();
         if (adapter != null) {
             closeResumeView();
-            ColumnModel columnModel = adapter.getItem(position);
-            if (columnModel != null) {
-                this.formSlider.gotoPage(columnModel.getParentGroupModel());
+
+            //go to the visible model or the previous
+            for (int i = position; i >= 0; i--) {
+                ColumnModel columnModel = adapter.getItem(i);
+                ColumnGroupModel groupModel = columnModel != null ? columnModel.getParentGroupModel() : null;
+
+                if (groupModel != null && groupModel.isDisplayable()) {
+                    this.formSlider.gotoPage(groupModel);
+                    return;
+                }
             }
+
+            this.formSlider.gotoFirstPage();
         }
     }
 
     public void closeResumeView(){
         if (this.resumeMode){
             this.resumeMode = false;
+
+            if (this.resumeEntryMethod == ResumeEntryMethod.SWIPE) {
+                slideRightContentLayout();
+            }
+
+            this.resumeEntryMethod = null;
             this.formResumeLayout.setVisibility(View.GONE);
             this.formContentLayout.setVisibility(View.VISIBLE);
         }
     }
 
-    private void openResumeView(){
+    private void hideKeyboard() {
+        View root = getView();
+        View focusedView = (root != null) ? root.findFocus() : null;
+        if (focusedView != null) {
+            InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(focusedView.getWindowToken(), 0);
+            }
+            focusedView.clearFocus();
+        }
+    }
+
+    public void openResumeView(ResumeEntryMethod entryMethod){
+        this.resumeEntryMethod = entryMethod;
         this.resumeMode = true;
 
         loadResumeListView();
+
+        hideKeyboard();
+
+        slideLeftResumeLayout();
 
         this.formResumeLayout.setVisibility(View.VISIBLE);
         this.formContentLayout.setVisibility(View.GONE);
     }
 
+    private void slideLeftResumeLayout() {
+        /** slide effects starts */
+        Slide slideIn = new Slide(Gravity.END);
+        slideIn.setDuration(300);
+        slideIn.addTarget(this.formResumeLayout);
+        TransitionManager.beginDelayedTransition(this.formMainConstraintLayout, slideIn);
+        /** slide effects ends*/
+    }
+
+    private void slideRightContentLayout() {
+        /** slide effects starts */
+        Slide slideOut = new Slide(Gravity.START);
+        slideOut.setDuration(300);
+        slideOut.addTarget(this.formContentLayout);
+        TransitionManager.beginDelayedTransition(this.formMainConstraintLayout, slideOut);
+        /** slide effects ends*/
+    }
+
     private void loadResumeListView() {
         List<ColumnModel> list = new ArrayList<>();
+
+        ColumnGroupModel headerModel = formController.getHeaderGroupModel();
+        if (headerModel != null) {
+            for (ColumnModel columnModel : headerModel.getColumnModels()) {
+                if (!columnModel.getColumn().isHidden()) {
+                    list.add(columnModel);
+                }
+            }
+        }
 
         for (ColumnGroupModel groupModel : formController.getGroupModels()) {
             if (!groupModel.isHidden()) {
@@ -474,6 +587,10 @@ public class FormFragment extends DialogFragment implements ExternalMethodCallLi
 
         ColumnViewDataAdapter adapter = new ColumnViewDataAdapter(this.getContext(), list);
         this.lvResumeColumns.setAdapter(adapter);
+    }
+
+    private void openLastPage() {
+        this.formSlider.gotoLastPage();
     }
 
     private Context getCurrentContext() {
