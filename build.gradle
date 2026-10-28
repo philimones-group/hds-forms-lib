@@ -1,22 +1,28 @@
 plugins {
     id 'com.android.library'
+    id 'signing'
+    id 'com.vanniktech.maven.publish' version '0.28.0'
 }
+
+group = 'org.philimone.hds.forms'
+version = '1.7.1'
 
 android {
     namespace = "org.philimone.hds.forms"
 
     compileSdk = 35
-    //buildToolsVersion "30.0.3"
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 26
         targetSdk = 35
-        versionCode 11
-        versionName "1.7.0"
+        versionCode 15
+        versionName "1.7.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
+
+
 
     buildTypes {
         release {
@@ -25,7 +31,6 @@ android {
         }
     }
     compileOptions {
-        // Flag to enable support for the new language APIs - to enable java 8 new features on android < 24
         coreLibraryDesugaringEnabled = true
 
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -35,14 +40,10 @@ android {
 
 dependencies {
 
-    // Use 'api' so the App also sees the models transitively
-    api project(':hds-forms-model-lib')
+    api 'org.philimone.hds.forms.model:hds-forms-model-lib:1.0.5'
 
-    // When we are ready and after published we will use this
-    //api 'org.philimone.hds.forms.model:hds-forms-model-lib:1.0.0'
-
-    implementation 'com.android.support:appcompat-v7:34.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation "androidx.activity:activity-ktx:1.10.1"
     implementation 'androidx.fragment:fragment-ktx:1.8.8'
@@ -52,9 +53,8 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.5.4'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
-    implementation 'com.ibm.icu:icu4j:77.1' // or latest version
+    implementation 'com.ibm.icu:icu4j:77.1'
 
-    // CameraX dependencies
     def camerax_version = "1.4.1"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
@@ -63,8 +63,52 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
-    //to enable java 8 new features on android < 24
     implementation "androidx.window:window:1.4.0"
     implementation "androidx.window:window-java:1.4.0"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+}
+
+signing {
+    required {
+        (gradle.taskGraph.hasTask("publish") || gradle.taskGraph.hasTask("publishAndReleaseToMavenCentral")) &&
+        (project.hasProperty("signing.keyId") || project.hasProperty("signing.gnupg.keyName"))
+    }
+    if (project.hasProperty("signing.gnupg.keyName")) {
+        useGpgCmd()
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, true)
+
+    if (project.hasProperty("signing.keyId") || project.hasProperty("signing.gnupg.keyName")) {
+        signAllPublications()
+    }
+
+    coordinates("org.philimone.hds.forms", "hds-forms-lib", "1.7.1")
+
+    pom {
+        name = 'HDS Forms Library'
+        description = 'Android library for dynamic data collection in HDS-Explorer and longitudinal research, providing logic-driven form rendering as native UI components.'
+        url = 'https://github.com/philimones-group/hds-forms-lib'
+        
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+        developers {
+            developer {
+                id = 'paulphilimone'
+                name = 'Paulo Filimone'
+                email = 'paulphilimone@gmail.com'
+            }
+        }
+        scm {
+            connection = 'scm:git:github.com/philimones-group/hds-forms-lib.git'
+            developerConnection = 'scm:git:ssh://github.com/philimones-group/hds-forms-lib.git'
+            url = 'https://github.com/philimones-group/hds-forms-lib'
+        }
+    }
 }
